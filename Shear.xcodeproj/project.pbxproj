@@ -10,6 +10,8 @@
 		EB1C613F1B5327380092817E /* Shear.h in Headers */ = {isa = PBXBuildFile; fileRef = EB1C613E1B5327380092817E /* Shear.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB1C61461B5327380092817E /* Shear.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB1C613B1B5327380092817E /* Shear.framework */; };
 		EB1C614B1B5327380092817E /* ShearTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C614A1B5327380092817E /* ShearTests.swift */; };
+		EB1C61561B5327500092817E /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C61551B5327500092817E /* Array.swift */; };
+		EB1C61581B53275E0092817E /* DenseArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C61571B53275E0092817E /* DenseArray.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +31,8 @@
 		EB1C61451B5327380092817E /* ShearTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShearTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB1C614A1B5327380092817E /* ShearTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShearTests.swift; sourceTree = "<group>"; };
 		EB1C614C1B5327380092817E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EB1C61551B5327500092817E /* Array.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
+		EB1C61571B53275E0092817E /* DenseArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DenseArray.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +75,8 @@
 		EB1C613D1B5327380092817E /* Shear */ = {
 			isa = PBXGroup;
 			children = (
+				EB1C61551B5327500092817E /* Array.swift */,
+				EB1C61571B53275E0092817E /* DenseArray.swift */,
 				EB1C613E1B5327380092817E /* Shear.h */,
 				EB1C61401B5327380092817E /* Info.plist */,
 			);
@@ -142,6 +148,7 @@
 		EB1C61321B5327380092817E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Andrew Snow";
 				TargetAttributes = {
@@ -193,6 +200,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB1C61561B5327500092817E /* Array.swift in Sources */,
+				EB1C61581B53275E0092817E /* DenseArray.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -302,6 +311,7 @@
 		EB1C61501B5327380092817E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -314,12 +324,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = su.snw.Shear;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		EB1C61511B5327380092817E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
