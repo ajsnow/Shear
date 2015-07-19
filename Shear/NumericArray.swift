@@ -7,7 +7,7 @@
 //
 
 import Foundation
-//import simd
+import Accelerate
 
 extension Array where Element: NumericType {
     public static func Ones(shape newShape: [Int]) -> DenseArray<Element> {
@@ -22,21 +22,10 @@ extension Array where Element: NumericType {
 //        var array = Zeros(shape: Swift.Array(count: rank, repeatedValue: length))
 //        for i in 0..<length {
 //            let indices = Swift.Array(count: rank, repeatedValue: i)
-//            array[indices] = Element(1)
+//            array[indices] = Element(1) // Cannot assign type of Self.Element to a varaible of type Self.Element?
 //        }
 //        return array
 //    }
-}
-
-func + < A: Array, B: Array where A.Generator.Element == B.Generator.Element, A.Generator.Element: NumericType >
-    (lhs: A, rhs: B) -> DenseArray<A.Generator.Element> {
-        precondition(lhs.shape == rhs.shape, "Arrays must have same shape to be elementwise added")
-        return DenseArray(shape: lhs.shape, baseArray: zip(lhs, rhs).map(+))
-}
-
-func + < A: Array, B: NumericType where A.Generator.Element == B >
-    (lhs: A, rhs: B) -> DenseArray<A.Generator.Element> {
-        return DenseArray(shape: lhs.shape, baseArray: lhs.map {$0 + rhs})
 }
 
 protocol NumericArray: Array {
@@ -55,25 +44,24 @@ protocol NumericArray: Array {
     
     // inhereited
     
-    func *(lhs: Self, rhs: Self) -> Self
+//    func *(lhs: Self, rhs: Self) -> Self
 //    func *(lhs: Self, rhs: NumericArray) -> NumericArray
 //    func *(lhs: NumericArray, rhs: Self) -> NumericArray
 
-    func *(lhs: Element, rhs: Self) -> Self
-    func *(lhs: Self, rhs: Element) -> Self
+//    func *(lhs: Element, rhs: Self) -> Self
+//    func *(lhs: Self, rhs: Element) -> Self
 //    func *=(inout lhs: double2x4, rhs: Double)
 //    func *=(inout lhs: double2x4, rhs: double2x2)
     
-    func +(lhs: Self, rhs: Self) -> Self
-    func +=(inout lhs: Self, rhs: Self)
-    func -(lhs: Self, rhs: Self) -> Self
-    prefix func -(rhs: Self) -> Self
-    func -=(inout lhs: Self, rhs: Self)
+//    func +(lhs: Self, rhs: Self) -> Self
+//    func +=(inout lhs: Self, rhs: Self)
+//    func -(lhs: Self, rhs: Self) -> Self
+//    prefix func -(rhs: Self) -> Self
+//    func -=(inout lhs: Self, rhs: Self)
 
 }
 
-infix operator × {} /// Cross Product Operator
-infix operator ∙ {} /// Dot Product Operator
+
 
 
 protocol Vector: NumericArray {
