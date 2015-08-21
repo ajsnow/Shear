@@ -24,14 +24,13 @@ public struct DenseArraySlice<T>: Array {
     // MARK: - Initializers
     
     init?(baseArray: DenseArray<Element>, viewIndices: [ArrayIndex]) {
-        guard let st = makeShapeAndTransform(baseArray.shape, viewIndices: viewIndices) else {
+        guard let shape = makeShapeAndTransform(baseArray.shape, viewIndices: viewIndices) else {
             fatalError("DenseArraySlice's bounds must be within the DenseArray")
         }
         
         self.storage = baseArray
         self.viewIndices = viewIndices
-        self.shape = st.shape
-        self.transform = st.transform
+        self.shape = shape
     }
     
     // MARK: - Underlying Storage
@@ -41,9 +40,6 @@ public struct DenseArraySlice<T>: Array {
     
     /// The Swift.Array of `ArrayIndex` that define the view into `storage`.
     private let viewIndices: [ArrayIndex]
-    
-    /// `transform` is an array that help map indices from the `DenseArraySlice`'s coordinates to its underlying `DenseArray`'s.
-    private let transform: [[Int]?]
     
     // MARK: - Properties
     
@@ -115,7 +111,7 @@ extension DenseArraySlice {
 
 // MARK: - Helpers
 
-private func makeShapeAndTransform(initialShape: [Int], viewIndices: [ArrayIndex]) -> (shape: [Int], transform: [[Int]?])? {
+private func makeShapeAndTransform(initialShape: [Int], viewIndices: [ArrayIndex]) -> [Int]? {
     // Check for correct number of indicies
     guard initialShape.count == viewIndices.count else { return nil }
     
@@ -137,20 +133,7 @@ private func makeShapeAndTransform(initialShape: [Int], viewIndices: [ArrayIndex
         }
     }
     
-    let transform = pairs.map { (initialBound, index) -> [Int]? in
-        switch index {
-        case .All:
-            return [Int](0..<initialBound)
-        case .SingleValue:
-            return nil
-        case .List(let list):
-            return list
-        case .Range(let low, let high):
-            return [Int](low..<high)
-        }
-    }
-    
-    return (shape, transform)
+    return shape
 }
 
 // Ugly functions get ugly names.
@@ -162,9 +145,7 @@ private func enumerateAllValuesFromZeroToBounds(bounds: [Int]) -> [[Int]] {
         let results = recursivelyEnumerateAllValuesFromZeroToBounds(remainingBits.dropFirst())
         
         return (0..<first).map { currentIndex -> [[Int]] in
-            return results.map {
-                return [currentIndex] + $0
-            }
+            return results.map { [currentIndex] + $0 }
             }.flatMap {$0}
     }
     
