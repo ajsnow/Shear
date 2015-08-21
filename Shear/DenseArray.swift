@@ -8,8 +8,36 @@
 
 import Foundation
 
-public struct DenseArray<T> : Array {
-    // MARK: - Initialization
+public struct DenseArray<T>: Array {
+    
+    // MARK: - Associated Types
+    
+    /// The type of element stored by this `$TypeName`.
+    public typealias Element = T
+    
+//    public typealias ElementsView = [T]
+    
+    // MARK: - Underlying Storage
+    
+    /// The flat builtin array that serves as the underlying backing storage for this `$TypeName`.
+    private var storage: [T]
+    
+    // MARK: - Properties
+    
+    /// The shape (lenght in each demision) of this `$TypeName`.
+    /// e.g. If the `$TypeName` represents a 3 by 4 matrix, it's shape is [3,4]
+    public let shape: [Int]
+    
+    /// The offsets needed to index into storage.
+    let offsets: [Int] // Shape is constant; this will need to change when that changes.
+    // Dynamic version. If we let shape change, we'll need to make this effeicent by only calling on didSet shape
+    //    private var offsets: [Int] {
+    //        return Array(shape.scan(1, combine: *)[0..<rank])
+    //    }
+}
+
+// MARK: - Initializers
+public extension DenseArray {
     
     /// Construct a DenseArray with a `shape` of elements, each initialized to `repeatedValue`.
     public init(shape newShape: [Int], repeatedValue: Element) {
@@ -44,8 +72,8 @@ public struct DenseArray<T> : Array {
     }
     
     /// Reshape any Array `baseArray` into a new DenseArray of `shape`. This iterates over the entire `baseArray` and thus could be quite slow.
-    public init<A: Array where A.Generator.Element == Element>(shape newShape: [Int], baseArray: A) {
-        self.init(shape: newShape, baseArray: baseArray.map {$0})
+    public init<A: Array where A.Element == Element>(shape newShape: [Int], baseArray: A) {
+        self.init(shape: newShape, baseArray: baseArray.allElements.map {$0})
     }
     
     /// Reshape a DenseArray `baseArray` into a new DenseArray of `shape`.
@@ -83,32 +111,6 @@ public struct DenseArray<T> : Array {
     public init(_ tuple: DenseArray<Element>...) {
         self.init(collection: tuple)
     }
-    
-    // MARK: - Basics
-    
-    /// The type of element stored by this `$TypeName`.
-    typealias Element = T
-    
-    /// The flat array that serves as the underlying backing storage for this `$TypeName`.
-    private var storage: [T]
-    
-    // MARK: - Shape, Rank, Indexing
-    
-    /// The shape (lenght in each demision) of this `$TypeName`.
-    /// e.g. If the `$TypeName` represents a 3 by 4 matrix, it's shape is [3,4]
-    public let shape: [Int]
-    
-    /// The number of demensions of this `$TypeName`.
-    public var rank: Int {
-        return shape.count
-    }
-    
-    /// The offsets needed to index into storage.
-    private let offsets: [Int] // Shape is constant; this will need to change when that changes.
-    // Dynamic version. If we let shape change, we'll need to make this effeicent by only calling on didSet shape
-    //    private var offsets: [Int] {
-    //        return Array(shape.scan(1, combine: *)[0..<rank])
-    //    }
 }
 
 // MARK: - ArrayLiteralConvertible
@@ -119,6 +121,7 @@ public struct DenseArray<T> : Array {
 
 // MARK: - Init from Array (of Array (...)) of Elements
 extension DenseArray {
+    
     init(array: [Element]) {
         shape = [array.count]
         offsets = calculateOffsets(shape)
@@ -136,11 +139,23 @@ extension DenseArray {
         offsets = calculateOffsets(shape)
         storage = array.flatMap { $0 }.flatMap { $0 }
     }
+    
 }
 
-// MARK: - Indexing
+// MARK: - All Elements Views
 extension DenseArray {
-    private func getStorageIndex(indices: [Int]) -> Int {
+    
+    public var allElements: AnyForwardCollection<Element> {
+        return AnyForwardCollection(storage)
+    }
+    
+    //enumerate view that has indexes
+}
+
+// MARK: - Scalar Indexing
+extension DenseArray {
+    
+    func getStorageIndex(indices: [Int]) -> Int {
         // First, we check to see if we have the right number of indices to address an element:
         if indices.count != rank {
             fatalError("Array indices don't match array shape")
@@ -154,10 +169,10 @@ extension DenseArray {
         }
         
         // We've meet our preconditions, so lets calculate the target index:
-        return zip(indices, offsets).map(*).reduce(0, combine: +)
+        return zip(indices, offsets).map(*).reduce(0, combine: +) // Aside: clever readers may notice that this is the dot product of the indices and offsets vectors.
     }
     
-    private subscript(indices: [Int]) -> Element {
+    subscript(indices: [Int]) -> Element {
         get {
             let storageIndex = getStorageIndex(indices)
             return storage[storageIndex]
@@ -178,39 +193,38 @@ extension DenseArray {
             storage[storageIndex] = newValue
         }
     }
+
 }
 
-// MARK: - SequenceType
-extension DenseArray: SequenceType {
+// MARK: - ArraySlice Indexing
+extension DenseArray {
+    subscript(indices: [ArrayIndex]) -> DenseArraySlice<Element> {
+        guard let slice = DenseArraySlice(baseArray: self, viewIndices: indices) else { fatalError("Array subscript invalid") }
+        
+        return slice
+    }
     
-    //    typealias Generator = AnyGenerator<Element>
-    
-    public func generate() -> AnyGenerator<Element> {
-        var index = 0
-        return anyGenerator{
-            if index < self.storage.count {
-                return self.storage[index++]
-            }
-            return nil
-        }
+    public subscript(indices: ArrayIndex...) -> DenseArraySlice<Element> {
+        guard let slice = DenseArraySlice(baseArray: self, viewIndices: indices) else { fatalError("Array subscript invalid") }
+        
+        return slice
     }
 }
 
-// MARK: - CollectionType
-//extension DenseArray: CollectionType {
-//    var isEmpty: Bool {
-//        return false // There is no empty DenseArray (would it be zero demision
-//    }
-//    
-//    var count: DenseArray.Index.Distance {
-//        return storage.count
-//    }
-//}
+// MARK: - Private Helpers
 
-
-// Private Helpers
+// Offsets for column-major ordering (last dimension on n-arrays)
 private func calculateOffsets(shape: [Int]) -> [Int] {
-    return Swift.Array(shape.scan(1, combine: *)[0..<shape.count])
+    var offsets = shape.scan(1, combine: *)
+    offsets.removeLast()
+    return offsets
+}
+
+// Offsets for row-major ordering (first dimension on n-arrays)
+private func calculateOffsetsReverse(shape: [Int]) -> [Int] {
+    var offsets: [Int] = shape.reverse().scan(1, combine: *)
+    offsets.removeLast()
+    return offsets.reverse()
 }
 
 private extension SequenceType {
