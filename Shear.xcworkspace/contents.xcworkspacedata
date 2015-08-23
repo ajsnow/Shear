@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:ShearPlay.playground">
+   </FileRef>
+   <FileRef
       location = "container:Shear.xcodeproj">
    </FileRef>
 </Workspace>
