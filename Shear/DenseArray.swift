@@ -28,10 +28,10 @@ public struct DenseArray<T>: Array {
     /// e.g. If the `$TypeName` represents a 3 by 4 matrix, it's shape is [3,4]
     public let shape: [Int]
     
-    /// The offsets needed to index into storage.
-    let offsets: [Int] // Shape is constant; this will need to change when that changes.
+    /// The stride needed to index into storage.
+    let stride: [Int] // Shape is constant; this will need to change when that changes.
     // Dynamic version. If we let shape change, we'll need to make this effeicent by only calling on didSet shape
-    //    private var offsets: [Int] {
+    //    private var stride: [Int] {
     //        return Array(shape.scan(1, combine: *)[0..<rank])
     //    }
 }
@@ -52,7 +52,7 @@ public extension DenseArray {
         }
         
         shape = newShape
-        offsets = calculateOffsets(shape)
+        stride = calculateStride(shape)
         let count = shape.reduce(1, combine: *)
         storage = Swift.Array<T>(count: count, repeatedValue: repeatedValue)
     }
@@ -60,7 +60,7 @@ public extension DenseArray {
     /// Reshape a one-dimensional, built-in `baseArray` into a DenseArray of `shape`.
     public init(shape newShape: [Int], baseArray: [Element]) {
         shape = newShape
-        offsets = calculateOffsets(shape)
+        stride = calculateStride(shape)
         let count = shape.reduce(1, combine: *)
         
         if count != baseArray.count {
@@ -102,7 +102,7 @@ public extension DenseArray {
             
             
             shape = firstShape + [collection.count]
-            offsets = calculateOffsets(shape)
+            stride = calculateStride(shape)
             var emptyReserve: [Element] = []
             emptyReserve.reserveCapacity(collection.first!.storage.count * collection.count) // Pre-allocate our big array so that the reduce doesn't need collection.count reallocations
             storage = collection.reduce(emptyReserve, combine: {$0 + $1.storage})
@@ -124,19 +124,19 @@ extension DenseArray {
     
     init(array: [Element]) {
         shape = [array.count]
-        offsets = calculateOffsets(shape)
+        stride = calculateStride(shape)
         storage = array
     }
     
     init(array: [[Element]]) { // Need to assert that the count of sub-arrays are equal
         shape = [array.count, array.first!.count]
-        offsets = calculateOffsets(shape)
+        stride = calculateStride(shape)
         storage = array.flatMap { $0 }
     }
     
     init(array: [[[Element]]]) { // Need to assert that the count of sub-arrays are equal
         shape = [array.count, array.first!.count, array.first!.first!.count]
-        offsets = calculateOffsets(shape)
+        stride = calculateStride(shape)
         storage = array.flatMap { $0 }.flatMap { $0 }
     }
     
@@ -169,7 +169,7 @@ extension DenseArray {
         }
         
         // We've meet our preconditions, so lets calculate the target index:
-        return zip(indices, offsets).map(*).reduce(0, combine: +) // Aside: clever readers may notice that this is the dot product of the indices and offsets vectors.
+        return zip(indices, stride).map(*).reduce(0, combine: +) // Aside: clever readers may notice that this is the dot product of the indices and stride vectors.
     }
     
     subscript(indices: [Int]) -> Element {
@@ -214,20 +214,20 @@ extension DenseArray {
 // MARK: - Private Helpers
 
 // Calculate the stride vector for indexing into the base array
-private let calculateOffsets = calculateOffsetsRowMajor
+private let calculateStride = calculateStrideRowMajor
 
-// Offsets for column-major ordering (first dimension on n-arrays)
-private func calculateOffsetsColumnMajor(shape: [Int]) -> [Int] {
-    var offsets = shape.scan(1, combine: *)
-    offsets.removeLast()
-    return offsets
+// Stride for column-major ordering (first dimension on n-arrays)
+private func calculateStrideColumnMajor(shape: [Int]) -> [Int] {
+    var stride = shape.scan(1, combine: *)
+    stride.removeLast()
+    return stride
 }
 
-// Offsets for row-major ordering (last dimension on n-arrays)
-private func calculateOffsetsRowMajor(shape: [Int]) -> [Int] {
-    var offsets: [Int] = shape.reverse().scan(1, combine: *)
-    offsets.removeLast()
-    return offsets.reverse()
+// Stride for row-major ordering (last dimension on n-arrays)
+private func calculateStrideRowMajor(shape: [Int]) -> [Int] {
+    var stride: [Int] = shape.reverse().scan(1, combine: *)
+    stride.removeLast()
+    return stride.reverse()
 }
 
 private extension SequenceType {
