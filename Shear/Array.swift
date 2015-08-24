@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol Array {
+public protocol Array: CustomStringConvertible {
     
     // MARK: - Associated Types
     
@@ -42,7 +42,8 @@ public protocol Array {
     var rank: Int { get }
     
     /// A view that provides a `CollectionType` over all the items stored in the array.
-    /// The first element is at the all-zeros index of the array.
+    /// The first element is at the all-zeros index of the array. 
+    /// Elements thereafter are in row-major ordering.
     var allElements: AnyForwardCollection<Element> { get } // TODO: Consider renaming "elementsView" "flatView" "linearView", something else that makes it clear you lose the position information
     // TODO: we'd prefer the type of allEmements to be a contrainted CollectionType but I'm not sure this currently possible with Swift's typesystem see ElementsView
     // TODO: we want an enumerate()-like function to return ([index], element) pairs
@@ -113,4 +114,27 @@ public extension Array {
         return ds.map(size)
     }
     
+}
+
+// MARK: - Pretty Printing
+extension Array {
+    
+    public var description: String {
+        return toString(ArraySlice(shape), elementGenerator: allElements.generate())
+    }
+    
+}
+
+private func toString<T>(remainingShape: ArraySlice<Int>, elementGenerator: AnyGenerator<T>) -> String {
+    if remainingShape.isEmpty {
+        return String(elementGenerator.next()!) // If the number of elements is not the scan-product of the shape, something terrible has already happened.
+    }
+    
+    let length = remainingShape[0]
+    var str = "[" + toString(remainingShape.dropFirst(), elementGenerator: elementGenerator)
+    for _ in 1..<length {
+        str += ", " + toString(remainingShape.dropFirst(), elementGenerator: elementGenerator)
+    }
+    str.append(Character("]"))
+    return str
 }
