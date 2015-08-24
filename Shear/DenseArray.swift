@@ -213,15 +213,18 @@ extension DenseArray {
 
 // MARK: - Private Helpers
 
-// Offsets for row-major ordering (last dimension on n-arrays)
-private func calculateOffsets(shape: [Int]) -> [Int] {
+// Calculate the stride vector for indexing into the base array
+private let calculateOffsets = calculateOffsetsRowMajor
+
+// Offsets for column-major ordering (first dimension on n-arrays)
+private func calculateOffsetsColumnMajor(shape: [Int]) -> [Int] {
     var offsets = shape.scan(1, combine: *)
     offsets.removeLast()
     return offsets
 }
 
-// Offsets for column-major ordering (first dimension on n-arrays)
-private func calculateOffsetsColumnMajor(shape: [Int]) -> [Int] {
+// Offsets for row-major ordering (last dimension on n-arrays)
+private func calculateOffsetsRowMajor(shape: [Int]) -> [Int] {
     var offsets: [Int] = shape.reverse().scan(1, combine: *)
     offsets.removeLast()
     return offsets.reverse()

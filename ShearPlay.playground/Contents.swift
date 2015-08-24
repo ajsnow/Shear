@@ -17,3 +17,6 @@ print(b)
 let c = DenseArray(shape: [2, 3], baseArray: [0, 1, 2, 3, 4, 5])
 
 print(c)
+
+c[1, 2]
+
