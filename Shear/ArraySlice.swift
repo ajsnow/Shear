@@ -1,5 +1,5 @@
 //
-//  DenseArraySlice.swift
+//  ArraySlice.swift
 //  Shear
 //
 //  Created by Andrew Snow on 8/9/15.
@@ -13,7 +13,7 @@ import Foundation
 // linear indexing
 // plus the ability to subslice slices and bounds check all of this...
 
-public struct DenseArraySlice<T>: Array {
+public struct ArraySlice<T>: Array {
     
     // MARK: - Associated Types
     
@@ -21,40 +21,76 @@ public struct DenseArraySlice<T>: Array {
     
     //    public typealias ElementsView = ArraySlice<T>
     
-    // MARK: - Initializers
-    
-    init?(baseArray: DenseArray<Element>, viewIndices: [ArrayIndex]) {
-        guard let shape = makeShapeAndTransform(baseArray.shape, viewIndices: viewIndices) else {
-            fatalError("DenseArraySlice's bounds must be within the DenseArray")
-        }
-        
-        self.storage = baseArray
-        self.viewIndices = viewIndices
-        self.shape = shape
-    }
-    
     // MARK: - Underlying Storage
     
-    /// The `DenseArray` that serves as the underlying backing storage for this `DenseArraySlice`.
-    private var storage: DenseArray<T>
+    /// The `DenseArray` that serves as the underlying backing storage for this `ArraySlice`.
+    private var storage: DenseArray<Element>
     
     /// The Swift.Array of `ArrayIndex` that define the view into `storage`.
     private let viewIndices: [ArrayIndex]
     
-    // MARK: - Properties
+    // MARK: - Stored Properties
     
     public let shape: [Int]
+    
+}
+
+// MARK: - Initializers
+extension ArraySlice {
+    
+    /// Construct a ArraySlice from a complete view into `baseArray`.
+    init(baseArray: DenseArray<Element>) {
+        self.storage = baseArray
+        self.shape = storage.shape
+        self.viewIndices = Swift.Array(count: shape.count, repeatedValue: .All)
+    }
+    
+    /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
+    init(baseArray: DenseArray<Element>, viewIndices: [ArrayIndex]) {
+        guard let shape = makeShapeAndTransform(baseArray.shape, viewIndices: viewIndices) else {
+            fatalError("ArraySlice's bounds must be within the DenseArray")
+        }
+        
+        self.storage = baseArray
+        self.shape = shape
+        self.viewIndices = viewIndices
+    }
+    
+    /// Construct a ArraySlice from a complete view into `baseArray`.
+    init(baseArray: ArraySlice<Element>) {
+        self.storage = baseArray.storage
+        self.shape = baseArray.shape
+        self.viewIndices = baseArray.viewIndices
+    }
+    
+    /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
+    init(baseArray: ArraySlice<Element>, viewIndices: [ArrayIndex]) {
+        guard let shape = makeShapeAndTransform(baseArray.shape, viewIndices: viewIndices) else {
+            fatalError("ArraySlice's bounds must be within the ArraySlice")
+        }
+        
+        self.storage = baseArray.storage
+        self.shape = shape
+        self.viewIndices = viewIndices // WRONG: the viewIndices will contrain the original array not the parent slice's contraints
+    }
+    
+}
+
+// MARK: - All Elements Views
+extension ArraySlice {
     
     public var allElements: AnyForwardCollection<Element> {
         // this is super inefficient, but quite easy to impliment.
         let allValidIndices = enumerateAllValuesFromZeroToBounds(shape)
         return AnyForwardCollection(allValidIndices.map {self[$0]})
     }
-
+    
 }
 
-// MARK: - Indexing
-extension DenseArraySlice {
+
+// MARK: - Scalar Indexing
+extension ArraySlice {
+    
     private func getStorageIndices(indices: [Int]) -> [Int] {
         // First, we check to see if we have the right number of indices to address an element:
         if indices.count != rank {
@@ -67,7 +103,6 @@ extension DenseArraySlice {
                 fatalError("Array index out of range")
             }
         }
-        
         
         // Now that we're bounds checked, we can do this knowing we have enough g.next()s & without checking if we'll be within the various arrays
         var g = indices.generate()
@@ -106,10 +141,23 @@ extension DenseArraySlice {
             storage[storageIndices] = newValue
         }
     }
+    
 }
 
+// MARK: - Slice Indexing
+extension ArraySlice {
+    
+    subscript(indices: [ArrayIndex]) -> ArraySlice<Element> {
+        return ArraySlice(baseArray: self, viewIndices: indices)
+    }
+    
+    public subscript(indices: ArrayIndex...) -> ArraySlice<Element> {
+        return ArraySlice(baseArray: self, viewIndices: indices)
+    }
+    
+}
 
-// MARK: - Helpers
+// MARK: - Private Helpers
 
 private func makeShapeAndTransform(initialShape: [Int], viewIndices: [ArrayIndex]) -> [Int]? {
     // Check for correct number of indicies
@@ -139,7 +187,7 @@ private func makeShapeAndTransform(initialShape: [Int], viewIndices: [ArrayIndex
 // Ugly functions get ugly names.
 // The returned subarrays represent each possible combination of values from 0 to the bound for that place in the initial array.
 private func enumerateAllValuesFromZeroToBounds(bounds: [Int]) -> [[Int]] {
-    func recursivelyEnumerateAllValuesFromZeroToBounds(remainingBits: ArraySlice<Int>) -> [[Int]] {
+    func recursivelyEnumerateAllValuesFromZeroToBounds(remainingBits: Swift.ArraySlice<Int>) -> [[Int]] {
         guard let first = remainingBits.first else { return [[]] }
         
         let results = recursivelyEnumerateAllValuesFromZeroToBounds(remainingBits.dropFirst())
@@ -149,5 +197,5 @@ private func enumerateAllValuesFromZeroToBounds(bounds: [Int]) -> [[Int]] {
             }.flatMap {$0}
     }
     
-    return recursivelyEnumerateAllValuesFromZeroToBounds(ArraySlice(bounds))
+    return recursivelyEnumerateAllValuesFromZeroToBounds(Swift.ArraySlice(bounds))
 }

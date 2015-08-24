@@ -12,32 +12,26 @@ public struct DenseArray<T>: Array {
     
     // MARK: - Associated Types
     
-    /// The type of element stored by this `$TypeName`.
     public typealias Element = T
     
-//    public typealias ElementsView = [T]
+    //    public typealias ElementsView = [T]
     
     // MARK: - Underlying Storage
     
     /// The flat builtin array that serves as the underlying backing storage for this `$TypeName`.
     private var storage: [T]
     
-    // MARK: - Properties
+    // MARK: - Stored Properties
     
-    /// The shape (lenght in each demision) of this `$TypeName`.
-    /// e.g. If the `$TypeName` represents a 3 by 4 matrix, it's shape is [3,4]
     public let shape: [Int]
     
     /// The stride needed to index into storage.
     let stride: [Int] // Shape is constant; this will need to change when that changes.
-    // Dynamic version. If we let shape change, we'll need to make this effeicent by only calling on didSet shape
-    //    private var stride: [Int] {
-    //        return Array(shape.scan(1, combine: *)[0..<rank])
-    //    }
+
 }
 
 // MARK: - Initializers
-public extension DenseArray {
+extension DenseArray {
     
     /// Construct a DenseArray with a `shape` of elements, each initialized to `repeatedValue`.
     public init(shape newShape: [Int], repeatedValue: Element) {
@@ -81,8 +75,6 @@ public extension DenseArray {
         self.init(shape: newShape, baseArray: baseArray.storage)
     }
     
-    /// Reshape a one-dimensional collection type into
-    
     /// Construct a DenseArray from a `collection` of DenseArrays.
     public init<C: CollectionType where
         C.Generator.Element == DenseArray<Element>,
@@ -108,16 +100,11 @@ public extension DenseArray {
             storage = collection.reduce(emptyReserve, combine: {$0 + $1.storage})
     }
     
+    /// Concatonate several DenseArrays.
     public init(_ tuple: DenseArray<Element>...) {
         self.init(collection: tuple)
     }
 }
-
-// MARK: - ArrayLiteralConvertible
-// ArrayLiteralConvertible _not_ supported because there is no way to convert an array of (...) arrays to a `$TypeName`.
-// The vector case isn't terribly useful.
-//extension MyArray: ArrayLiteralConvertible {
-//}
 
 // MARK: - Init from Array (of Array (...)) of Elements
 extension DenseArray {
@@ -149,7 +136,7 @@ extension DenseArray {
         return AnyForwardCollection(storage)
     }
     
-    //enumerate view that has indexes
+    //enumerate()-like view that has indexes
 }
 
 // MARK: - Scalar Indexing
@@ -196,19 +183,17 @@ extension DenseArray {
 
 }
 
-// MARK: - ArraySlice Indexing
+// MARK: - Slice Indexing
 extension DenseArray {
-    subscript(indices: [ArrayIndex]) -> DenseArraySlice<Element> {
-        guard let slice = DenseArraySlice(baseArray: self, viewIndices: indices) else { fatalError("Array subscript invalid") }
-        
-        return slice
+    
+    subscript(indices: [ArrayIndex]) -> ArraySlice<Element> {
+        return ArraySlice(baseArray: self, viewIndices: indices)
     }
     
-    public subscript(indices: ArrayIndex...) -> DenseArraySlice<Element> {
-        guard let slice = DenseArraySlice(baseArray: self, viewIndices: indices) else { fatalError("Array subscript invalid") }
-        
-        return slice
+    public subscript(indices: ArrayIndex...) -> ArraySlice<Element> {
+        return ArraySlice(baseArray: self, viewIndices: indices)
     }
+
 }
 
 // MARK: - Private Helpers

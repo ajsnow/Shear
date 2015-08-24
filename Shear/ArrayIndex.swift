@@ -48,4 +48,4 @@ func ..<(start: Int, end: Int) -> ArrayIndex {
     return .Range(start, end)
 }
 
-let $ = ArrayIndex.All // TODO: decide if this or nil or some other symbol is best to express grabbing all of a dim
+public let $ = ArrayIndex.All // TODO: decide if this or nil or some other symbol is best to express grabbing all of a dim

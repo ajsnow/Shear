@@ -8,6 +8,7 @@
 
 import Foundation
 
+// MARK: - Requirements
 public protocol Array: CustomStringConvertible {
     
     // MARK: - Associated Types
@@ -33,14 +34,6 @@ public protocol Array: CustomStringConvertible {
     ///     If the Array is a row vector of 6 elements, its shape is [1, 6]
     var shape: [Int] { get }
     
-    /// The number of non-unitary demensions of this Array or zero for the Empty Array.
-    /// e.g.
-    ///     If the Array represents a 3 by 4 matrix, its shape is 2
-    ///     If the Array is a column vector of 5 elements, its shape is 1
-    ///     If the Array is a row vector of 6 elements, its shape is 1
-    ///     If the Array is the Empty Array, its shape is 0
-    var rank: Int { get }
-    
     /// A view that provides a `CollectionType` over all the items stored in the array.
     /// The first element is at the all-zeros index of the array. 
     /// Elements thereafter are in row-major ordering.
@@ -54,18 +47,18 @@ public protocol Array: CustomStringConvertible {
     
     subscript(indices: Int...) -> Element { get set }
 
-//    subscript(indices: ArrayIndex...) -> AnyArray<Element> { get }
+    subscript(indices: ArrayIndex...) -> ArraySlice<Element> { get }
 }
 
-/// A type-erased `Array` over `Element` elements.
-/// We use this to work around some type system limitations brought by associated types.
-public struct AnyArray<Element> {
-
-}
-
+// MARK: - Extension Methods
 public extension Array {
-
+    
     /// The number of non-unitary demensions of this Array.
+    /// e.g.
+    ///     If the Array represents a 3 by 4 matrix, its shape is 2
+    ///     If the Array is a column vector of 5 elements, its shape is 1
+    ///     If the Array is a row vector of 6 elements, its shape is 1
+    ///     If the Array is the Empty Array, its shape is 0
     var rank: Int {
         get {
             if isEmpty { return 0 }
@@ -74,35 +67,44 @@ public extension Array {
         }
     }
     
+    /// Returns true iff `self` is empty.
     var isEmpty: Bool {
         return shape.filter {$0 == 0}.count > 0
     }
 
+    /// Returns true iff `self` is scalar.
     var isScalar: Bool {
         return !isEmpty && rank == 0
     }
     
-    var isVector: Bool {
-        return rank == 1
-    }
-    
-    var isRowVector: Bool {
-        return isVector && shape.count == 2 && shape[0] == 1
-    }
-    
-    var isColumnVector: Bool {
-        return isVector && shape.count == 2 && shape[1] == 1
-    }
-    
+    /// If `self` is a scalar in an Array box, returns the scalar value.
+    /// Otherwise returns nil.
     var scalarValue: Element? {
         guard isScalar else { return nil }
         
         return allElements.first
     }
-
+    
+    /// Returns true iff `self` is a vector.
+    var isVector: Bool {
+        return rank == 1
+    }
+    
+    /// Returns true iff `self` is a row vector.
+    var isRowVector: Bool {
+        return isVector && shape.count == 2 && shape[0] == 1
+    }
+    
+    /// Returns true iff `self` is a column vector.
+    var isColumnVector: Bool {
+        return isVector && shape.count == 2 && shape[1] == 1
+    }
+    
 }
 
 public extension Array {
+    
+    // I imagine this could simplify comparing shape appropraiteness, but don't actually know if they're that useful.
     
     // The length of the Array in a particular dimension
     func size(d: Int) -> Int {
@@ -110,7 +112,7 @@ public extension Array {
     }
     
     // The length of the Array in several dimensions
-    func size(ds: Int...) -> [Int] {
+    func size(ds: [Int]) -> [Int] {
         return ds.map(size)
     }
     
@@ -120,12 +122,12 @@ public extension Array {
 extension Array {
     
     public var description: String {
-        return toString(ArraySlice(shape), elementGenerator: allElements.generate())
+        return toString(Swift.ArraySlice(shape), elementGenerator: allElements.generate())
     }
     
 }
 
-private func toString<T>(remainingShape: ArraySlice<Int>, elementGenerator: AnyGenerator<T>) -> String {
+private func toString<T>(remainingShape: Swift.ArraySlice<Int>, elementGenerator: AnyGenerator<T>) -> String {
     if remainingShape.isEmpty {
         return String(elementGenerator.next()!) // If the number of elements is not the scan-product of the shape, something terrible has already happened.
     }
