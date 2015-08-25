@@ -96,7 +96,7 @@ extension ArraySlice {
         if indices.count != shape.count {
             fatalError("Array indices don't match array shape")
         }
-
+        
         // Next, we check to see if all the indices are between 0 and the count of their demension:
         for (index, count) in zip(indices, shape) {
             if index < 0 || index >= count {
@@ -111,7 +111,7 @@ extension ArraySlice {
             case .All:
                 return g.next()!
             case .SingleValue(let sv):
-                return sv
+                return sv + g.next()!
             case .Range(let low, _):
                 return low + g.next()!
             case .List(let list):
@@ -159,7 +159,6 @@ extension ArraySlice {
 
 // MARK: - Private Helpers
 
-// BUG: Doesn't do full shape compression. Any 1's are a failure.
 private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> [Int]? {
     // Check for correct number of indicies
     guard initialShape.count == viewIndices.count else { return nil }
@@ -169,12 +168,12 @@ private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> [Int]?
     // Bounds check indicies
     guard pairs.map({$1.isInbounds($0)}).filter({$0 == false}).isEmpty else { return nil }
     
-    let shape = pairs.flatMap { (initialBound, index) -> Int? in
+    let shape = pairs.map { (initialBound, index) -> Int in
         switch index {
         case .All:
             return initialBound
         case .SingleValue:
-            return nil // Compress shape by removing extranious 1s
+            return 1
         case .List(let list):
             return list.count
         case .Range(let low, let high):
@@ -224,10 +223,10 @@ private func transformToAbsoluteViewIndices(baseSlice: [ArrayIndex], viewIntoSli
 // Ugly functions get ugly names.
 // The returned subarrays represent each possible combination of values from 0 to the bound for that place in the initial array.
 private func enumerateAllValuesFromZeroToBounds(bounds: [Int]) -> [[Int]] {
-    func recursivelyEnumerateAllValuesFromZeroToBounds(remainingBits: Swift.ArraySlice<Int>) -> [[Int]] {
-        guard let first = remainingBits.first else { return [[]] }
+    func recursivelyEnumerateAllValuesFromZeroToBounds(bounds: Swift.ArraySlice<Int>) -> [[Int]] {
+        guard let first = bounds.first else { return [[]] }
         
-        let results = recursivelyEnumerateAllValuesFromZeroToBounds(remainingBits.dropFirst())
+        let results = recursivelyEnumerateAllValuesFromZeroToBounds(bounds.dropFirst())
         
         return (0..<first).map { currentIndex -> [[Int]] in
             return results.map { [currentIndex] + $0 }
