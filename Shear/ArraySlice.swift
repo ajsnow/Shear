@@ -47,7 +47,7 @@ extension ArraySlice {
     
     /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
     init(baseArray: DenseArray<Element>, viewIndices: [ArrayIndex]) {
-        guard let shape = makeShapeAndTransform(baseArray.shape, viewIndices: viewIndices) else {
+        guard let shape = makeShape(baseArray.shape, viewIndices: viewIndices) else {
             fatalError("ArraySlice's bounds must be within the DenseArray")
         }
         
@@ -65,13 +65,13 @@ extension ArraySlice {
     
     /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
     init(baseArray: ArraySlice<Element>, viewIndices: [ArrayIndex]) {
-        guard let shape = makeShapeAndTransform(baseArray.shape, viewIndices: viewIndices) else {
+        guard let shape = makeShape(baseArray.shape, viewIndices: viewIndices) else {
             fatalError("ArraySlice's bounds must be within the ArraySlice")
         }
         
         self.storage = baseArray.storage
         self.shape = shape
-        self.viewIndices = viewIndices // WRONG: the viewIndices will contrain the original array not the parent slice's contraints
+        self.viewIndices = transformToAbsoluteViewIndices(baseArray.viewIndices, viewIntoSlice: viewIndices)
     }
     
 }
@@ -93,7 +93,7 @@ extension ArraySlice {
     
     private func getStorageIndices(indices: [Int]) -> [Int] {
         // First, we check to see if we have the right number of indices to address an element:
-        if indices.count != rank {
+        if indices.count != shape.count {
             fatalError("Array indices don't match array shape")
         }
 
@@ -159,7 +159,8 @@ extension ArraySlice {
 
 // MARK: - Private Helpers
 
-private func makeShapeAndTransform(initialShape: [Int], viewIndices: [ArrayIndex]) -> [Int]? {
+// BUG: Doesn't do full shape compression. Any 1's are a failure.
+private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> [Int]? {
     // Check for correct number of indicies
     guard initialShape.count == viewIndices.count else { return nil }
     
@@ -182,6 +183,42 @@ private func makeShapeAndTransform(initialShape: [Int], viewIndices: [ArrayIndex
     }
     
     return shape
+}
+
+private func transformToAbsoluteViewIndices(baseSlice: [ArrayIndex], viewIntoSlice: [ArrayIndex]) -> [ArrayIndex] {
+    // We've already checked that the relative lengths are correct when we checked the viewIntoSlice in makeShape
+    
+    var g = viewIntoSlice.generate()
+    return baseSlice.map {
+        switch $0 {
+        case .All:
+            return g.next()! // If the parent slice is .All in a dimension, than the child's ArrayIndex in that dimension is the only constraint
+        case .SingleValue:
+            return $0 // On the other hand, if the parent slice is a .SingleValue, it fully determines the relationship to the base DenseArray
+        case .List(let list):
+            switch g.next()! {
+            case .All:
+                return $0
+            case .SingleValue(let sv):
+                return .SingleValue(list[sv])
+            case .List(let littleList):
+                return .List(littleList.map {list[$0]})
+            case .Range(let littleLow, let littleHigh):
+                return .List((littleLow..<littleHigh).map {list[$0]})
+            }
+        case .Range(let low, _):
+            switch g.next()! {
+            case .All:
+                return $0
+            case .SingleValue(let sv):
+                return .SingleValue(low + sv)
+            case .List(let littleList):
+                return .List(littleList.map {low + $0})
+            case .Range(let littleLow, let littleHigh):
+                return .Range(low + littleLow, low + littleHigh)
+            }
+        }
+    }
 }
 
 // Ugly functions get ugly names.
