@@ -128,11 +128,10 @@ extension Array {
 }
 
 private func toString<T>(remainingShape: Swift.ArraySlice<Int>, elementGenerator: AnyGenerator<T>) -> String {
-    if remainingShape.isEmpty {
+    guard let length = remainingShape.first else {
         return String(elementGenerator.next()!) // If the number of elements is not the scan-product of the shape, something terrible has already happened.
     }
     
-    let length = remainingShape[0]
     var str = "[" + toString(remainingShape.dropFirst(), elementGenerator: elementGenerator)
     for _ in 1..<length {
         str += ", " + toString(remainingShape.dropFirst(), elementGenerator: elementGenerator)
