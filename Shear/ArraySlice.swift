@@ -29,6 +29,9 @@ public struct ArraySlice<T>: Array {
     /// The Swift.Array of `ArrayIndex` that define the view into `storage`.
     private let viewIndices: [ArrayIndex]
     
+    /// If an ArraySlice's view is single-valued in one dimension, this array holds that value.
+    private let compactedView: [Int?]
+    
     // MARK: - Stored Properties
     
     public let shape: [Int]
@@ -40,38 +43,30 @@ extension ArraySlice {
     
     /// Construct a ArraySlice from a complete view into `baseArray`.
     init(baseArray: DenseArray<Element>) {
-        self.storage = baseArray
-        self.shape = storage.shape
-        self.viewIndices = Swift.Array(count: shape.count, repeatedValue: .All)
+        self = ArraySlice(baseArray: baseArray, viewIndices: Swift.Array(count: baseArray.shape.count, repeatedValue: ArrayIndex.All))
     }
     
     /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
     init(baseArray: DenseArray<Element>, viewIndices: [ArrayIndex]) {
-        guard let shape = makeShape(baseArray.shape, viewIndices: viewIndices) else {
+        guard let shapeAndCompactedView = makeShape(baseArray.shape, viewIndices: viewIndices) else {
             fatalError("ArraySlice's bounds must be within the DenseArray")
         }
         
         self.storage = baseArray
-        self.shape = shape
+        self.shape = shapeAndCompactedView.shape
+        self.compactedView = shapeAndCompactedView.compactedView
         self.viewIndices = viewIndices
     }
     
     /// Construct a ArraySlice from a complete view into `baseArray`.
     init(baseArray: ArraySlice<Element>) {
-        self.storage = baseArray.storage
-        self.shape = baseArray.shape
-        self.viewIndices = baseArray.viewIndices
+        self = ArraySlice(baseArray: baseArray, viewIndices: Swift.Array(count: baseArray.shape.count, repeatedValue: ArrayIndex.All))
     }
     
     /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
     init(baseArray: ArraySlice<Element>, viewIndices: [ArrayIndex]) {
-        guard let shape = makeShape(baseArray.shape, viewIndices: viewIndices) else {
-            fatalError("ArraySlice's bounds must be within the ArraySlice")
-        }
-        
-        self.storage = baseArray.storage
-        self.shape = shape
-        self.viewIndices = transformToAbsoluteViewIndices(baseArray.viewIndices, viewIntoSlice: viewIndices)
+        let absoluteViewIndices = transformToAbsoluteViewIndices(baseArray, viewIntoSlice: viewIndices)
+        self = ArraySlice(baseArray: baseArray.storage, viewIndices: absoluteViewIndices)
     }
     
 }
@@ -80,7 +75,7 @@ extension ArraySlice {
 extension ArraySlice {
     
     public var allElements: AnyForwardCollection<Element> {
-        // this is super inefficient, but quite easy to impliment.
+        // this is super inefficient, but quite easy to implement.
         let allValidIndices = enumerateAllValuesFromZeroToBounds(shape)
         return AnyForwardCollection(allValidIndices.map {self[$0]})
     }
@@ -106,8 +101,10 @@ extension ArraySlice {
         
         // Now that we're bounds checked, we can do this knowing we have enough g.next()s & without checking if we'll be within the various arrays
         var g = indices.generate()
-        return viewIndices.map {
-            switch $0 {
+        return zip(compactedView, viewIndices).map {
+            if let d = $0.0 { return d }
+            
+            switch $0.1 {
             case .All:
                 return g.next()!
             case .SingleValue(let sv):
@@ -159,7 +156,7 @@ extension ArraySlice {
 
 // MARK: - Private Helpers
 
-private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> [Int]? {
+private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> (shape: [Int], compactedView: [Int?])? {
     // Check for correct number of indicies
     guard initialShape.count == viewIndices.count else { return nil }
     
@@ -175,29 +172,45 @@ private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> [Int]?
         case .SingleValue:
             return 1
         case .List(let list):
-            return list.count
+            return list.count // need to handle zeros
         case .Range(let low, let high):
-            return high - low
+            return high - low // need to handle zeros
         }
     }
     
-    return shape
+    let compactedView = zip(shape, viewIndices).map { (bound, index) -> Int? in
+        guard bound == 1 else { return nil }
+        switch index {
+        case .All:
+            return 0
+        case .SingleValue(let sv):
+            return sv
+        case .List(let list):
+            return list.first
+        case .Range(let low, _):
+            return low
+        }
+    }
+    
+    return (shape.filter {$0 != 1}, compactedView)
 }
 
-private func transformToAbsoluteViewIndices(baseSlice: [ArrayIndex], viewIntoSlice: [ArrayIndex]) -> [ArrayIndex] {
+private func transformToAbsoluteViewIndices<T>(baseSlice: ArraySlice<T>, viewIntoSlice: [ArrayIndex]) -> [ArrayIndex] {
     // We've already checked that the relative lengths are correct when we checked the viewIntoSlice in makeShape
     
     var g = viewIntoSlice.generate()
-    return baseSlice.map {
-        switch $0 {
+    return zip(baseSlice.compactedView, baseSlice.viewIndices).map {
+        if let d = $0.0 { return .SingleValue(d) }
+        
+        switch $0.1 {
         case .All:
             return g.next()! // If the parent slice is .All in a dimension, than the child's ArrayIndex in that dimension is the only constraint
         case .SingleValue:
-            return $0 // On the other hand, if the parent slice is a .SingleValue, it fully determines the relationship to the base DenseArray
+            return $0.1 // On the other hand, if the parent slice is a .SingleValue, it fully determines the relationship to the base DenseArray
         case .List(let list):
             switch g.next()! {
             case .All:
-                return $0
+                return $0.1
             case .SingleValue(let sv):
                 return .SingleValue(list[sv])
             case .List(let littleList):
@@ -208,7 +221,7 @@ private func transformToAbsoluteViewIndices(baseSlice: [ArrayIndex], viewIntoSli
         case .Range(let low, _):
             switch g.next()! {
             case .All:
-                return $0
+                return $0.1
             case .SingleValue(let sv):
                 return .SingleValue(low + sv)
             case .List(let littleList):
