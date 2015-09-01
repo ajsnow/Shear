@@ -159,7 +159,7 @@ extension DenseArray {
         return zip(indices, stride).map(*).reduce(0, combine: +) // Aside: clever readers may notice that this is the dot product of the indices and stride vectors.
     }
     
-    subscript(indices: [Int]) -> Element {
+    public subscript(indices: [Int]) -> Element {
         get {
             let storageIndex = getStorageIndex(indices)
             return storage[storageIndex]
@@ -186,7 +186,7 @@ extension DenseArray {
 // MARK: - Slice Indexing
 extension DenseArray {
     
-    subscript(indices: [ArrayIndex]) -> ArraySlice<Element> {
+    public subscript(indices: [ArrayIndex]) -> ArraySlice<Element> {
         return ArraySlice(baseArray: self, viewIndices: indices)
     }
     

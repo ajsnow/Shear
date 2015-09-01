@@ -19,7 +19,8 @@ print(c)
 
 c[1, 2]
 
-let d = c[nil, [0, 2]]
+        let d = c[nil, [0, 2]]
+//let d = ArraySlice(baseArray: c, viewIndices: [nil, [0, 2]])
 
 print(d)
 
@@ -37,8 +38,6 @@ big.isVector
 big.isRowVector
 big.isColumnVector
 big.scalarValue
-big.size(999)
 
-[1, 2].isEmpty
-
-let asdf: Set = [[1], [2], [3]]
+//let smallish = ArraySlice(baseArray: big, viewIndices: [ArrayIndex.All, .SingleValue(0), .Range(0, 2), .List([0, 2, 3]), .All])
+//let small = ArraySlice(baseArray: smallish, viewIndices: [.SingleValue(0), .Range(0, 2), .List([1, 2])])

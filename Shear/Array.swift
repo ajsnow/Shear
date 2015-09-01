@@ -43,11 +43,14 @@ public protocol Array: CustomStringConvertible {
     
     // MARK: - Methods
     
-//    func sequence<A: Array, C: CollectionType where C.Generator.Element == A, A.Element == Element>(dimension: Int) -> C
-    
     subscript(indices: Int...) -> Element { get set }
+    
+    subscript(indices: [Int]) -> Element { get set }
 
     subscript(indices: ArrayIndex...) -> ArraySlice<Element> { get }
+    
+    subscript(indices: [ArrayIndex]) -> ArraySlice<Element> { get }
+
 }
 
 // MARK: - Extension Methods
@@ -99,6 +102,22 @@ public extension Array {
     var isColumnVector: Bool {
         return isVector && shape.count == 2 && shape[1] == 1
     }
+    
+}
+
+public extension Array {
+    
+    func sequence(deminsion: Int) -> [ArraySlice<Element>] {
+        guard deminsion < shape.count else { fatalError("An array cannot be sequenced on a deminsion it does not have.") }
+        
+        let viewIndices = Swift.Array(count: shape.count, repeatedValue: ArrayIndex.All)
+        return (0..<shape[deminsion]).map {
+            var nViewIndicies = viewIndices
+            nViewIndicies[deminsion] = .SingleValue($0)
+            return self[viewIndices]
+        }
+    }
+        
     
 }
 

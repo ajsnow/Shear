@@ -117,7 +117,7 @@ extension ArraySlice {
         }
     }
     
-    subscript(indices: [Int]) -> Element {
+    public subscript(indices: [Int]) -> Element {
         get {
             let storageIndices = getStorageIndices(indices)
             return storage[storageIndices]
@@ -144,7 +144,7 @@ extension ArraySlice {
 // MARK: - Slice Indexing
 extension ArraySlice {
     
-    subscript(indices: [ArrayIndex]) -> ArraySlice<Element> {
+    public subscript(indices: [ArrayIndex]) -> ArraySlice<Element> {
         return ArraySlice(baseArray: self, viewIndices: indices)
     }
     
