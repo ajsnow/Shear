@@ -157,12 +157,12 @@ extension ArraySlice {
 // MARK: - Private Helpers
 
 private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> (shape: [Int], compactedView: [Int?])? {
-    // Check for correct number of indicies
+    // Check for correct number of indices
     guard initialShape.count == viewIndices.count else { return nil }
     
     let pairs = zip(initialShape, viewIndices)
     
-    // Bounds check indicies
+    // Bounds check indices
     guard pairs.map({$1.isInbounds($0)}).filter({$0 == false}).isEmpty else { return nil }
     
     let shape = pairs.map { (initialBound, index) -> Int in
