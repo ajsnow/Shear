@@ -9,7 +9,7 @@ let a = DenseArray(shape: [1, 2, 3, 4, 5], repeatedValue: 0).allElements.count
 
 //print(a)
 
-let b = DenseArray(shape: [4, 3], baseArray: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+let b = DenseArray(shape: [3, 4], baseArray: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
 
 //print(b)
 
@@ -19,12 +19,12 @@ print(c)
 
 c[1, 2]
 
-        let d = c[nil, [0, 2]]
+        let d = c[$, [0, 2]]
 //let d = ArraySlice(baseArray: c, viewIndices: [nil, [0, 2]])
 
 print(d)
 
-let e = c[$, Shear.$]
+let e = c[$, .All]
 let f = c[nil, 1]
 
 let big = DenseArray(shape: [1, 2, 3, 4, 5], baseArray: Array(0..<120))
@@ -37,7 +37,48 @@ big.isScalar
 big.isVector
 big.isRowVector
 big.isColumnVector
-big.scalarValue
+big.scalar
 
 //let smallish = ArraySlice(baseArray: big, viewIndices: [ArrayIndex.All, .SingleValue(0), .Range(0, 2), .List([0, 2, 3]), .All])
 //let small = ArraySlice(baseArray: smallish, viewIndices: [.SingleValue(0), .Range(0, 2), .List([1, 2])])
+
+let view = big.sequence(1)[1]
+
+view.shape
+view
+
+// MATHS
+
+//inner(0, map: *, lhs: [1, 2, 3], rhs: [4, 5, 6], reduce: +)
+//outer(*, lhs: [1, 2, 3], rhs: [4, 5, 6])
+
+//innerProduct(c, b)
+
+// Vector Inner Product (e.g. dot)
+
+let vecA = DenseArray(shape: [3], baseArray: [1, 2, 3])
+let vecB = DenseArray(shape: [3], baseArray: [9, 10, 11])
+
+//innerProduct(vecA, vecB)
+
+// Matrix Inner Product
+
+let matA = DenseArray(shape: [3, 2], baseArray: [1, 2, 3, 4, 5, 6])
+let matB = DenseArray(shape: [3, 2], baseArray: [9, 10, 11, 12, 13, 14])
+
+//innerProduct(matA, matB) // should be [[62, 80], [152, 197]]
+
+let matC = DenseArray(shape: [2, 3], baseArray: [9, 10, 11, 12, 13, 14])
+
+//innerProduct(matA, matC) // should be error
+
+vecB.reduce(1, combine: *).scalar!
+
+let iotaCube = DenseArray(shape: [2, 2, 2], baseArray: [0, 1, 2, 3, 4, 5, 6, 7])
+iotaCube.reduce(0, combine: +)
+
+let iotaSq = DenseArray(shape: [2, 2], baseArray: [0, 1, 2, 3])
+
+inner(iotaSq, B: iotaSq, transform: *, initial: 0, combine: +)
+
+inner(vecA, B: vecB, transform: *, initial: 0, combine: +)

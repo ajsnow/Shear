@@ -29,9 +29,11 @@ public protocol Array: CustomStringConvertible {
     
     /// The shape (lenght in each demision) of this `Array`.
     /// e.g. 
-    ///     If the Array represents a 3 by 4 matrix, its shape is [3, 4]
+    ///     If the Array is a 3 by 4 matrix, its shape is [3, 4]
     ///     If the Array is a column vector of 5 elements, its shape is [5, 1]
     ///     If the Array is a row vector of 6 elements, its shape is [1, 6]
+    ///     If the Array is a scalar, its shape is []
+    ///     The Empty Array has an empty shape or at least one 0 in its shape
     var shape: [Int] { get }
     
     /// A view that provides a `CollectionType` over all the items stored in the array.
@@ -58,21 +60,22 @@ public extension Array {
     
     /// The number of non-unitary demensions of this Array.
     /// e.g.
-    ///     If the Array represents a 3 by 4 matrix, its shape is 2
-    ///     If the Array is a column vector of 5 elements, its shape is 1
-    ///     If the Array is a row vector of 6 elements, its shape is 1
-    ///     If the Array is the Empty Array, its shape is 0
+    ///     If the Array represents a 3 by 4 matrix, its rank is 2
+    ///     If the Array is a column vector of 5 elements, its rank is 1
+    ///     If the Array is a row vector of 6 elements, its rank is 0
+    ///     If the Array is a scalar or the Empty Array, its rank is 0
     var rank: Int {
-        get {
-            if isEmpty { return 0 }
-            
-            return shape.filter {$0 != 1}.count
-        }
+        if isEmpty { return 0 }
+        
+        return shape.filter {$0 != 1}.count
     }
     
     /// Returns true iff `self` is empty.
     var isEmpty: Bool {
-        return shape.filter {$0 == 0}.count > 0
+//        return shape.contains(0) || (shape.isEmpty && scalar == nil)
+        // Consider this replacement:
+        return allElements.isEmpty
+        // It's a better definition, but I'm guessing there are bugs.
     }
 
     /// Returns true iff `self` is scalar.
@@ -82,7 +85,7 @@ public extension Array {
     
     /// If `self` is a scalar in an Array box, returns the scalar value.
     /// Otherwise returns nil.
-    var scalarValue: Element? {
+    var scalar: Element? {
         guard isScalar else { return nil }
         
         return allElements.first
@@ -108,16 +111,24 @@ public extension Array {
 public extension Array {
     
     func sequence(deminsion: Int) -> [ArraySlice<Element>] {
+//        guard !shape.isEmpty else { return [self[ArrayIndex.All]] }
         guard deminsion < shape.count else { fatalError("An array cannot be sequenced on a deminsion it does not have.") }
         
         let viewIndices = Swift.Array(count: shape.count, repeatedValue: ArrayIndex.All)
         return (0..<shape[deminsion]).map {
-            var nViewIndicies = viewIndices
-            nViewIndicies[deminsion] = .SingleValue($0)
-            return self[viewIndices]
+            var nViewIndices = viewIndices
+            nViewIndices[deminsion] = .SingleValue($0)
+            return self[nViewIndices]
         }
     }
-        
+    
+    var sequenceFirst: [ArraySlice<Element>] {
+        return sequence(0)
+    }
+    
+    var sequenceLast: [ArraySlice<Element>] {
+        return sequence(shape.count - 1)
+    }
     
 }
 

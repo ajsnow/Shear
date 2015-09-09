@@ -14,6 +14,7 @@ import Accelerate
 infix operator ⊗ {} /// Tensor (Outer) Product Operator
 infix operator × {} /// Cross Product Operator
 infix operator ∙ {} /// Dot (Inner) Product Operator
+// infix operator * {} /// Element-wise Product Operator
 
 // MARK: - Real Functions
 
@@ -29,22 +30,76 @@ private func elementwiseScalarProduct < A: Array, Scalar: NumericType where A.El
         return DenseArray(shape: a.shape, baseArray: a.allElements.map(multiplyScalar))
 }
 
-//private func innerProduct < A: Array, B: Array where A.Element == B.Element, A.Element: NumericType >
-//    (lhs: A, _ rhs: B) -> DenseArray<A.Element> {
-//        inner(<#T##initial: T##T#>, map: <#T##((T, T)) -> Z#>, lhs: <#T##A#>, rhs: <#T##B#>, reduce: <#T##(T, Z) -> T#>)
+//public func innerProduct <T, A: Array, B: Array where A.Element == T, B.Element == T, T: NumericType >
+//    (lhs: A, _ rhs: B) -> T {
+//        
+//        if lhs.isVector && rhs.isVector {
+//            return inner(T(0), map: *, lhs: lhs.allElements, rhs: rhs.allElements, reduce: +)
+//        } else {
+//            return inner(T(0), map: innerProduct, lhs: lhs.sequenceFirst, rhs: rhs.sequenceLast, reduce: +)
+//        }
+//}
+//
+//public func inner<A: Array, B: Array, X, Y, Z where A.Element == X, B.Element == X>
+//    (initial: Z, map: ((X, X)) -> Y, lhs: A, rhs: B, reduce: (Z, Y) -> Z) -> Z {
+//        return zip(lhs.sequenceLast, rhs.sequenceFirst).map(map).reduce(initial, combine: reduce)
 //}
 
-private func inner<T, A: SequenceType, B: SequenceType, Z where A.Generator.Element == T, B.Generator.Element == T>
-    (initial: T, map: ((T, T)) -> Z, lhs: A, rhs: B, reduce: (T, Z) -> T) -> T {
-        return zip(lhs, rhs).map(map).reduce(initial, combine: reduce)
+
+
+public func outer<T, Z, A: Array, B: Array where A.Element == T, B.Element == T>
+    (lhs: A, rhs: B, transform: ((ArraySlice<T>, ArraySlice<T>) -> DenseArray<Z>)) -> DenseArray<Z> {
+        let c = lhs.sequenceFirst.map { a -> [Z] in
+            rhs.sequenceFirst.map {
+                b -> Z in
+                transform(a, b)
+            }
+        }.flatMap {$0}
+        
+        return DenseArray(collection: c)
 }
 
-private func outer<T, A: SequenceType, B: SequenceType where A.Generator.Element == T, B.Generator.Element == T>
-    (map: ((T, T)) -> T, lhs: A, rhs: B) -> [[T]] {
-        return lhs.map { a -> [T] in
-            rhs.map {
-                b -> T in
-                map((a, b))
-            }
+public func inner<T, Y, Z, A: Array, B: Array where A.Element == T, B.Element == T>
+    (A: A, B: B, transform: ((ArraySlice<T>, ArraySlice<T>) -> DenseArray<Y>), initial: Z, combine: ((Z, Y) -> Z)) -> DenseArray<Z> {
+        let sliceA = A.sequenceLast
+        let sliceB = A.sequenceFirst
+        
+        
+        let c = zip(sliceA, sliceB).map {
+            outer($0, rhs: $1, transform: transform).reduce(initial, combine: combine)
         }
+        
+        return DenseArray(collection: c)
 }
+
+//public func inner<T, Y, Z, A: SequenceType, B: SequenceType where A.Generator.Element == T, B.Generator.Element == T>
+//    (lhs: A, rhs: B, transform: ((T, T)) -> Y, initial: Z, combine: (Z, Y) -> Z) -> Z {
+//        return zip(lhs, rhs).map(transform).reduce(initial, combine: combine)
+//}
+
+public extension Array {
+    func reduce<Z>(initial: Z, combine: ((Z, Element)-> Z)) -> DenseArray<Z> {
+        if let s = scalar {
+            return DenseArray(shape: [], baseArray: [combine(initial, s)])
+        }
+        
+        let slice = sequenceFirst
+        guard slice.first?.scalar != nil else {
+            return DenseArray(collection: slice.map { $0.reduce(initial, combine: combine) })
+        }
+        
+        let result = slice.map { $0.scalar! }.reduce(initial, combine: combine)
+        return DenseArray(shape: [], baseArray: [result])
+    }
+}
+
+//
+//public func outer<T, Z, A: SequenceType, B: SequenceType where A.Generator.Element == T, B.Generator.Element == T>
+//    (map: ((T, T)) -> Z, lhs: A, rhs: B) -> [[Z]] {
+//        return lhs.map { a -> [Z] in
+//            rhs.map {
+//                b -> Z in
+//                map((a, b))
+//            }
+//        }
+//}
