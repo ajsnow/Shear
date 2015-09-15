@@ -41,7 +41,7 @@ private func scalarSubtraction < A: Array, Scalar: NumericType where A.Element =
 }
 
 
-// MARK: - Operator Overloads
+// MARK: - Operators
 
 public func + < A: Array, B: Array where A.Element == B.Element, A.Element: NumericType >
     (lhs: A, rhs: B) -> DenseArray<A.Element> {

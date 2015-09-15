@@ -14,7 +14,7 @@ import Accelerate
 infix operator ⊗ {} /// Tensor (Outer) Product Operator
 infix operator × {} /// Cross Product Operator
 infix operator ∙ {} /// Dot (Inner) Product Operator
-// infix operator * {} /// Element-wise Product Operator
+//infix operator * {} /// Element-wise Product Operator
 
 // MARK: - Real Functions
 
@@ -48,28 +48,28 @@ private func elementwiseScalarProduct < A: Array, Scalar: NumericType where A.El
 
 
 public func outer<T, Z, A: Array, B: Array where A.Element == T, B.Element == T>
-    (lhs: A, rhs: B, transform: ((ArraySlice<T>, ArraySlice<T>) -> DenseArray<Z>)) -> DenseArray<Z> {
-        let c = lhs.sequenceFirst.map { a -> [Z] in
-            rhs.sequenceFirst.map {
+    (lhs: A, rhs: B, transform: ((T, T) -> Z)) -> DenseArray<Z> {
+        let rawArray = lhs.allElements.map { a -> [Z] in
+            rhs.allElements.map {
                 b -> Z in
                 transform(a, b)
             }
         }.flatMap {$0}
         
-        return DenseArray(collection: c)
+        return DenseArray(shape: lhs.shape + rhs.shape, baseArray: rawArray)
 }
 
 public func inner<T, Y, Z, A: Array, B: Array where A.Element == T, B.Element == T>
-    (A: A, B: B, transform: ((ArraySlice<T>, ArraySlice<T>) -> DenseArray<Y>), initial: Z, combine: ((Z, Y) -> Z)) -> DenseArray<Z> {
-        let sliceA = A.sequenceLast
-        let sliceB = A.sequenceFirst
+    (A: A, B: B, transform: ((ArraySlice<T>, ArraySlice<T>) -> DenseArray<Y>), initial: Z, combine: ((Z, Y) -> Z)) -> DenseArray<Z> {        
+        let sliceA = A.sequenceFirst
+        let sliceB = B.sequenceLast
+
+        let aosA = DenseArray(shape: [sliceA.count], baseArray: sliceA)
+        let aosB = DenseArray(shape: [sliceB.count], baseArray: sliceB)
         
-        
-        let c = zip(sliceA, sliceB).map {
-            outer($0, rhs: $1, transform: transform).reduce(initial, combine: combine)
-        }
-        
-        return DenseArray(collection: c)
+        let aoaosAB = outer(aosA, rhs: aosB, transform: transform)
+        let unshaped = DenseArray(collection: aoaosAB.allElements.map { $0.reduce(initial, combine: combine)})
+        return DenseArray(shape: aoaosAB.shape, baseArray: unshaped)
 }
 
 //public func inner<T, Y, Z, A: SequenceType, B: SequenceType where A.Generator.Element == T, B.Generator.Element == T>
@@ -103,3 +103,10 @@ public extension Array {
 //            }
 //        }
 //}
+
+// MARK: - Operators
+
+public func * < A: Array, B: Array where A.Element == B.Element, A.Element: NumericType >
+    (lhs: A, rhs: B) -> DenseArray<A.Element> {
+        return elementwiseArrayProduct(lhs, rhs)
+}

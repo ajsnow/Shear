@@ -79,6 +79,8 @@ iotaCube.reduce(0, combine: +)
 
 let iotaSq = DenseArray(shape: [2, 2], baseArray: [0, 1, 2, 3])
 
+iotaSq * iotaSq
+
 inner(iotaSq, B: iotaSq, transform: *, initial: 0, combine: +)
 
 inner(vecA, B: vecB, transform: *, initial: 0, combine: +)
