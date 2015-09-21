@@ -17,6 +17,7 @@
 		EB3ED7CD1B78811C0092817E /* ArrayIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */; };
 		EB77109E1BA8B0D4006FE242 /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77109D1BA8B0D4006FE242 /* SwiftExtensions.swift */; settings = {ASSET_TAGS = (); }; };
 		EB8CAB481B5329180092817E /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB8CAB471B5329180092817E /* Accelerate.framework */; };
+		EBA365331BAFC2BE0092817E /* AllElementsCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA365321BAFC2BE0092817E /* AllElementsCollection.swift */; settings = {ASSET_TAGS = (); }; };
 		EBE0D99A1B5368BE0092817E /* AddSubtract.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE0D9991B5368BE0092817E /* AddSubtract.swift */; };
 		EBE0D99C1B536BDB0092817E /* Multiply.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE0D99B1B536BDB0092817E /* Multiply.swift */; };
 		EBEB92C21B77FC660092817E /* ArraySlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB92C11B77FC660092817E /* ArraySlice.swift */; };
@@ -46,6 +47,7 @@
 		EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayIndex.swift; sourceTree = "<group>"; };
 		EB77109D1BA8B0D4006FE242 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
 		EB8CAB471B5329180092817E /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		EBA365321BAFC2BE0092817E /* AllElementsCollection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllElementsCollection.swift; sourceTree = "<group>"; };
 		EBE0D9991B5368BE0092817E /* AddSubtract.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddSubtract.swift; sourceTree = "<group>"; };
 		EBE0D99B1B536BDB0092817E /* Multiply.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Multiply.swift; sourceTree = "<group>"; };
 		EBEB92C11B77FC660092817E /* ArraySlice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArraySlice.swift; sourceTree = "<group>"; };
@@ -126,6 +128,7 @@
 			children = (
 				EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */,
 				EB77109D1BA8B0D4006FE242 /* SwiftExtensions.swift */,
+				EBA365321BAFC2BE0092817E /* AllElementsCollection.swift */,
 			);
 			name = Util;
 			sourceTree = "<group>";
@@ -253,6 +256,7 @@
 				EBE0D99A1B5368BE0092817E /* AddSubtract.swift in Sources */,
 				EB3ED7CD1B78811C0092817E /* ArrayIndex.swift in Sources */,
 				EBEB92C21B77FC660092817E /* ArraySlice.swift in Sources */,
+				EBA365331BAFC2BE0092817E /* AllElementsCollection.swift in Sources */,
 				EB1C615A1B5327B20092817E /* NumericType.swift in Sources */,
 				EBE0D99C1B536BDB0092817E /* Multiply.swift in Sources */,
 				EB1C61581B53275E0092817E /* DenseArray.swift in Sources */,
