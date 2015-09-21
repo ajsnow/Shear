@@ -12,12 +12,15 @@ struct AllElementsCollection<A: Array>: CollectionType {
     
     let array: A
     let boundsRev: [Int]
-    let strideRev: [Int]
+    let stride: [Int]
     
     init(array: A) {
         self.array = array
+        stride = calculateStrideRowMajor(array.shape)
+        
+        // We reverse the bounds so that we can reverse the BoundedAccumulator's output.
+        // We reverse that because we need row major order, which means incrementing the rows (indices.first) last.
         boundsRev = array.shape.reverse()
-        strideRev = calculateStrideRowMajor(boundsRev)
     }
     
     func generate() -> AnyGenerator<A.Element> {
@@ -47,12 +50,18 @@ struct AllElementsCollection<A: Array>: CollectionType {
     }
     
     subscript(position: Int) -> A.Element {
-        return self.array[strideRev.map { position % $0 }]
+        return self.array[stride.map { position % $0 }]
     }
     
 }
 
-struct BoundedAccumulator {
+/// BoundedAccumulator is an extension of binary addition to cover non-binary, non-uniform-sized 'bits'
+/// E.g.
+///     var a = BoundedAccumulator([4, 2, 5], onOverflow: .Ignore)
+///               # a.current == [0, 0, 0]
+///     a.inc()   # a.current == [1, 0, 0]
+///     a.add(10) # a.current == [3, 0, 1]
+private struct BoundedAccumulator {
     enum OverflowBehavior {
         case Nil
         case Ignore
