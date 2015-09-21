@@ -41,6 +41,12 @@ public struct ArraySlice<T>: Array {
 // MARK: - Initializers
 extension ArraySlice {
     
+    /// Construct a ArraySlice from a complete view into `baseArray` by converting it into a DenseArray first.
+    init<A: Array where A.Element == T>(baseArray: A) {
+        let denseArray = DenseArray(shape: baseArray.shape, baseArray: baseArray)
+        self = ArraySlice(baseArray: denseArray)
+    }
+    
     /// Construct a ArraySlice from a complete view into `baseArray`.
     init(baseArray: DenseArray<Element>) {
         self = ArraySlice(baseArray: baseArray, viewIndices: Swift.Array(count: baseArray.shape.count, repeatedValue: ArrayIndex.All))
@@ -74,10 +80,9 @@ extension ArraySlice {
 // MARK: - All Elements Views
 extension ArraySlice {
     
-    public var allElements: AnyForwardCollection<Element> {
-        // this is super inefficient, but quite easy to implement.
-        let allValidIndices = enumerateAllValuesFromZeroToBounds(shape)
-        return AnyForwardCollection(allValidIndices.map {self[$0]})
+    public var allElements: AnyRandomAccessCollection<Element> {
+        
+        return AnyRandomAccessCollection(AllElementsCollection(array: self))
     }
     
 }
@@ -233,18 +238,84 @@ private func transformToAbsoluteViewIndices<T>(baseSlice: ArraySlice<T>, viewInt
     }
 }
 
-// Ugly functions get ugly names.
-// The returned subarrays represent each possible combination of values from 0 to the bound for that place in the initial array.
-private func enumerateAllValuesFromZeroToBounds(bounds: [Int]) -> [[Int]] {
-    func recursivelyEnumerateAllValuesFromZeroToBounds(bounds: Swift.ArraySlice<Int>) -> [[Int]] {
-        guard let first = bounds.first else { return [[]] }
-        
-        let results = recursivelyEnumerateAllValuesFromZeroToBounds(bounds.dropFirst())
-        
-        return (0..<first).map { currentIndex -> [[Int]] in
-            return results.map { [currentIndex] + $0 }
-            }.flatMap {$0}
+struct BoundedAccumulator {
+    enum OverflowBehavior {
+        case Nil
+        case Ignore
+        case FatalError
     }
     
-    return recursivelyEnumerateAllValuesFromZeroToBounds(Swift.ArraySlice(bounds))
+    private let bounds: [Int]
+    private(set) var current: [Int]?
+    private let onOverflow: OverflowBehavior
+    
+    init(bounds: [Int], onOverflow: OverflowBehavior) {
+        self.bounds = bounds
+        self.current = Swift.Array(count: bounds.count, repeatedValue: 0)
+        self.onOverflow = onOverflow
+    }
+    
+    mutating func add(amount: Int, position pos: Int = 0) {
+        guard pos < bounds.count else {
+            switch onOverflow {
+            case .Nil: current = nil; fallthrough
+            case .Ignore: return
+            case .FatalError: fatalError("overflow")
+            }
+        }
+        
+        current?[pos] += amount
+        while current?[pos] > bounds[pos] {
+            current?[pos] -= bounds[pos]
+            self.add(1, position: pos + 1)
+        }
+    }
+    
+    mutating func inc() {
+        add(1, position: 0)
+    }
+}
+
+struct AllElementsCollection<A: Array>: CollectionType {
+    
+    let array: A
+    let boundsRev: [Int]
+    let strideRev: [Int]
+    
+    init(array: A) {
+        self.array = array
+        boundsRev = array.shape.reverse()
+        strideRev = calculateStrideRowMajor(boundsRev)
+    }
+    
+    func generate() -> AnyGenerator<A.Element> {
+        var accRev = BoundedAccumulator(bounds: boundsRev, onOverflow: .Nil)
+        let indexGenerator = anyGenerator { () -> [Int]? in
+            let elementRev = accRev.current
+            accRev.inc()
+            return elementRev?.reverse()
+        }
+        
+        return anyGenerator { () -> A.Element? in
+            guard let indices = indexGenerator.next() else { return nil }
+            return self.array[indices]
+        }
+    }
+    
+    var count: Int {
+        return array.shape.reduce(1, combine: *)
+    }
+
+    var startIndex: Int {
+        return 0
+    }
+    
+    var endIndex: Int {
+        return count
+    }
+
+    subscript(position: Int) -> A.Element {
+        return self.array[strideRev.map { position % $0 }]
+    }
+    
 }

@@ -76,8 +76,9 @@ extension DenseArray {
     }
     
     /// Construct a DenseArray from a `collection` of DenseArrays.
-    public init<C: CollectionType where
-        C.Generator.Element == DenseArray<Element>,
+    public init<C: CollectionType, A: Array where
+        A.Element == Element,
+        C.Generator.Element == A,
         C.Index.Distance == Int>
         (collection: C) {
             if collection.isEmpty {
@@ -96,8 +97,8 @@ extension DenseArray {
             shape = firstShape + [collection.count]
             stride = calculateStride(shape)
             var emptyReserve: [Element] = []
-            emptyReserve.reserveCapacity(collection.first!.storage.count * collection.count) // Pre-allocate our big array so that the reduce doesn't need collection.count reallocations
-            storage = collection.reduce(emptyReserve, combine: {$0 + $1.storage})
+            emptyReserve.reserveCapacity(Int(collection.first!.allElements.count) * collection.count) // Pre-allocate our big array so that the reduce doesn't need collection.count reallocations
+            storage = collection.reduce(emptyReserve, combine: {$0 + $1.allElements})
     }
     
     /// Concatonate several DenseArrays.
@@ -132,8 +133,8 @@ extension DenseArray {
 // MARK: - All Elements Views
 extension DenseArray {
     
-    public var allElements: AnyForwardCollection<Element> {
-        return AnyForwardCollection(storage)
+    public var allElements: AnyRandomAccessCollection<Element> {
+        return AnyRandomAccessCollection(storage)
     }
     
     //enumerate()-like view that has indexes
@@ -209,7 +210,7 @@ private func calculateStrideColumnMajor(shape: [Int]) -> [Int] {
 }
 
 // Stride for row-major ordering (last dimension on n-arrays)
-private func calculateStrideRowMajor(shape: [Int]) -> [Int] {
+func calculateStrideRowMajor(shape: [Int]) -> [Int] {
     var stride: [Int] = shape.reverse().scan(1, combine: *)
     stride.removeLast()
     return stride.reverse()

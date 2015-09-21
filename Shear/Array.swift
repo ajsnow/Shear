@@ -32,6 +32,7 @@ public protocol Array: CustomStringConvertible {
     ///     If the Array is a 3 by 4 matrix, its shape is [3, 4]
     ///     If the Array is a column vector of 5 elements, its shape is [5, 1]
     ///     If the Array is a row vector of 6 elements, its shape is [1, 6]
+    ///     If The Array is a vector of 7 elements, its shape is [7]
     ///     If the Array is a scalar, its shape is []
     ///     The Empty Array has an empty shape or at least one 0 in its shape
     var shape: [Int] { get }
@@ -39,7 +40,7 @@ public protocol Array: CustomStringConvertible {
     /// A view that provides a `CollectionType` over all the items stored in the array.
     /// The first element is at the all-zeros index of the array. 
     /// Elements thereafter are in row-major ordering.
-    var allElements: AnyForwardCollection<Element> { get } // TODO: Consider renaming "elementsView" "flatView" "linearView", something else that makes it clear you lose the position information
+    var allElements: AnyRandomAccessCollection<Element> { get } // TODO: Consider renaming "elementsView" "flatView" "linearView", something else that makes it clear you lose the position information
     // TODO: we'd prefer the type of allEmements to be a contrainted CollectionType but I'm not sure this currently possible with Swift's typesystem see ElementsView
     // TODO: we want an enumerate()-like function to return ([index], element) pairs
     
@@ -49,6 +50,7 @@ public protocol Array: CustomStringConvertible {
     
     subscript(indices: [Int]) -> Element { get set }
 
+    // In a 3 array: [Depth, Row, Column]
     subscript(indices: ArrayIndex...) -> ArraySlice<Element> { get }
     
     subscript(indices: [ArrayIndex]) -> ArraySlice<Element> { get }
@@ -72,10 +74,7 @@ public extension Array {
     
     /// Returns true iff `self` is empty.
     var isEmpty: Bool {
-//        return shape.contains(0) || (shape.isEmpty && scalar == nil)
-        // Consider this replacement:
         return allElements.isEmpty
-        // It's a better definition, but I'm guessing there are bugs.
     }
 
     /// Returns true iff `self` is scalar.
@@ -98,12 +97,12 @@ public extension Array {
     
     /// Returns true iff `self` is a row vector.
     var isRowVector: Bool {
-        return isVector && shape.count == 2 && shape[0] == 1
+        return isVector && shape.count == 2 && shape[1] == 1
     }
     
     /// Returns true iff `self` is a column vector.
     var isColumnVector: Bool {
-        return isVector && shape.count == 2 && shape[1] == 1
+        return isVector && shape.count == 2 && shape[0] == 1
     }
     
 }
