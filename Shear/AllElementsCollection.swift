@@ -11,19 +11,36 @@ import Foundation
 /// AllElementsCollection is a collection
 struct AllElementsCollection<A: Array>: CollectionType {
     
-    let array: A
-    let boundsRev: [Int]
-    let stride: [Int]
+    // Maintain a mutable reference to our parent array through the power of abusing closures!
+    let arrayIndex: ([Int]) -> A.Element
+    let subscriptGet: (Int) -> A.Element
+    let subscriptSet: (Int, A.Element) -> Void
+    let arrayCount: () -> Int
     
-    init(array: A) {
-        self.array = array
-        stride = calculateStrideRowMajor(array.shape)
+    let boundsRev: [Int]
+    
+    init(inout array: A) {
+        let stride = calculateStrideRowMajor(array.shape)
+        
+        // This seems like I'm asking for trouble...
+        self.arrayIndex = { array[$0] }
+        
+        self.subscriptGet = { (position: Int) -> A.Element in
+            return array[stride.map { position % $0 }]
+        }
+        
+        self.subscriptSet = { (position: Int, value: A.Element) -> Void in
+            array[stride.map { position % $0 }] = value
+        }
+        
+        self.arrayCount = { array.shape.reduce(1, combine: *) }
         
         // We reverse the bounds so that we can reverse the BoundedAccumulator's output.
         // We reverse that because we need row major order, which means incrementing the rows (indices.first) last.
         boundsRev = array.shape.reverse()
     }
     
+    // We could just go from startIndex to endIndex - 1 with subscriptSet
     func generate() -> AnyGenerator<A.Element> {
         var accRev = BoundedAccumulator(bounds: boundsRev, onOverflow: .Nil)
         let indexGenerator = anyGenerator { () -> [Int]? in
@@ -34,12 +51,12 @@ struct AllElementsCollection<A: Array>: CollectionType {
         
         return anyGenerator { () -> A.Element? in
             guard let indices = indexGenerator.next() else { return nil }
-            return self.array[indices]
+            return self.arrayIndex(indices)
         }
     }
     
     var count: Int {
-        return array.shape.reduce(1, combine: *)
+        return arrayCount()
     }
     
     var startIndex: Int {
@@ -51,7 +68,12 @@ struct AllElementsCollection<A: Array>: CollectionType {
     }
     
     subscript(position: Int) -> A.Element {
-        return self.array[stride.map { position % $0 }]
+        get {
+            return subscriptGet(position)
+        }
+        set(newValue) {
+           subscriptSet(position, newValue)
+        }
     }
     
 }
