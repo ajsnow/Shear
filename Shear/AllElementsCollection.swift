@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// AllElementsCollection is a collection
 struct AllElementsCollection<A: Array>: CollectionType {
     
     let array: A
@@ -55,12 +56,15 @@ struct AllElementsCollection<A: Array>: CollectionType {
     
 }
 
-/// BoundedAccumulator is an extension of binary addition to cover non-binary, non-uniform-sized 'bits'
+/// BoundedAccumulator is a generalization of binary addition to cover non-binary, non-uniform-capacity digits.
 /// E.g.
 ///     var a = BoundedAccumulator([4, 2, 5], onOverflow: .Ignore)
 ///               # a.current == [0, 0, 0]
 ///     a.inc()   # a.current == [1, 0, 0]
 ///     a.add(10) # a.current == [3, 0, 1]
+///
+/// We use it to convert linear indices into their cartesian equivilants.
+/// (N.B. this requires setting the bounds to the reversed shape & reversing the output since our mapping is row-major.)
 private struct BoundedAccumulator {
     enum OverflowBehavior {
         case Nil
@@ -88,7 +92,7 @@ private struct BoundedAccumulator {
         }
         
         current?[pos] += amount
-        while current?[pos] > bounds[pos] {
+        while current?[pos] >= bounds[pos] {
             current?[pos] -= bounds[pos]
             self.add(1, position: pos + 1)
         }
