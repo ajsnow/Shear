@@ -22,7 +22,13 @@ class ShearTests: XCTestCase {
     }
     
     func testExample() {
-        
+        var z = BoundedAccumulator(bounds: [10], onOverflow: .Nil)
+        z.current
+        z.add(5)
+        z.add(5)
+        z.current
+        z.add(50)
+        z.current
         
         let a = DenseArray(shape: [1, 2, 3, 4, 5], repeatedValue: 0).allElements.count
         
@@ -99,9 +105,11 @@ class ShearTests: XCTestCase {
         let iotaSq = DenseArray(shape: [2, 2], baseArray: [0, 1, 2, 3])
         iotaSq * iotaSq
         
-        inner(iotaSq, B: iotaSq, transform: *, initial: 0, combine: +)
+//        inner(iotaSq, right: iotaSq, transform: *, initial: 0, combine: +)
         
-        inner(vecA, B: vecB, transform: *, initial: 0, combine: +)
+//        inner(vecA, right: vecB, transform: *, initial: 0, combine: +)
+        
+        inner(iotaCube, right: iotaCube, transform: *, initial: 0, combine: +)
     }
     
     func testPerformanceExample() {

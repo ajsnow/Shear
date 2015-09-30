@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol NumericType {
+public protocol NumericType: IntegerLiteralConvertible {
     func +(lhs: Self, rhs: Self) -> Self
     func -(lhs: Self, rhs: Self) -> Self
     func *(lhs: Self, rhs: Self) -> Self

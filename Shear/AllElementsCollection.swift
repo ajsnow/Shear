@@ -12,25 +12,16 @@ import Foundation
 struct AllElementsCollection<A: Array>: CollectionType {
     
     let array: A
-    let boundsRev: [Int]
     let stride: [Int]
     
     init(array: A) {
         self.array = array
         stride = calculateStrideRowMajor(array.shape)
-        
-        // We reverse the bounds so that we can reverse the BoundedAccumulator's output.
-        // We reverse that because we need row major order, which means incrementing the rows (indices.first) last.
-        boundsRev = array.shape.reverse()
     }
     
     func generate() -> AnyGenerator<A.Element> {
-        var accRev = BoundedAccumulator(bounds: boundsRev, onOverflow: .Nil)
-        let indexGenerator = anyGenerator { () -> [Int]? in
-            let elementRev = accRev.current
-            accRev.inc()
-            return elementRev?.reverse()
-        }
+        
+        let indexGenerator = makeRowMajorIndexGenerator(array.shape)
         
         return anyGenerator { () -> A.Element? in
             guard let indices = indexGenerator.next() else { return nil }
@@ -65,7 +56,7 @@ struct AllElementsCollection<A: Array>: CollectionType {
 ///
 /// We use it to convert linear indices into their cartesian equivilants.
 /// (N.B. this requires setting the bounds to the reversed shape & reversing the output since our mapping is row-major.)
-private struct BoundedAccumulator {
+struct BoundedAccumulator {
     enum OverflowBehavior {
         case Nil
         case Ignore
@@ -100,5 +91,16 @@ private struct BoundedAccumulator {
     
     mutating func inc() {
         add(1, position: 0)
+    }
+}
+
+// We reverse the shape so that we can reverse the BoundedAccumulator's output.
+// We reverse that because we need row major order, which means incrementing the rows (indices.first) last.
+func makeRowMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
+    var accRev = BoundedAccumulator(bounds: shape.reverse(), onOverflow: .Nil)
+    return anyGenerator { () -> [Int]? in
+        let elementRev = accRev.current
+        accRev.inc()
+        return elementRev?.reverse()
     }
 }

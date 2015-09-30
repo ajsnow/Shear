@@ -3,6 +3,8 @@
 import Cocoa
 import Shear
 
+
+
 var str = "Hello, playground"
 
 let a = DenseArray(shape: [1, 2, 3, 4, 5], repeatedValue: 0).allElements.count
@@ -64,7 +66,7 @@ let vecB = DenseArray(shape: [3], baseArray: [9, 10, 11])
 // Matrix Inner Product
 
 let matA = DenseArray(shape: [3, 2], baseArray: [1, 2, 3, 4, 5, 6])
-let matB = DenseArray(shape: [3, 2], baseArray: [9, 10, 11, 12, 13, 14])
+let matB = DenseArray(shape: [2, 3], baseArray: [9, 10, 11, 12, 13, 14])
 
 //innerProduct(matA, matB) // should be [[62, 80], [152, 197]]
 
@@ -81,6 +83,36 @@ let iotaSq = DenseArray(shape: [2, 2], baseArray: [0, 1, 2, 3])
 
 iotaSq * iotaSq
 
-inner(iotaSq, B: iotaSq, transform: *, initial: 0, combine: +)
+inner(iotaSq, right: iotaSq, transform: *, initial: 0, combine: +)
 
-inner(vecA, B: vecB, transform: *, initial: 0, combine: +)
+inner(vecA, right: vecB, transform: *, initial: 0, combine: +)
+
+print(inner(iotaCube, right: iotaCube, transform: *, initial: 0, combine: +))
+
+vecA ∙ vecB
+matA ∙ matB
+//
+//let _A = iotaCube.enclose(0)
+//let _B = iotaCube.enclose(iotaCube.shape.count - 1)
+//
+//print(outer(_A, rhs: _B, transform: +).reduce(1, combine: *))
+//
+//
+//let oa = DenseArray(shape: [2, 2], baseArray: ["a", "b", "c", "d"])
+//let ob = DenseArray(shape: [2, 2], baseArray: ["e", "f", "g", "h"])
+//print(outer(oa, rhs: ob, transform: +))
+//
+//print(outer(iotaCube, rhs: iotaCube, transform: *))
+//
+//
+//print(iotaCube.sequenceLast)
+//print(iotaCube.sequenceFirst)
+//print(iotaCube.sequence(0))
+//print(iotaCube.sequence(1))
+//print(iotaCube.sequence(2))
+//
+//let superCube = DenseArray(shape: [2, 2, 2], baseArray: [0, 4, 1, 5, 2, 6, 3, 7])
+//print("Lol: \(superCube)")
+//print(superCube.sequence(0))
+//
+//
