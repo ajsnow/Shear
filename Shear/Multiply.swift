@@ -9,7 +9,7 @@
 import Foundation
 import Accelerate
 
-// MARK: - Declare operators
+// MARK: - Declared Operators
 
 infix operator ⊗ {} /// Tensor (Outer) Product Operator
 infix operator × {} /// Cross Product Operator
@@ -19,9 +19,9 @@ infix operator ∙ {} /// Dot (Inner) Product Operator
 // MARK: - Real Functions
 
 private func elementwiseArrayProduct<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
-    (lhs: A, _ rhs: B) -> DenseArray<A.Element> {
-        precondition(lhs.shape == rhs.shape, "Arrays must have same shape to be elementwise added")
-        return DenseArray(shape: lhs.shape, baseArray: zip(lhs.allElements, rhs.allElements).map(*))
+    (left: A, _ right: B) -> DenseArray<A.Element> {
+        precondition(left.shape == right.shape, "Arrays must have same shape to be elementwise added")
+        return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(*))
 }
 
 private func elementwiseScalarProduct<A: Array, Scalar: NumericType where A.Element == Scalar>
@@ -30,104 +30,52 @@ private func elementwiseScalarProduct<A: Array, Scalar: NumericType where A.Elem
         return DenseArray(shape: a.shape, baseArray: a.allElements.map(multiplyScalar))
 }
 
+private func outerProduct<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
+    (left: A, _ right: B) -> DenseArray<A.Element> {
+        return outer(left, right, *)
+}
+
 private func innerProduct<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, _ right: B) -> DenseArray<A.Element> {
         return inner(left, right: right, transform: *, initial: 0, combine: +)
 }
 
-public func outer<T, Z, A: Array, B: Array where A.Element == T, B.Element == T>
-    (left: A, _ right: B, _ transform: ((T, T) -> Z)) -> DenseArray<Z> {
-        var baseArray = Swift.Array<Z>()
-        baseArray.reserveCapacity(Int(left.allElements.count * right.allElements.count))
-        
-        for l in left.allElements {
-            for r in right.allElements {
-                baseArray.append(transform(l, r))
-            }
-        }
-        
-        return DenseArray(shape: left.shape + right.shape, baseArray: baseArray)
-}
-
-public func inner<T, Y, Z, A: Array, B: Array where A.Element == T, B.Element == T>
-    (left: A, right: B, transform: ((ArraySlice<T>, ArraySlice<T>) -> DenseArray<Y>), initial: Z, combine: ((Z, Y) -> Z)) -> DenseArray<Z> {
-        
-        let cA = left.enclose(left.shape.count - 1)
-        let cB = right.enclose(0)
-        
-        let op = outer(cA, cB, transform)
-        let baseArray = op.allElements.map{ $0.reduce(initial, combine: combine).allElements.map {$0} }.flatMap {$0}
-        return DenseArray(shape: op.shape, baseArray: baseArray)
-        
-        
-//        if left.isVector && right.isVector {
-//            return transform(ArraySlice(baseArray: left), ArraySlice(baseArray: right)).reduce(initial, combine: combine)
-//        }
-//        
-//        let sliceA = left.sequenceFirst
-//        let sliceB = right.sequenceLast
-//        let aosA = DenseArray(shape: [sliceA.count], baseArray: sliceA)
-//        let aosB = DenseArray(shape: [sliceB.count], baseArray: sliceB)
-//        let aoaosAB = outer(aosA, rhs: aosB, transform: transform)
-//        return DenseArray(collection: aoaosAB.allElements.map { $0.reduce(initial, combine: combine)})
-        ////        let unshaped = DenseArray(collection: aoaosAB.allElements.map { $0.reduce(initial, combine: combine)})
-        ////        return DenseArray(shape: aoaosAB.shape, baseArray: unshaped)
-}
-
-public extension Array {
-    public func enclose(axes: Int...) -> DenseArray<ArraySlice<Element>> {
-        // Since this algo is recursive, we only check and operate on the head of the list.
-        guard let axis = axes.first else { fatalError("ran out of axes") }
-        guard axis < shape.count else { fatalError("domain") }
-        
-        let newShape = Swift.Array(shape.enumerate().lazy.filter { $0.index != axis }.map { $0.element })
-        
-        let internalIndicesList = makeRowMajorIndexGenerator(newShape).map { newIndices -> [ArrayIndex] in
-            var internalIndices = newIndices.map { ArrayIndex.SingleValue($0) }
-            internalIndices.insert(.All, atIndex: axis)
-            return internalIndices
-        }
-        
-        let subarrays = internalIndicesList.map { self[$0] }
-    
-        return DenseArray(shape: newShape, baseArray: subarrays)
-    }
-    
-    
-    func reduce<Z>(initial: Z, combine: ((Z, Element)-> Z)) -> DenseArray<Z> {
-        if let s = scalar {
-            return DenseArray(shape: [], baseArray: [combine(initial, s)])
-        }
-        
-        let slice = sequenceLast
-        guard slice.first?.scalar != nil else {
-            return DenseArray(collection: DenseArray(collection: slice.map { $0.reduce(initial, combine: combine) }).sequenceLast)
-        }
-        
-        let result = slice.map { $0.scalar! }.reduce(initial, combine: combine)
-        return DenseArray(shape: [], baseArray: [result])
-    }
-}
-
-
-//private func outer<T, Z, A: SequenceType, B: SequenceType where A.Generator.Element == T, B.Generator.Element == T>
-//    (map: ((T, T)) -> Z, lhs: A, rhs: B) -> [[Z]] {
-//        return lhs.map { a -> [Z] in
-//            rhs.map {
-//                b -> Z in
-//                map((a, b))
-//            }
-//        }
-//}
-
 // MARK: - Operators
 
 public func *<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
-    (lhs: A, rhs: B) -> DenseArray<A.Element> {
-        return elementwiseArrayProduct(lhs, rhs)
+    (left: A, right: B) -> DenseArray<A.Element> {
+        return elementwiseArrayProduct(left, right)
+}
+
+public func *<A: Array, B: NumericType where A.Element == B>
+    (left: A, right: B) -> DenseArray<A.Element> {
+        return elementwiseScalarProduct(left, scalar: right)
+}
+
+public func *<A: Array, B: NumericType where A.Element == B>
+    (left: B, right: A) -> DenseArray<A.Element> {
+        return elementwiseScalarProduct(right, scalar: left)
+}
+
+public func ⊗<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
+    (left: A, right: B) -> DenseArray<A.Element> {
+        return outerProduct(left, right)
+}
+
+public func ×<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
+    (left: A, right: B) -> DenseArray<A.Element> {
+        // As far as I can tell, no one actually uses a generalized cross product
+        // (i.e. N vectors of N+1 length in N+1 space) for anything, so we just
+        // support the 3-space case.
+        precondition(left.shape == right.shape && left.shape == [3], "Shear only supports 3-space cross products. If you actually want this, we'll happily accept a PR for a generalized algo.")
+        
+        let ax = left[0], ay = left[1], az = left[2]
+        let bx = right[0], by = right[1], bz = right[2]
+        
+        return DenseArray(shape: [3], baseArray: [ay*bz - by*az, az*bx - bz*ax, ax*by - bx*ay])
 }
 
 public func ∙<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
-    (lhs: A, rhs: B) -> DenseArray<A.Element> {
-        return innerProduct(lhs, rhs)
+    (left: A, right: B) -> DenseArray<A.Element> {
+        return innerProduct(left, right)
 }
