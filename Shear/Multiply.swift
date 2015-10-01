@@ -11,32 +11,39 @@ import Accelerate
 
 // MARK: - Declared Operators
 
+//infix operator * {} /// Element-wise Product Operator
 infix operator ⊗ {} /// Tensor (Outer) Product Operator
 infix operator × {} /// Cross Product Operator
 infix operator ∙ {} /// Dot (Inner) Product Operator
-//infix operator * {} /// Element-wise Product Operator
 
 // MARK: - Real Functions
 
 private func elementwiseArrayProduct<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, _ right: B) -> DenseArray<A.Element> {
         precondition(left.shape == right.shape, "Arrays must have same shape to be elementwise added")
+        
         return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(*))
 }
 
 private func elementwiseScalarProduct<A: Array, Scalar: NumericType where A.Element == Scalar>
     (a: A, scalar: Scalar) -> DenseArray<A.Element> {
+        // No preconditions.
+        
         let multiplyScalar = { $0 * scalar}
         return DenseArray(shape: a.shape, baseArray: a.allElements.map(multiplyScalar))
 }
 
 private func outerProduct<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, _ right: B) -> DenseArray<A.Element> {
+        // No preconditions.
+        
         return outer(left, right, *)
 }
 
 private func innerProduct<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, _ right: B) -> DenseArray<A.Element> {
+        // Preconditions are checked by inner.
+        
         return inner(left, right: right, transform: *, initial: 0, combine: +)
 }
 
@@ -62,11 +69,12 @@ public func ⊗<A: Array, B: Array where A.Element == B.Element, A.Element: Nume
         return outerProduct(left, right)
 }
 
+// As far as I can tell, no one actually uses a generalized cross product
+// (i.e. N vectors of N+1 length in N+1 space) for anything, so we just
+// support the 3-space case.
 public func ×<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> DenseArray<A.Element> {
-        // As far as I can tell, no one actually uses a generalized cross product
-        // (i.e. N vectors of N+1 length in N+1 space) for anything, so we just
-        // support the 3-space case.
+
         precondition(left.shape == right.shape && left.shape == [3], "Shear only supports 3-space cross products. If you actually want this, we'll happily accept a PR for a generalized algo.")
         
         let ax = left[0], ay = left[1], az = left[2]

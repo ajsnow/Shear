@@ -13,11 +13,11 @@ import Accelerate
 // Psudeo-Protocol of NumericArray
 extension Array where Element: NumericType {
     public static func Ones(shape newShape: [Int]) -> DenseArray<Element> {
-        return DenseArray<Element>(shape: newShape, repeatedValue: Element(1))
+        return DenseArray<Element>(shape: newShape, repeatedValue: 1)
     }
 
     public static func Zeros(shape newShape: [Int]) -> DenseArray<Element> {
-        return DenseArray<Element>(shape: newShape, repeatedValue: Element(0))
+        return DenseArray<Element>(shape: newShape, repeatedValue: 0)
     }
     
     func add<A: Array where A.Element == Self.Element>(right: A) -> DenseArray<Element> {
