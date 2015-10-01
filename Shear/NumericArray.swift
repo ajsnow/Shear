@@ -9,6 +9,8 @@
 import Foundation
 import Accelerate
 
+
+// Psudeo-Protocol of NumericArray
 extension Array where Element: NumericType {
     public static func Ones(shape newShape: [Int]) -> DenseArray<Element> {
         return DenseArray<Element>(shape: newShape, repeatedValue: Element(1))
@@ -16,6 +18,10 @@ extension Array where Element: NumericType {
 
     public static func Zeros(shape newShape: [Int]) -> DenseArray<Element> {
         return DenseArray<Element>(shape: newShape, repeatedValue: Element(0))
+    }
+    
+    func add<A: Array where A.Element == Self.Element>(right: A) -> DenseArray<Element> {
+        return DenseArray(shape: self.shape, baseArray: zip(self.allElements, right.allElements).map(+))
     }
 
 //    public static func Eyes(length: Int, rank: Int = 2) -> DenseArray<Element> {
@@ -28,10 +34,12 @@ extension Array where Element: NumericType {
 //    }
 }
 
-protocol NumericArray: Array {
+public protocol NumericArray: Array {
+
+    typealias Element: NumericType
 //    // Elementwise addition
 //    func +(lhs: Self, rhs: Self) -> Self
-//    
+//
 //    // Elementwise subtraction
 //    func -(lhs: Self, rhs: Self) -> Self
 //    
@@ -60,8 +68,6 @@ protocol NumericArray: Array {
 //    func -=(inout lhs: Self, rhs: Self)
 
 }
-
-
 
 
 protocol Vector: NumericArray {

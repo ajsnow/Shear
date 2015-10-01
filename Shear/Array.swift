@@ -132,6 +132,65 @@ public extension Array {
 }
 
 public extension Array {
+    public func enclose(axes: Int...) -> DenseArray<ArraySlice<Element>> {
+        // Since this algo is recursive, we only check and operate on the head of the list.
+        guard let axis = axes.first else { fatalError("ran out of axes") }
+        guard axis < shape.count else { fatalError("domain") }
+        
+        let newShape = Swift.Array(shape.enumerate().lazy.filter { $0.index != axis }.map { $0.element })
+        
+        let internalIndicesList = makeRowMajorIndexGenerator(newShape).map { newIndices -> [ArrayIndex] in
+            var internalIndices = newIndices.map { ArrayIndex.SingleValue($0) }
+            internalIndices.insert(.All, atIndex: axis)
+            return internalIndices
+        }
+        
+        let subarrays = internalIndicesList.map { self[$0] }
+        
+        return DenseArray(shape: newShape, baseArray: subarrays)
+    }
+    
+    
+    func reduce<Z>(initial: Z, combine: ((Z, Element)-> Z)) -> DenseArray<Z> {
+        if let s = scalar {
+            return DenseArray(shape: [], baseArray: [combine(initial, s)])
+        }
+        
+        let slice = sequenceLast
+        guard slice.first?.scalar != nil else {
+            return DenseArray(collection: DenseArray(collection: slice.map { $0.reduce(initial, combine: combine) }).sequenceLast)
+        }
+        
+        let result = slice.map { $0.scalar! }.reduce(initial, combine: combine)
+        return DenseArray(shape: [], baseArray: [result])
+    }
+}
+
+public func outer<T, Z, A: Array, B: Array where A.Element == T, B.Element == T>
+    (left: A, _ right: B, _ transform: ((T, T) -> Z)) -> DenseArray<Z> {
+        var baseArray = Swift.Array<Z>()
+        baseArray.reserveCapacity(Int(left.allElements.count * right.allElements.count))
+        
+        for l in left.allElements {
+            for r in right.allElements {
+                baseArray.append(transform(l, r))
+            }
+        }
+        
+        return DenseArray(shape: left.shape + right.shape, baseArray: baseArray)
+}
+
+public func inner<T, Y, Z, A: Array, B: Array where A.Element == T, B.Element == T>
+    (left: A, right: B, transform: ((ArraySlice<T>, ArraySlice<T>) -> DenseArray<Y>), initial: Z, combine: ((Z, Y) -> Z)) -> DenseArray<Z> {
+        let cA = left.enclose(left.shape.count - 1)
+        let cB = right.enclose(0)
+        
+        let op = outer(cA, cB, transform)
+        let baseArray = op.allElements.map{ $0.reduce(initial, combine: combine).allElements.map {$0} }.flatMap {$0}
+        return DenseArray(shape: op.shape, baseArray: baseArray)
+}
+
+public extension Array {
     
     // I imagine this could simplify comparing shape appropraiteness, but don't actually know if they're that useful.
     

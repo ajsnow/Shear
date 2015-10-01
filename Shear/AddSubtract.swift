@@ -11,9 +11,9 @@ import Foundation
 // MARK: - Real Functions
 
 private func arraySum < A: Array, B: Array where A.Element == B.Element, A.Element: NumericType >
-    (lhs: A, _ rhs: B) -> DenseArray<A.Element> {
-        precondition(lhs.shape == rhs.shape, "Arrays must have same shape to be elementwise added")
-        return DenseArray(shape: lhs.shape, baseArray: zip(lhs.allElements, rhs.allElements).map(+))
+    (left: A, _ right: B) -> DenseArray<A.Element> {
+        precondition(left.shape == right.shape, "Arrays must have same shape to be elementwise added")
+        return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(+))
 }
 
 private func scalarSum < A: Array, Scalar: NumericType where A.Element == Scalar >
@@ -23,53 +23,52 @@ private func scalarSum < A: Array, Scalar: NumericType where A.Element == Scalar
 }
 
 private func vectorSubtraction < A: Array, B: Array where A.Element == B.Element, A.Element: NumericType >
-    (lhs: A, _ rhs: B) -> DenseArray<A.Element> {
-        precondition(lhs.shape == rhs.shape, "Arrays must have same shape to be elementwise subtracted")
-        return DenseArray(shape: lhs.shape, baseArray: zip(lhs.allElements, rhs.allElements).map(-))
+    (left: A, _ right: B) -> DenseArray<A.Element> {
+        precondition(left.shape == right.shape, "Arrays must have same shape to be elementwise subtracted")
+        return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(-))
 }
 
 private func scalarSubtraction < A: Array, Scalar: NumericType where A.Element == Scalar >
-    (a: A, scalarRhs: Scalar) -> DenseArray<A.Element> {
-        let subtractScalar = { $0 - scalarRhs}
+    (a: A, scalarRight: Scalar) -> DenseArray<A.Element> {
+        let subtractScalar = { $0 - scalarRight}
         return DenseArray(shape: a.shape, baseArray: a.allElements.map(subtractScalar))
 }
 
 private func scalarSubtraction < A: Array, Scalar: NumericType where A.Element == Scalar >
-    (a: A, scalarLhs: Scalar) -> DenseArray<A.Element> {
-        let subtractScalar = { scalarLhs - $0 }
+    (a: A, scalarLeft: Scalar) -> DenseArray<A.Element> {
+        let subtractScalar = { scalarLeft - $0 }
         return DenseArray(shape: a.shape, baseArray: a.allElements.map(subtractScalar))
 }
 
 
 // MARK: - Operators
 
-public func + < A: Array, B: Array where A.Element == B.Element, A.Element: NumericType >
-    (lhs: A, rhs: B) -> DenseArray<A.Element> {
-        return arraySum(lhs, rhs)
+public func + < A: NumericArray, B: NumericArray where A.Element == B.Element, A.Element: NumericType >
+    (left: A, right: B) -> DenseArray<A.Element> {
+        return arraySum(left, right)
 }
 
 public func + < A: Array, Scalar: NumericType where A.Element == Scalar >
-    (lhs: A, rhs: Scalar) -> DenseArray<A.Element> {
-        return scalarSum(lhs, scalar: rhs)
+    (left: A, right: Scalar) -> DenseArray<A.Element> {
+        return scalarSum(left, scalar: right)
 }
 
 public func + < A: Array, Scalar: NumericType where A.Element == Scalar >
-    (lhs: Scalar, rhs: A) -> DenseArray<A.Element> {
-        return scalarSum(rhs, scalar: lhs)
+    (left: Scalar, right: A) -> DenseArray<A.Element> {
+        return scalarSum(right, scalar: left)
 }
 
 private func - < A: Array, B: Array where A.Element == B.Element, A.Element: NumericType >
-    (lhs: A, rhs: B) -> DenseArray<A.Element> {
-        return vectorSubtraction(lhs, rhs)
-}
-
-
-public func - < A: Array, Scalar: NumericType where A.Element == Scalar >
-    (lhs: A, rhs: Scalar) -> DenseArray<A.Element> {
-        return scalarSubtraction(lhs, scalarRhs: rhs)
+    (left: A, right: B) -> DenseArray<A.Element> {
+        return vectorSubtraction(left, right)
 }
 
 public func - < A: Array, Scalar: NumericType where A.Element == Scalar >
-    (lhs: Scalar, rhs: A) -> DenseArray<A.Element> {
-        return scalarSubtraction(rhs, scalarLhs: lhs)
+    (left: A, right: Scalar) -> DenseArray<A.Element> {
+        return scalarSubtraction(left, scalarRight: right)
+}
+
+public func - < A: Array, Scalar: NumericType where A.Element == Scalar >
+    (left: Scalar, right: A) -> DenseArray<A.Element> {
+        return scalarSubtraction(right, scalarLeft: left)
 }

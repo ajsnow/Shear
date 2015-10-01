@@ -91,6 +91,16 @@ print(inner(iotaCube, right: iotaCube, transform: *, initial: 0, combine: +))
 
 vecA ∙ vecB
 matA ∙ matB
+//matA + matB
+
+matA is A: Array where A.Element == Int
+
+func asdf<A: NumericArray>(a: A) {
+    print(a)
+}
+//asdf(matA)
+
+//arraySum2(matA, matB)
 //
 //let _A = iotaCube.enclose(0)
 //let _B = iotaCube.enclose(iotaCube.shape.count - 1)
