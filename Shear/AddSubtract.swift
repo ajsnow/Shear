@@ -43,7 +43,7 @@ private func scalarSubtraction<A: Array, Scalar: NumericType where A.Element == 
 
 // MARK: - Operators
 
-public func +<A: NumericArray, B: NumericArray where A.Element == B.Element, A.Element: NumericType>
+public func +<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> DenseArray<A.Element> {
         return arraySum(left, right)
 }

@@ -91,13 +91,24 @@ print(inner(iotaCube, right: iotaCube, transform: *, initial: 0, combine: +))
 
 vecA ∙ vecB
 matA ∙ matB
-//matA + matB
 
-matA is A: Array where A.Element == Int
+let me = Mirror(reflecting: [1, 2, 3, 4])
+let thou = Mirror(reflecting: 5)
 
-func asdf<A: NumericArray>(a: A) {
-    print(a)
-}
+me.children.first!
+thou.children.count
+thou.subjectType
+
+//extension Shear.DenseArray {
+//    
+//    init<Z>(array: [Z]) {
+//        if Z is CollectionType {
+//            
+//        }
+//        
+//    }
+//
+//}
 //asdf(matA)
 
 //arraySum2(matA, matB)

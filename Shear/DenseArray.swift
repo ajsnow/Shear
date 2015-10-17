@@ -102,8 +102,8 @@ extension DenseArray {
     }
     
     /// Concatonate several DenseArrays.
-    public init(_ tuple: DenseArray<Element>...) {
-        self.init(collection: tuple)
+    public init(_ arrays: DenseArray<Element>...) {
+        self.init(collection: arrays)
     }
 }
 
