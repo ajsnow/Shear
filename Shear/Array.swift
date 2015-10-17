@@ -54,6 +54,8 @@ public protocol Array: CustomStringConvertible {
     subscript(indices: ArrayIndex...) -> ArraySlice<Element> { get }
     
     subscript(indices: [ArrayIndex]) -> ArraySlice<Element> { get }
+    
+    subscript(linear linear: Int) -> Element { get set } // We'd prefer all linear indexing happen via .allElements; however, coaxing .allElements into holding a mutable reference to it's value-typed parent is hard, so for the time being, we're doing this.
 
 }
 

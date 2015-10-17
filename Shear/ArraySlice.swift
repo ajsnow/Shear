@@ -85,6 +85,25 @@ extension ArraySlice {
         return AnyRandomAccessCollection(AllElementsCollection(array: self))
     }
     
+    public subscript(linear linearIndex: Int) -> Element {
+        get {
+            return self[linearToCartesianIndices(linearIndex)]
+        }
+        set (newValue) {
+            self[linearToCartesianIndices(linearIndex)] = newValue
+        }
+    }
+    
+    private func linearToCartesianIndices(var i: Int) -> [Int] {
+        let stride = calculateStride(shape)
+        var indices = [Int]()
+        for s in stride {
+            indices.append(i/s)
+            i %= s
+        }
+        return indices
+    }
+    
 }
 
 

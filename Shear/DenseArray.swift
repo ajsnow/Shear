@@ -138,6 +138,16 @@ extension DenseArray {
     }
     
     //enumerate()-like view that has indexes
+    
+    public subscript(linear linearIndex: Int) -> Element {
+        get {
+            return storage[linearIndex]
+        }
+        set (newValue) {
+            storage[linearIndex] = newValue
+        }
+    }
+    
 }
 
 // MARK: - Scalar Indexing
@@ -200,10 +210,10 @@ extension DenseArray {
 // MARK: - Private Helpers
 
 // Calculate the stride vector for indexing into the base array
-private let calculateStride = calculateStrideRowMajor
+let calculateStride = calculateStrideRowMajor
 
 // Stride for column-major ordering (first dimension on n-arrays)
-private func calculateStrideColumnMajor(shape: [Int]) -> [Int] {
+func calculateStrideColumnMajor(shape: [Int]) -> [Int] {
     var stride = shape.scan(1, combine: *)
     stride.removeLast()
     return stride
