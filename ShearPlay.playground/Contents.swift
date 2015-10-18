@@ -137,3 +137,10 @@ thou.subjectType
 //print(superCube.sequence(0))
 //
 //
+let threesCube = DenseArray(shape: [3, 3, 3], baseArray: Swift.Array(0...26))
+print("\n\n\n\n", inner(threesCube, right: threesCube, transform: *, combine: +))
+
+
+let jj = DenseArray(shape: [2, 3], baseArray: [0, 1, 2, 3, 4, 5])
+jj.reduce(+)
+jj.scan(+)

@@ -44,7 +44,7 @@ private func innerProduct<A: Array, B: Array where A.Element == B.Element, A.Ele
     (left: A, _ right: B) -> DenseArray<A.Element> {
         // Preconditions are checked by inner.
         
-        return inner(left, right: right, transform: *, initial: 0, combine: +)
+        return inner(left, right: right, transform: *, combine: +)
 }
 
 // MARK: - Operators

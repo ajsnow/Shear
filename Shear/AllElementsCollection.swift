@@ -16,7 +16,7 @@ struct AllElementsCollection<A: Array>: CollectionType {
     
     init(array: A) {
         self.array = array
-        stride = calculateStrideRowMajor(array.shape)
+        stride = calculateStride(array.shape)
     }
     
     func generate() -> AnyGenerator<A.Element> {

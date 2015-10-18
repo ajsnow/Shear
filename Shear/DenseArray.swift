@@ -206,38 +206,3 @@ extension DenseArray {
     }
 
 }
-
-// MARK: - Private Helpers
-
-// Calculate the stride vector for indexing into the base array
-let calculateStride = calculateStrideRowMajor
-
-// Stride for column-major ordering (first dimension on n-arrays)
-func calculateStrideColumnMajor(shape: [Int]) -> [Int] {
-    var stride = shape.scan(1, combine: *)
-    stride.removeLast()
-    return stride
-}
-
-// Stride for row-major ordering (last dimension on n-arrays)
-func calculateStrideRowMajor(shape: [Int]) -> [Int] {
-    var stride: [Int] = shape.reverse().scan(1, combine: *)
-    stride.removeLast()
-    return stride.reverse()
-}
-
-private extension SequenceType {
-    
-    /// Return the array of partial results of repeatedly calling `combine` with an
-    /// accumulated value initialized to `initial` and each element of
-    /// `self`, in turn, i.e. return
-    /// `[initial, combine(results[0], self[0]),...combine(results[count-1], self[count-1]]`.
-    func scan<T>(initial: T, @noescape combine: (T, Self.Generator.Element) -> T) -> [T] {
-        var results: Swift.Array<T> = [initial]
-        for (i, v) in self.enumerate() {
-            results.append(combine(results[i], v))
-        }
-        return results
-    }
-    
-}
