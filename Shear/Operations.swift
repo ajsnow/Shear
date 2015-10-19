@@ -39,6 +39,17 @@ public extension Array {
     
 }
 
+// MARK: - Shape
+public extension Array {
+    
+    
+    /// Returns a new DenseArray with the contents of `self` with `shape`.
+    public func reshape(shape: [Int]) -> DenseArray<Element> {
+        return DenseArray(shape: shape, baseArray: self)
+    }
+    
+}
+
 // MARK: - Map, Filter, Reduce, Scan
 public extension Array {
     

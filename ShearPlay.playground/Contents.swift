@@ -83,11 +83,11 @@ let iotaSq = DenseArray(shape: [2, 2], baseArray: [0, 1, 2, 3])
 
 iotaSq * iotaSq
 
-inner(iotaSq, right: iotaSq, transform: *, initial: 0, combine: +)
+inner(iotaSq, iotaSq, product: *, sum: +)
 
-inner(vecA, right: vecB, transform: *, initial: 0, combine: +)
+inner(vecA, vecB, product: *, sum: +)
 
-print(inner(iotaCube, right: iotaCube, transform: *, initial: 0, combine: +))
+print(inner(iotaCube, iotaCube, product: *, sum: +))
 
 vecA ∙ vecB
 matA ∙ matB
@@ -138,7 +138,7 @@ thou.subjectType
 //
 //
 let threesCube = DenseArray(shape: [3, 3, 3], baseArray: Swift.Array(0...26))
-print("\n\n\n\n", inner(threesCube, right: threesCube, transform: *, combine: +))
+print("\n\n\n\n", inner(threesCube, threesCube, product: *, sum: +))
 
 
 let jj = DenseArray(shape: [2, 3], baseArray: [0, 1, 2, 3, 4, 5])
