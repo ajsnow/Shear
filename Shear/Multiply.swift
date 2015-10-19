@@ -20,7 +20,7 @@ infix operator ∙ {} /// Dot (Inner) Product Operator
 
 private func elementwiseArrayProduct<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, _ right: B) -> DenseArray<A.Element> {
-        precondition(left.shape == right.shape, "Arrays must have same shape to be elementwise added")
+        precondition(left.shape == right.shape, "Arrays must have same shape to be elementwise multiplied")
         
         return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(*))
 }
@@ -37,14 +37,14 @@ private func outerProduct<A: Array, B: Array where A.Element == B.Element, A.Ele
     (left: A, _ right: B) -> DenseArray<A.Element> {
         // No preconditions.
         
-        return outer(left, right, *)
+        return outer(left, right, product: *)
 }
 
 private func innerProduct<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, _ right: B) -> DenseArray<A.Element> {
         // Preconditions are checked by inner.
         
-        return inner(left, right: right, transform: *, combine: +)
+        return inner(left, right, product: *, sum: +)
 }
 
 // MARK: - Operators
