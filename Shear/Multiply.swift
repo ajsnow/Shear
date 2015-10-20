@@ -77,10 +77,16 @@ public func ×<A: Array, B: Array where A.Element == B.Element, A.Element: Numer
 
         precondition(left.shape == right.shape && left.shape == [3], "Shear only supports 3-space cross products. If you actually want this, we'll happily accept a PR for a generalized algo.")
         
-        let ax = left[0], ay = left[1], az = left[2]
-        let bx = right[0], by = right[1], bz = right[2]
-        
-        return DenseArray(shape: [3], baseArray: [ay*bz - by*az, az*bx - bz*ax, ax*by - bx*ay])
+        let ax = left[linear: 0],
+            ay = left[linear: 1],
+            az = left[linear: 2]
+        let bx = right[linear: 0],
+            by = right[linear: 1],
+            bz = right[linear: 2]
+        let cx = ay*bz - by*az, // Xcode 7.1b has a hard time with parsing these as a Swift.Array literal.
+            cy = az*bx - bz*ax,
+            cz = ax*by - bx*ay
+        return DenseArray(shape: [3], baseArray: [cx, cy, cz])
 }
 
 public func ∙<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
