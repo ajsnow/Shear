@@ -8,67 +8,38 @@
 
 import Foundation
 
-// MARK: - Real Functions
-
-private func arraySum<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
-    (left: A, _ right: B) -> DenseArray<A.Element> {
-        precondition(left.shape == right.shape, "Arrays must have same shape to be elementwise added")
-        return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(+))
-}
-
-private func scalarSum<A: Array, Scalar: NumericType where A.Element == Scalar>
-    (a: A, scalar: Scalar) -> DenseArray<A.Element> {
-        let addScalar = { $0 + scalar}
-        return DenseArray(shape: a.shape, baseArray: a.allElements.map(addScalar))
-}
-
-private func vectorSubtraction<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
-    (left: A, _ right: B) -> DenseArray<A.Element> {
-        precondition(left.shape == right.shape, "Arrays must have same shape to be elementwise subtracted")
-        return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(-))
-}
-
-private func scalarSubtraction<A: Array, Scalar: NumericType where A.Element == Scalar>
-    (a: A, scalarRight: Scalar) -> DenseArray<A.Element> {
-        let subtractScalar = { $0 - scalarRight}
-        return DenseArray(shape: a.shape, baseArray: a.allElements.map(subtractScalar))
-}
-
-private func scalarSubtraction<A: Array, Scalar: NumericType where A.Element == Scalar>
-    (a: A, scalarLeft: Scalar) -> DenseArray<A.Element> {
-        let subtractScalar = { scalarLeft - $0 }
-        return DenseArray(shape: a.shape, baseArray: a.allElements.map(subtractScalar))
-}
-
-
-// MARK: - Operators
-
+/// Element-wise Addition
 public func +<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> DenseArray<A.Element> {
-        return arraySum(left, right)
+        return map(left, right, transform: +)
 }
 
-public func +<A: Array, Scalar: NumericType where A.Element == Scalar>
-    (left: A, right: Scalar) -> DenseArray<A.Element> {
-        return scalarSum(left, scalar: right)
+/// X Addition
+public func +<A: Array, X: NumericType where A.Element == X>
+    (left: A, right: X) -> DenseArray<A.Element> {
+        return left.map { $0 + right }
 }
 
-public func +<A: Array, Scalar: NumericType where A.Element == Scalar>
-    (left: Scalar, right: A) -> DenseArray<A.Element> {
-        return scalarSum(right, scalar: left)
+/// Left-scalar Addition
+public func +<A: Array, X: NumericType where A.Element == X>
+    (left: X, right: A) -> DenseArray<A.Element> {
+        return right.map { left + $0 }
 }
 
+/// Element-wise Subtraction
 private func -<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> DenseArray<A.Element> {
-        return vectorSubtraction(left, right)
+        return map(left, right, transform: -)
 }
 
-public func -<A: Array, Scalar: NumericType where A.Element == Scalar>
-    (left: A, right: Scalar) -> DenseArray<A.Element> {
-        return scalarSubtraction(left, scalarRight: right)
+/// X Substraction
+public func -<A: Array, X: NumericType where A.Element == X>
+    (left: A, right: X) -> DenseArray<A.Element> {
+        return left.map { $0 - right }
 }
 
-public func -<A: Array, Scalar: NumericType where A.Element == Scalar>
-    (left: Scalar, right: A) -> DenseArray<A.Element> {
-        return scalarSubtraction(right, scalarLeft: left)
+/// Left-scalar Subtraction
+public func -<A: Array, X: NumericType where A.Element == X>
+    (left: X, right: A) -> DenseArray<A.Element> {
+        return right.map { left - $0 }
 }

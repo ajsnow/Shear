@@ -194,7 +194,7 @@ public func inner<A: Array, B: Array, X, Y, Z where A.Element == X, B.Element ==
 /// Returns an Array with the same shape of the inputs, whose elements are the output of the transform applied to pairs of left's & right's elements.
 public func map<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
     (left: A, _ right: B, transform: (X, X) -> Y) -> DenseArray<Y> {
-        precondition(left.shape == right.shape, "Arrays must have same shape for element-wise mapping")
+        precondition(left.shape == right.shape, "Arrays must have the same shape to map a function element-wise")
         
         return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(transform))
 }

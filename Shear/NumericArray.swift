@@ -19,10 +19,6 @@ extension Array where Element: NumericType {
     public static func Zeros(shape newShape: [Int]) -> DenseArray<Element> {
         return DenseArray<Element>(shape: newShape, repeatedValue: 0)
     }
-    
-    func add<A: Array where A.Element == Self.Element>(right: A) -> DenseArray<Element> {
-        return DenseArray(shape: self.shape, baseArray: zip(self.allElements, right.allElements).map(+))
-    }
 
 //    public static func Eyes(length: Int, rank: Int = 2) -> DenseArray<Element> {
 //        var array = Zeros(shape: Swift.Array(count: rank, repeatedValue: length))

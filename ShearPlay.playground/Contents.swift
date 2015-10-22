@@ -144,3 +144,5 @@ print("\n\n\n\n", inner(threesCube, threesCube, product: *, sum: +))
 let jj = DenseArray(shape: [2, 3], baseArray: [0, 1, 2, 3, 4, 5])
 jj.reduce(+)
 jj.scan(+)
+
+threesCube + jj
