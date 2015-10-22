@@ -97,20 +97,10 @@ public extension Array {
         return rank == 1
     }
     
-    /// Returns true iff `self` is a row vector.
-    var isRowVector: Bool {
-        return isVector && shape.count == 2 && shape[1] == 1
-    }
-    
-    /// Returns true iff `self` is a column vector.
-    var isColumnVector: Bool {
-        return isVector && shape.count == 2 && shape[0] == 1
-    }
-    
 }
 
-// MARK: - Pretty Printing
-extension Array {
+// MARK: - CustomStringConvertible
+public extension Array {
     
     public var description: String {
         return toString(Swift.ArraySlice(shape), elementGenerator: allElements.generate())
@@ -118,6 +108,15 @@ extension Array {
     
 }
 
+// MARK: - Not-Really-Equatable-For-Reasons-Byond-Our-Control
+// We could make an optimized version for DenseArrays that compares shape && storage 
+// (which can be faster since native arrays can test if they point to the same underlying buffer).
+// Likewise, ArraySlices equality could check their underlying DenseArrays for equality which could sometimes get the same optimization.
+public func ==<A: Array, B: Array where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
+    return map(left, right, transform: ==).allElements.filter { $0 == false }.isEmpty
+}
+
+// When called with the correct args, it returns a string that looks like the nested native array equivalent.
 private func toString<T>(remainingShape: Swift.ArraySlice<Int>, elementGenerator: AnyGenerator<T>) -> String {
     guard let length = remainingShape.first else {
         return String(elementGenerator.next()!) // If the number of elements is not the scan-product of the shape, something terrible has already happened.
