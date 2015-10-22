@@ -42,7 +42,6 @@ public extension Array {
 // MARK: - Shape
 public extension Array {
     
-    
     /// Returns a new DenseArray with the contents of `self` with `shape`.
     public func reshape(shape: [Int]) -> DenseArray<Element> {
         return DenseArray(shape: shape, baseArray: self)
@@ -151,9 +150,9 @@ public extension Array {
 
 /// Returns the outer product `transform` of `left` and `right`.
 /// The outer product is the result of  all elements of `left` and `right` being `transform`'d.
-public func outer<T, Z, A: Array, B: Array where A.Element == T, B.Element == T>
-    (left: A, _ right: B, product: ((T, T) -> Z)) -> DenseArray<Z> {
-        var baseArray = Swift.Array<Z>()
+public func outer<X, Y, A: Array, B: Array where A.Element == X, B.Element == X>
+    (left: A, _ right: B, product: ((X, X) -> Y)) -> DenseArray<Y> {
+        var baseArray = Swift.Array<Y>()
         baseArray.reserveCapacity(Int(left.allElements.count * right.allElements.count))
         
         for l in left.allElements {
@@ -167,26 +166,26 @@ public func outer<T, Z, A: Array, B: Array where A.Element == T, B.Element == T>
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, +)`.
-public func inner<A: Array, B: Array, C, D where A.Element == C, B.Element == C>
-    (left: A, _ right: B, product: (ArraySlice<C>, ArraySlice<C>) -> DenseArray<D>, sum: (D, D) -> D) -> DenseArray<D> {
-        let cA = left.enclose(left.shape.count - 1)
-        let cB = right.enclose(0)
+public func inner<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
+    (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> DenseArray<Y>, sum: (Y, Y) -> Y) -> DenseArray<Y> {
+        let enclosedA = left.enclose(left.shape.count - 1)
+        let enclosedB = right.enclose(0)
         
-        let op = outer(cA, cB, product: product)
-        let baseArray = op.allElements.map{ $0.reduce(sum).allElements.map {$0} }.flatMap {$0}
-        return DenseArray(shape: op.shape, baseArray: baseArray)
+        let outerProduct = outer(enclosedA, enclosedB, product: product)
+        let baseArray = outerProduct.allElements.map{ $0.reduce(sum).allElements.map {$0} }.flatMap {$0}
+        return DenseArray(shape: outerProduct.shape, baseArray: baseArray)
 }
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, 0, +)`.
 public func inner<A: Array, B: Array, X, Y, Z where A.Element == X, B.Element == X>
     (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> DenseArray<Y>, sum: (Z, Y) -> Z, initialSum: Z) -> DenseArray<Z> {
-        let cA = left.enclose(left.shape.count - 1)
-        let cB = right.enclose(0)
+        let enclosedA = left.enclose(left.shape.count - 1)
+        let enclosedB = right.enclose(0)
         
-        let op = outer(cA, cB, product: product)
-        let baseArray = op.allElements.map{ $0.reduce(initialSum, combine: sum).allElements.map {$0} }.flatMap {$0}
-        return DenseArray(shape: op.shape, baseArray: baseArray)
+        let outerProduct = outer(enclosedA, enclosedB, product: product)
+        let baseArray = outerProduct.allElements.map{ $0.reduce(initialSum, combine: sum).allElements.map {$0} }.flatMap {$0}
+        return DenseArray(shape: outerProduct.shape, baseArray: baseArray)
 }
 
 // MARK: - Multi-Map
