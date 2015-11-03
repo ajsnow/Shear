@@ -39,18 +39,13 @@ public extension Array {
     
 }
 
-// MARK: - Shape
+// MARK: - Reshape (Rho), Enclose, Reversal
 public extension Array {
     
     /// Returns a new DenseArray with the contents of `self` with `shape`.
     public func reshape(shape: [Int]) -> DenseArray<Element> {
         return DenseArray(shape: shape, baseArray: self)
     }
-    
-}
-
-// MARK: - Map, Filter, Reduce, Scan
-public extension Array {
     
     /// Encloses the Array, resulting in a DenseArray whose sole element is Self.
     /// Author's note: I'm not sure this is particularly useful in the context of this library, it's just here to complement the axis version (both of which having been stolen from APL)
@@ -78,6 +73,22 @@ public extension Array {
         return DenseArray(shape: newShape, baseArray: subarrays)
     }
     
+    // ⊖
+    /// Reverse teh order of Elements along the first axis
+    public func reverseFirst() -> DenseArray<Element> {
+        return DenseArray(collection: sequenceFirst.reverse())
+    }
+    
+    // ⌽
+    /// Reverse the order of Elements along the last axis (columns)
+    public func reverseLast() -> DenseArray<Element> {
+        return DenseArray(collectionOnLastAxis: sequenceLast.reverse()) // Pretty sure one could do this much more efficiently with linear indexing.
+    }
+}
+
+// MARK: - Map, Filter, Reduce, Scan, Enumerate
+public extension Array {
+
     /// Maps a `transform` upon each element of the Array returning an Array of the same shape with the results.
     public func map<A>(transform: (Element) throws -> A) rethrows -> DenseArray<A> {
         let baseArray = try self.allElements.map(transform)
@@ -101,7 +112,7 @@ public extension Array {
             return DenseArray(shape: [], baseArray: [result])
         }
         
-        return DenseArray(collection: DenseArray(collection: slice.map { $0.reduce(initial, combine: combine) }).sequenceFirst)
+        return DenseArray(collection: slice.map { $0.reduce(initial, combine: combine) } )
     }
     
     /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
@@ -116,7 +127,7 @@ public extension Array {
             return DenseArray(shape: [], baseArray: [result])
         }
         
-        return DenseArray(collection: DenseArray(collection: slice.map { $0.reduce(combine) }).sequenceFirst)
+        return DenseArray(collection: slice.map { $0.reduce(combine) } )
     }
     
     /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
@@ -131,7 +142,7 @@ public extension Array {
             return DenseArray(shape: [results.count], baseArray: results)
         }
         
-        return DenseArray(collection: DenseArray(collection: slice.map { $0.scan(initial, combine: combine) } ).sequenceFirst)
+        return DenseArray(collection: slice.map { $0.scan(initial, combine: combine) } )
     }
     
     /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
@@ -146,13 +157,8 @@ public extension Array {
             return DenseArray(shape: [results.count], baseArray: results)
         }
         
-        return DenseArray(collection: DenseArray(collection: slice.map { $0.scan(combine) } ).sequenceFirst)
+        return DenseArray(collection: slice.map { $0.scan(combine) } )
     }
-    
-}
-
-// MARK: - Enumeration
-public extension Array {
     
     /// Returns a sequence containing pairs of indices and `Element`s.
     public func enumerate() -> AnySequence<([Int], Element)> {

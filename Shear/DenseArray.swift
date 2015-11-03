@@ -73,7 +73,8 @@ extension DenseArray {
         self.init(shape: newShape, baseArray: baseArray.storage)
     }
     
-    /// Construct a DenseArray from a `collection` of DenseArrays.
+    /// Construct a DenseArray from a `collection` of Arrays.
+    /// The count of the `collection` is the length of the resulting Array's first axis.
     public init<C: CollectionType, A: Array where
         A.Element == Element,
         C.Generator.Element == A,
@@ -92,11 +93,39 @@ extension DenseArray {
             }
             
             
+            shape = [collection.count] + firstShape
+            stride = calculateStride(shape)
+            storage = collection.reduce([], combine: {$0 + $1.allElements})
+    }
+    
+    /// Construct a DenseArray from a `collection` of Arrays.
+    /// The count of the `collection` is the length of the resulting Array's last axis.
+    public init<C: CollectionType, A: Array where
+        A.Element == Element,
+        C.Generator.Element == A,
+        C.Index.Distance == Int>
+        (collectionOnLastAxis collection: C) {
+            if collection.isEmpty {
+                fatalError("Cannot construct an Array from empty collection: can't infer shape")
+            }
+            
+            
+            let typeCheckerTemp = collection.first! // As of Xcode 7b3, the type checker crashes in the compact version of these lines.
+            let firstShape = typeCheckerTemp.shape
+            
+            if collection.contains({ $0.shape != firstShape }) {
+                fatalError("Arrays in the collection constructor must have the same shape")
+            }
+            
+            
             shape = firstShape + [collection.count]
             stride = calculateStride(shape)
-            var emptyReserve: [Element] = []
-            emptyReserve.reserveCapacity(Int(collection.first!.allElements.count) * collection.count) // Pre-allocate our big array so that the reduce doesn't need collection.count reallocations
-            storage = collection.reduce(emptyReserve, combine: {$0 + $1.allElements})
+            storage = []
+            for i in 0..<Int(typeCheckerTemp.allElements.count) {
+                for array in collection {
+                    storage.append(array[linear: i])
+                }
+            }
     }
     
     /// Concatonate several DenseArrays.
