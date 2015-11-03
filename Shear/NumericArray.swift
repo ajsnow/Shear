@@ -9,25 +9,43 @@
 import Foundation
 import Accelerate
 
+// TODO: Consider overload these so that a default type can be inferred.
 
-// Psudeo-Protocol of NumericArray
-extension Array where Element: NumericType {
-    public static func Ones(shape newShape: [Int]) -> DenseArray<Element> {
-        return DenseArray<Element>(shape: newShape, repeatedValue: 1)
+public func ones<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Element> {
+    return DenseArray<Element>(shape: newShape, repeatedValue: 1)
+}
+
+public func zeros<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Element> {
+    return DenseArray<Element>(shape: newShape, repeatedValue: 0)
+}
+
+public func eye<Element: NumericType>(count: Int, rank: Int = 2) -> DenseArray<Element> {
+    guard rank > 1 else { return DenseArray<Element>(shape: [1], baseArray: [1]) }
+    
+    let shape = Swift.Array(count: rank, repeatedValue: count)
+    var array: DenseArray<Element> = zeros(shape: shape)
+    for i in 0..<count {
+        let indices = Swift.Array(count: rank, repeatedValue: i)
+        array[indices] = 1
     }
+    return array
+}
 
-    public static func Zeros(shape newShape: [Int]) -> DenseArray<Element> {
-        return DenseArray<Element>(shape: newShape, repeatedValue: 0)
+public func eye<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Element> {
+    var array: DenseArray<Element> = zeros(shape: newShape)
+    let count = newShape.minElement()!
+    
+    for i in 0..<count {
+        let indices = Swift.Array(count: newShape.count, repeatedValue: i)
+        array[indices] = 1
     }
+    
+    return array
+}
 
-//    public static func Eyes(length: Int, rank: Int = 2) -> DenseArray<Element> {
-//        var array = Zeros(shape: Swift.Array(count: rank, repeatedValue: length))
-//        for i in 0..<length {
-//            let indices = Swift.Array(count: rank, repeatedValue: i)
-//            array[indices] = Element(1) // Cannot assign type of Self.Element to a varaible of type Self.Element?
-//        }
-//        return array
-//    }
+public func iota<Element: NumericType>(count: Int) -> DenseArray<Element> {
+    let range = Range(0..<count)
+    return DenseArray<Element>(shape: [count], baseArray: range.map { $0 as! Element })
 }
 
 public protocol NumericArray: Array {

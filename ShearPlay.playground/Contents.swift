@@ -147,4 +147,7 @@ let jj = DenseArray(shape: [2, 3], baseArray: [0, 1, 2, 3, 4, 5])
 jj.reduce(+)
 jj.scan(+)
 
+let ajjj: DenseArray<Int> = eyes(4, rank: 4)
+print(ajjj)
+
 
