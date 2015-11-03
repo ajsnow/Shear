@@ -14,8 +14,6 @@ public struct DenseArray<T>: Array {
     
     public typealias Element = T
     
-    //    public typealias ElementsView = [T]
-    
     // MARK: - Underlying Storage
     
     /// The flat builtin array that serves as the underlying backing storage for this `$TypeName`.
@@ -26,7 +24,7 @@ public struct DenseArray<T>: Array {
     public let shape: [Int]
     
     /// The stride needed to index into storage.
-    let stride: [Int] // Shape is constant; this will need to change when that changes.
+    private let stride: [Int]
 
 }
 

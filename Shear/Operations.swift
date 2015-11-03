@@ -84,6 +84,11 @@ public extension Array {
         return DenseArray(shape: self.shape, baseArray: baseArray)
     }
     
+    /// Returns an Array of matching shape that indicates which elements of `self` match the predicate.
+    public func filter(includeElement: (Element) throws -> Bool) rethrows -> DenseArray<Bool> {
+        return try self.map(includeElement)
+    }
+    
     /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
     public func reduce<A>(initial: A, combine: ((A, Element)-> A)) -> DenseArray<A> {
         if let s = scalar {
@@ -142,6 +147,21 @@ public extension Array {
         }
         
         return DenseArray(collection: DenseArray(collection: slice.map { $0.scan(combine) } ).sequenceFirst)
+    }
+    
+}
+
+// MARK: - Enumeration
+public extension Array {
+    
+    /// Returns a sequence containing pairs of indices and `Element`s.
+    public func enumerate() -> AnySequence<([Int], Element)> {
+        let indexGenerator = makeRowMajorIndexGenerator(shape)
+        
+        return AnySequence(anyGenerator {
+            guard let indices = indexGenerator.next() else { return nil }
+            return (indices, self[indices]) // TODO: Linear indexing is cheaper for DenseArrays. Consider specializing.
+        })
     }
     
 }

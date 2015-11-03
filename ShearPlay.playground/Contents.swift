@@ -13,6 +13,10 @@ let a = DenseArray(shape: [1, 2, 3, 4, 5], repeatedValue: 0).allElements.count
 
 let b = DenseArray(shape: [3, 4], baseArray: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
 
+for i in b.enumerate() {
+    print(i)
+}
+
 //print(b)
 
 let c = DenseArray(shape: [2, 3], baseArray: [0, 1, 2, 3, 4, 5])
@@ -37,8 +41,6 @@ big.rank
 big.isEmpty
 big.isScalar
 big.isVector
-big.isRowVector
-big.isColumnVector
 big.scalar
 
 //let smallish = ArraySlice(baseArray: big, viewIndices: [ArrayIndex.All, .SingleValue(0), .Range(0, 2), .List([0, 2, 3]), .All])

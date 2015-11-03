@@ -19,8 +19,6 @@ public struct ArraySlice<T>: Array {
     
     public typealias Element = T
     
-    //    public typealias ElementsView = ArraySlice<T>
-    
     // MARK: - Underlying Storage
     
     /// The `DenseArray` that serves as the underlying backing storage for this `ArraySlice`.
@@ -35,6 +33,9 @@ public struct ArraySlice<T>: Array {
     // MARK: - Stored Properties
     
     public let shape: [Int]
+    
+    /// The stride needed to index into storage.
+    private let stride: [Int]
     
 }
 
@@ -62,6 +63,7 @@ extension ArraySlice {
         self.shape = shapeAndCompactedView.shape
         self.compactedView = shapeAndCompactedView.compactedView
         self.viewIndices = viewIndices
+        self.stride = calculateStride(shape)
     }
     
     /// Construct a ArraySlice from a complete view into `baseArray`.
@@ -95,7 +97,6 @@ extension ArraySlice {
     }
     
     private func linearToCartesianIndices(var i: Int) -> [Int] {
-        let stride = calculateStride(shape)
         var indices = [Int]()
         for s in stride {
             indices.append(i/s)
