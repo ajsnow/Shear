@@ -39,12 +39,17 @@ public extension Array {
     
 }
 
-// MARK: - Reshape (Rho), Enclose, Reversal
+// MARK: - APL-look-alikes
 public extension Array {
     
     /// Returns a new DenseArray with the contents of `self` with `shape`.
     public func reshape(shape: [Int]) -> DenseArray<Element> {
         return DenseArray(shape: shape, baseArray: self)
+    }
+    
+    /// Reshapes a new DenseArray with the contents of `self` as a vector.
+    public func ravel() -> DenseArray<Element> {
+        return allElements.ravel()
     }
     
     /// Encloses the Array, resulting in a DenseArray whose sole element is Self.
@@ -73,17 +78,27 @@ public extension Array {
         return DenseArray(shape: newShape, baseArray: subarrays)
     }
     
-    // ⊖
-    /// Reverse teh order of Elements along the first axis
-    public func reverseFirst() -> DenseArray<Element> {
+    // monadic ⊖
+    /// Reverse the order of Elements along the first axis
+    public func flip() -> DenseArray<Element> {
         return DenseArray(collection: sequenceFirst.reverse())
     }
     
-    // ⌽
+    // monadic ⌽
     /// Reverse the order of Elements along the last axis (columns)
-    public func reverseLast() -> DenseArray<Element> {
+    public func reverse() -> DenseArray<Element> {
         return DenseArray(collectionOnLastAxis: sequenceLast.reverse()) // Pretty sure one could do this much more efficiently with linear indexing.
     }
+    
+    public func transpose() -> DenseArray<Element> {
+        let indexGenerator = makeColumnMajorIndexGenerator(shape)
+        let transposedSeq = AnySequence(anyGenerator { () -> Element? in
+            guard let indices = indexGenerator.next() else { return nil }
+            return self[indices]
+        })
+        return transposedSeq.map { $0 } .reshape(shape.reverse())
+    }
+
 }
 
 // MARK: - Map, Filter, Reduce, Scan, Enumerate

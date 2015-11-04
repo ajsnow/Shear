@@ -104,3 +104,12 @@ func makeRowMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
         return elementRev?.reverse()
     }
 }
+
+func makeColumnMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
+    var accRev = BoundedAccumulator(bounds: shape, onOverflow: .Nil)
+    return anyGenerator { () -> [Int]? in
+        let elementRev = accRev.current
+        accRev.inc()
+        return elementRev
+    }
+}

@@ -29,6 +29,7 @@ extension SequenceType {
     }
 }
 
+// We could have defined these on sequence types, but this definition is much nicer
 extension CollectionType where SubSequence.Generator.Element == Generator.Element {
     
     func reduce(@noescape combine: (Generator.Element, Generator.Element) -> Generator.Element) -> Generator.Element {
@@ -49,6 +50,31 @@ extension CollectionType where SubSequence.Generator.Element == Generator.Elemen
             results.append(combine(results.last!, v))
         }
         return results
+    }
+    
+}
+
+extension Swift.Array {
+    
+    func ravel() -> DenseArray<Generator.Element> {
+        return DenseArray(shape: [Int(count)], baseArray: self)
+    }
+    
+    func reshape(shape: [Int]) -> DenseArray<Generator.Element> {
+        return DenseArray(shape: shape, baseArray: self)
+    }
+    
+}
+
+extension CollectionType where Index.Distance: NumericType {
+    
+    func ravel() -> DenseArray<Generator.Element> {
+        let array = self.map { $0 }
+        return array.ravel()
+    }
+    
+    func reshape(shape: [Int]) -> DenseArray<Generator.Element> {
+        return DenseArray(shape: shape, baseArray: self.map { $0 } )
     }
     
 }
