@@ -101,6 +101,14 @@ public extension Array {
     
 }
 
+// MARK: - Not-Really-Equatable-For-Reasons-Beyond-Our-Control
+// We could make an optimized version for DenseArrays that compares shape && storage
+// (which can be faster since native arrays can test if they point to the same underlying buffer).
+// Likewise, ArraySlices equality could check their underlying DenseArrays for equality which could sometimes get the same optimization.
+public func ==<A: Array, B: Array where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
+    return map(left, right, transform: ==).allElements.filter { $0 == false }.isEmpty
+}
+
 // MARK: - CustomStringConvertible
 public extension Array {
     
@@ -108,14 +116,6 @@ public extension Array {
         return toString(Swift.ArraySlice(shape), elementGenerator: allElements.generate())
     }
     
-}
-
-// MARK: - Not-Really-Equatable-For-Reasons-Byond-Our-Control
-// We could make an optimized version for DenseArrays that compares shape && storage 
-// (which can be faster since native arrays can test if they point to the same underlying buffer).
-// Likewise, ArraySlices equality could check their underlying DenseArrays for equality which could sometimes get the same optimization.
-public func ==<A: Array, B: Array where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
-    return map(left, right, transform: ==).allElements.filter { $0 == false }.isEmpty
 }
 
 // When called with the correct args, it returns a string that looks like the nested native array equivalent.

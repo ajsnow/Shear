@@ -74,13 +74,13 @@ public func /<A: Array, B: Array where A.Element == B.Element, A.Element: Numeri
         return map(left, right, transform: /)
 }
 
-/// Scalar Multiplication
+/// Scalar Division
 public func /<A: Array, X: NumericType where A.Element == X>
     (left: A, right: X) -> DenseArray<A.Element> {
         return left.map { $0 / right }
 }
 
-/// Left-Scalar Multiplication
+/// Left-Scalar Division
 public func /<A: Array, X: NumericType where A.Element == X>
     (left: X, right: A) -> DenseArray<A.Element> {
         return right.map { left / $0 }
