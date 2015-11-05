@@ -58,6 +58,13 @@ public extension Swift.Array {
         return DenseArray(shape: shape, baseArray: self)
     }
     
+    public func rotate(var shift: Int) -> [Generator.Element] {
+        shift = modulo(shift, base: count)
+        let back = self[0..<shift]
+        let front = self[shift..<count]
+        return [Element](front) + back
+    }
+    
 }
 
 extension CollectionType where Index.Distance: NumericType {
@@ -71,4 +78,10 @@ extension CollectionType where Index.Distance: NumericType {
         return DenseArray(shape: shape, baseArray: self.map { $0 } )
     }
     
+}
+
+// MARK: - Private helpers
+private func modulo(count: Int, base: Int) -> Int {
+    let m = count % base
+    return m < 0 ? m + base : m
 }

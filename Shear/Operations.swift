@@ -191,6 +191,16 @@ public extension Array {
         return recurseTo(rowVector: false, transform: {$0.scan(combine)})
     }
     
+    /// Returns a DenseArray whose columns are shifted `count` times.
+    public func rotate(count: Int) -> DenseArray<Element> {
+        return recurseTo(rowVector: true, transform: {$0.rotate(count)})
+    }
+    
+    /// Returns a DenseArray whose first dimension's elements are shifted `count` times.
+    public func rotateFirst(count: Int) -> DenseArray<Element> {
+        return recurseTo(rowVector: false, transform: {$0.rotate(count)})
+    }
+    
 }
 
 // MARK: - Generalized Inner and Outer Products

@@ -148,6 +148,7 @@ jj.reduce(+)
 jj.scan(+)
 jj.reduceFirst(+)
 jj.scanFirst(+)
+jj.rotate(2)
 
 let ajjj: DenseArray<Int> = eye(4, rank: 4)
 //print(ajjj)
@@ -156,3 +157,4 @@ print(b)
 print(b.flip())
 print(b.reverse())
 print(b.transpose())
+
