@@ -30,7 +30,7 @@ struct AllElementsCollection<A: Array>: CollectionType {
     }
     
     var count: Int {
-        return array.shape.reduce(1, combine: *)
+        return array.shape.isEmpty ? 1 : array.shape.reduce(*)
     }
     
     var startIndex: Int {

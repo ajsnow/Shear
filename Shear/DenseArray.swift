@@ -31,39 +31,26 @@ public struct DenseArray<T>: Array {
 // MARK: - Initializers
 extension DenseArray {
     
-    /// Construct a DenseArray with a `shape` of elements, each initialized to `repeatedValue`.
-    public init(shape newShape: [Int], repeatedValue: Element) {
-        if newShape.isEmpty {
-            fatalError("Array must have non-empty shape")
-        }
-        
-        for dimensionLenght in newShape {
-            if dimensionLenght <= 0 {
-                fatalError("Array must have positive length dimensions")
-            }
-        }
-        
-        shape = newShape
-        stride = calculateStride(shape)
-        let count = shape.reduce(1, combine: *)
-        storage = Swift.Array<T>(count: count, repeatedValue: repeatedValue)
-    }
-    
     /// Reshape a one-dimensional, built-in `baseArray` into a DenseArray of `shape`.
-    public init(shape newShape: [Int], baseArray: [Element]) {
-        shape = newShape
-        stride = calculateStride(shape)
-        let count = shape.reduce(1, combine: *)
+    init(shape newShape: [Int], baseArray: [Element]) {
+        guard !newShape.contains({ $0 < 1 }) else { fatalError("Array cannot contain zero or negative length dimensions.") }
         
-        if count != baseArray.count {
-            let wrongness = count > baseArray.count ? "few" : "many"
-            fatalError("baseArray has too \(wrongness) elements to construct an array of that shape")
-        }
+        shape = newShape.filter { $0 > 1 } // shape is defined in terms of non-unary dimensions.
+        stride = calculateStride(shape)
+        
+        let count = shape.isEmpty ? 1 : shape.reduce(*)
+        guard count == baseArray.count else { fatalError("Array's element's count does not match the product of it's dimensions.") }
         
         storage = baseArray
     }
     
-    /// Reshape any Array `baseArray` into a new DenseArray of `shape`. This iterates over the entire `baseArray` and thus could be quite slow.
+    /// Construct a DenseArray with a `shape` of elements, each initialized to `repeatedValue`.
+    public init(shape newShape: [Int], repeatedValue: Element) {
+        let storage = [Element](count: newShape.isEmpty ? 1 : newShape.reduce(*), repeatedValue: repeatedValue)
+        self.init(shape: newShape, baseArray: storage)
+    }
+    
+    /// Reshape any Array `baseArray` into a new DenseArray of `shape`.
     public init<A: Array where A.Element == Element>(shape newShape: [Int], baseArray: A) {
         self.init(shape: newShape, baseArray: baseArray.allElements.map {$0})
     }
@@ -85,17 +72,14 @@ extension DenseArray {
             }
             
             
-            let typeCheckerTemp = collection.first! // As of Xcode 7b3, the type checker crashes in the compact version of these lines.
-            let firstShape = typeCheckerTemp.shape
-            
-            if collection.contains({ $0.shape != firstShape }) {
+            let subShape = collection.first!.shape
+            guard !collection.contains({$0.shape != subShape}) else {
                 fatalError("Arrays in the collection constructor must have the same shape")
             }
             
-            
-            shape = [collection.count] + firstShape
-            stride = calculateStride(shape)
-            storage = collection.reduce([], combine: {$0 + $1.allElements})
+            let shape = [collection.count] as [Int] + subShape
+            let storage = collection.reduce([Element](), combine: {$0 + $1.allElements})
+            self.init(shape: shape, baseArray: storage)
     }
     
     /// Construct a DenseArray from a `collection` of Arrays.
@@ -109,29 +93,22 @@ extension DenseArray {
                 fatalError("Cannot construct an Array from empty collection: can't infer shape")
             }
             
-            
-            let typeCheckerTemp = collection.first! // As of Xcode 7b3, the type checker crashes in the compact version of these lines.
-            let firstShape = typeCheckerTemp.shape
-            
-            if collection.contains({ $0.shape != firstShape }) {
+            let subShape = collection.first!.shape
+            guard !collection.contains({ $0.shape != subShape }) else {
                 fatalError("Arrays in the collection constructor must have the same shape")
             }
             
             
-            shape = firstShape + [collection.count]
-            stride = calculateStride(shape)
-            storage = []
-            for i in 0..<Int(typeCheckerTemp.allElements.count) {
+            let shape = subShape + [collection.count] as [Int]
+            var storage = [Element]()
+            for i in 0..<Int(collection.first!.allElements.count) {
                 for array in collection {
                     storage.append(array[linear: i])
                 }
             }
+            self.init(shape: shape, baseArray: storage)
     }
     
-    /// Concatonate several DenseArrays.
-    public init(_ arrays: DenseArray<Element>...) {
-        self.init(collection: arrays)
-    }
 }
 
 // MARK: - Init from Array (of Array (...)) of Elements
