@@ -78,30 +78,17 @@ public extension Array {
         return DenseArray(shape: newShape, baseArray: subarrays)
     }
     
-    // monadic ⊖
     /// Reverse the order of Elements along the first axis
     public func flip() -> DenseArray<Element> {
         return DenseArray(collection: sequenceFirst.reverse())
     }
     
-    // monadic ⌽
     /// Reverse the order of Elements along the last axis (columns)
     public func reverse() -> DenseArray<Element> {
         return DenseArray(collectionOnLastAxis: sequenceLast.reverse()) // Pretty sure one could do this much more efficiently with linear indexing.
     }
     
-    // diadic ⊖
-    /// Reverse the order of Elements along the first axis
-    //    public func rotateFirst(count: Int) -> DenseArray<Element> {
-    ////        return DenseArray(collection: sequenceFirst.reverse())
-    //    }
-    //
-    //    // diadic ⌽
-    //    /// Reverse the order of Elements along the last axis (columns)
-    //    public func rotateLast(count: Int) -> DenseArray<Element> {
-    ////        return DenseArray(collectionOnLastAxis: sequenceLast.reverse()) // Pretty sure one could do this much more efficiently with linear indexing.
-    //    }
-    
+    /// Returns a DenseArray whose dimensions are reversed.
     public func transpose() -> DenseArray<Element> {
         let indexGenerator = makeColumnMajorIndexGenerator(shape)
         let transposedSeq = AnySequence(anyGenerator { () -> Element? in
@@ -113,13 +100,28 @@ public extension Array {
     
 }
 
-// MARK: - Map, Reduce, Scan, Enumerate
+// MARK: - Map, VectorMap, Enumerate
 public extension Array {
     
     /// Maps a `transform` upon each element of the Array returning an Array of the same shape with the results.
     public func map<A>(transform: (Element) throws -> A) rethrows -> DenseArray<A> {
         let baseArray = try self.allElements.map(transform)
         return DenseArray(shape: self.shape, baseArray: baseArray)
+    }
+    
+    /// Maps a `transform` upon a vector of elements from the Array. Either by rows (that is, row vectors of the column-seperated elements) or vectors of first-deminsion-seperated elements.
+    public func vectorMap<A>(byRows rowVector: Bool = true, transform: ([Element]) throws -> [A]) rethrows -> DenseArray<A> {
+        if let s = scalar {
+            return try transform([s]).ravel()
+        }
+        
+        let slice = rowVector ? sequenceFirst : sequenceLast
+        if let first = slice.first where first.isScalar { // Slice is a [ArraySlice<Element>], we need to know if it's constituent Arrays are themselves scalar.
+            return try transform(slice.map { $0.scalar! }).ravel()
+        }
+        
+        let partialResults = try slice.map { try $0.vectorMap(byRows: rowVector, transform: transform) }
+        return rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults)
     }
     
     /// Returns a sequence containing pairs of indices and `Element`s.
@@ -134,71 +136,57 @@ public extension Array {
     
 }
 
-// MARK: - Reduce, Scan, ReduceFirst, ScanFirst
+// MARK: - Rotate, Reduce, Scan, RotateFirst, ReduceFirst, ScanFirst
 public extension Array {
     
-    private func recurseTo<A>(rowVector rowVector: Bool, transform: ([Element]) -> [A]) -> DenseArray<A> {
-        if let s = scalar {
-            return transform([s]).ravel()
-        }
-        
-        let slice = rowVector ? sequenceFirst : sequenceLast
-        if let first = slice.first where first.isScalar { // Slice is a [ArraySlice<Element>], we need to know if it's constituent Arrays are themselves scalar.
-            return transform(slice.map { $0.scalar! }).ravel()
-        }
-        
-        let partialResults = slice.map { $0.recurseTo(rowVector: rowVector, transform: transform) }
-        return rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults)
+    /// Returns a DenseArray whose columns are shifted `count` times.
+    public func rotate(count: Int) -> DenseArray<Element> {
+        return vectorMap(byRows: true, transform: {$0.rotate(count)})
     }
     
     /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
     public func reduce<A>(initial: A, combine: ((A, Element)-> A)) -> DenseArray<A> {
-        return recurseTo(rowVector: true, transform: {[$0.reduce(initial, combine: combine)]})
+        return vectorMap(byRows: true, transform: {[$0.reduce(initial, combine: combine)]})
     }
     
     /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
     public func reduce(combine: (Element, Element) -> Element) -> DenseArray<Element> {
-        return recurseTo(rowVector: true, transform: {[$0.reduce(combine)]})
+        return vectorMap(byRows: true, transform: {[$0.reduce(combine)]})
     }
     
     /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
     public func scan<A>(initial: A, combine: (A, Element) -> A) -> DenseArray<A> {
-        return recurseTo(rowVector: true, transform: {$0.scan(initial, combine: combine)})
+        return vectorMap(byRows: true, transform: {$0.scan(initial, combine: combine)})
     }
     
     /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
     public func scan(combine: (Element, Element) -> Element) -> DenseArray<Element> {
-        return recurseTo(rowVector: true, transform: {$0.scan(combine)})        
-    }
-    
-    /// Applies the `combine` upon the first axis of the Array; returning an Array with the first element of `self`'s shape dropped.
-    public func reduceFirst<A>(initial: A, combine: ((A, Element)-> A)) -> DenseArray<A> {
-        return recurseTo(rowVector: false, transform: {[$0.reduce(initial, combine: combine)]})
-    }
-    
-    /// Applies the `combine` upon the first axis of the Array; returning an Array with the first element of `self`'s shape dropped.
-    public func reduceFirst(combine: (Element, Element) -> Element) -> DenseArray<Element> {
-        return recurseTo(rowVector: false, transform: {[$0.reduce(combine)]})
-    }
-    
-    /// Applies the `combine` upon the first axis of the Array, returning the partial results of it's appplication.
-    public func scanFirst<A>(initial: A, combine: (A, Element) -> A) -> DenseArray<A> {
-        return recurseTo(rowVector: false, transform: {$0.scan(initial, combine: combine)})
-    }
-    
-    /// Applies the `combine` upon the first axis of the Array, returning the partial results of it's appplication.
-    public func scanFirst(combine: (Element, Element) -> Element) -> DenseArray<Element> {
-        return recurseTo(rowVector: false, transform: {$0.scan(combine)})
-    }
-    
-    /// Returns a DenseArray whose columns are shifted `count` times.
-    public func rotate(count: Int) -> DenseArray<Element> {
-        return recurseTo(rowVector: true, transform: {$0.rotate(count)})
+        return vectorMap(byRows: true, transform: {$0.scan(combine)})
     }
     
     /// Returns a DenseArray whose first dimension's elements are shifted `count` times.
     public func rotateFirst(count: Int) -> DenseArray<Element> {
-        return recurseTo(rowVector: false, transform: {$0.rotate(count)})
+        return vectorMap(byRows: false, transform: {$0.rotate(count)})
+    }
+    
+    /// Applies the `combine` upon the first axis of the Array; returning an Array with the first element of `self`'s shape dropped.
+    public func reduceFirst<A>(initial: A, combine: ((A, Element)-> A)) -> DenseArray<A> {
+        return vectorMap(byRows: false, transform: {[$0.reduce(initial, combine: combine)]})
+    }
+    
+    /// Applies the `combine` upon the first axis of the Array; returning an Array with the first element of `self`'s shape dropped.
+    public func reduceFirst(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+        return vectorMap(byRows: false, transform: {[$0.reduce(combine)]})
+    }
+    
+    /// Applies the `combine` upon the first axis of the Array, returning the partial results of it's appplication.
+    public func scanFirst<A>(initial: A, combine: (A, Element) -> A) -> DenseArray<A> {
+        return vectorMap(byRows: false, transform: {$0.scan(initial, combine: combine)})
+    }
+    
+    /// Applies the `combine` upon the first axis of the Array, returning the partial results of it's appplication.
+    public func scanFirst(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+        return vectorMap(byRows: false, transform: {$0.scan(combine)})
     }
     
 }
