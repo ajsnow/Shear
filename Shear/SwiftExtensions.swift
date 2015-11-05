@@ -8,12 +8,6 @@
 
 import Foundation
 
-extension Swift.Array {
-    var shear: DenseArray<Element> {
-        return DenseArray(shape: [count], baseArray: self)
-    }
-}
-
 extension SequenceType {
     
     /// Return the array of partial results of repeatedly calling `combine` with an
@@ -54,13 +48,13 @@ extension CollectionType where SubSequence.Generator.Element == Generator.Elemen
     
 }
 
-extension Swift.Array {
+public extension Swift.Array {
     
-    func ravel() -> DenseArray<Generator.Element> {
+    public func ravel() -> DenseArray<Generator.Element> {
         return DenseArray(shape: [Int(count)], baseArray: self)
     }
     
-    func reshape(shape: [Int]) -> DenseArray<Generator.Element> {
+    public func reshape(shape: [Int]) -> DenseArray<Generator.Element> {
         return DenseArray(shape: shape, baseArray: self)
     }
     

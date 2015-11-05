@@ -32,7 +32,7 @@ public struct DenseArray<T>: Array {
 extension DenseArray {
     
     /// Reshape a one-dimensional, built-in `baseArray` into a DenseArray of `shape`.
-    init(shape newShape: [Int], baseArray: [Element]) {
+    public init(shape newShape: [Int], baseArray: [Element]) {
         guard !newShape.contains({ $0 < 1 }) else { fatalError("Array cannot contain zero or negative length dimensions.") }
         
         shape = newShape.filter { $0 > 1 } // shape is defined in terms of non-unary dimensions.

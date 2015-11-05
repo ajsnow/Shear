@@ -8,7 +8,7 @@
 
 import Foundation
 
-// MARK: - Sequence the Array into a series of subarrays upon a given dimension 
+// MARK: - Sequence the Array into a series of subarrays upon a given dimension
 public extension Array {
     
     /// Slices the Array into a sequence of `ArraySlice`s on its nth `deminsion`.
@@ -24,7 +24,7 @@ public extension Array {
         }
     }
     
-    /// Slices the Array on its first dimension. 
+    /// Slices the Array on its first dimension.
     /// Since our DenseArray is stored in Row-Major order & the row is the last dimension,
     /// sequencing on the first dimension allows for better memory access patterns than any other sequence.
     var sequenceFirst: [ArraySlice<Element>] {
@@ -90,89 +90,36 @@ public extension Array {
         return DenseArray(collectionOnLastAxis: sequenceLast.reverse()) // Pretty sure one could do this much more efficiently with linear indexing.
     }
     
+    // diadic ⊖
+    /// Reverse the order of Elements along the first axis
+    //    public func rotateFirst(count: Int) -> DenseArray<Element> {
+    ////        return DenseArray(collection: sequenceFirst.reverse())
+    //    }
+    //
+    //    // diadic ⌽
+    //    /// Reverse the order of Elements along the last axis (columns)
+    //    public func rotateLast(count: Int) -> DenseArray<Element> {
+    ////        return DenseArray(collectionOnLastAxis: sequenceLast.reverse()) // Pretty sure one could do this much more efficiently with linear indexing.
+    //    }
+    
     public func transpose() -> DenseArray<Element> {
         let indexGenerator = makeColumnMajorIndexGenerator(shape)
         let transposedSeq = AnySequence(anyGenerator { () -> Element? in
             guard let indices = indexGenerator.next() else { return nil }
             return self[indices]
-        })
+            })
         return transposedSeq.map { $0 } .reshape(shape.reverse())
     }
-
+    
 }
 
-// MARK: - Map, Filter, Reduce, Scan, Enumerate
+// MARK: - Map, Reduce, Scan, Enumerate
 public extension Array {
-
+    
     /// Maps a `transform` upon each element of the Array returning an Array of the same shape with the results.
     public func map<A>(transform: (Element) throws -> A) rethrows -> DenseArray<A> {
         let baseArray = try self.allElements.map(transform)
         return DenseArray(shape: self.shape, baseArray: baseArray)
-    }
-    
-    /// Returns an Array of matching shape that indicates which elements of `self` match the predicate.
-    public func filter(includeElement: (Element) throws -> Bool) rethrows -> DenseArray<Bool> {
-        return try self.map(includeElement)
-    }
-    
-    /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
-    public func reduce<A>(initial: A, combine: ((A, Element)-> A)) -> DenseArray<A> {
-        if let s = scalar {
-            return DenseArray(shape: [], baseArray: [combine(initial, s)])
-        }
-        
-        let slice = sequenceFirst
-        if let first = slice.first where first.isScalar {
-            let result = slice.map { $0.scalar! }.reduce(initial, combine: combine)
-            return DenseArray(shape: [], baseArray: [result])
-        }
-        
-        return DenseArray(collection: slice.map { $0.reduce(initial, combine: combine) } )
-    }
-    
-    /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
-    public func reduce(combine: (Element, Element) -> Element) -> DenseArray<Element> {
-        if let s = scalar {
-            return DenseArray(shape: [], baseArray: [s])
-        }
-        
-        let slice = sequenceFirst
-        if let first = slice.first where first.isScalar {
-            let result = slice.map { $0.scalar! }.reduce(combine)
-            return DenseArray(shape: [], baseArray: [result])
-        }
-        
-        return DenseArray(collection: slice.map { $0.reduce(combine) } )
-    }
-    
-    /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
-    public func scan<A>(initial: A, combine: (A, Element) -> A) -> DenseArray<A> {
-        if let s = scalar {
-            return DenseArray(shape: [], baseArray: [combine(initial, s)])
-        }
-        
-        let slice = sequenceFirst
-        if let first = slice.first where first.isScalar { // If our slices is Swift.Array of boxed scalars
-            let results = slice.map { $0.scalar! }.scan(initial, combine: combine)
-            return DenseArray(shape: [results.count], baseArray: results)
-        }
-        
-        return DenseArray(collection: slice.map { $0.scan(initial, combine: combine) } )
-    }
-    
-    /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
-    public func scan(combine: (Element, Element) -> Element) -> DenseArray<Element> {
-        if let s = scalar {
-            return DenseArray(shape: [], baseArray: [s])
-        }
-        
-        let slice = sequenceFirst
-        if let first = slice.first where first.isScalar { // If our slices is Swift.Array of boxed scalars
-            let results = slice.map { $0.scalar! }.scan(combine)
-            return DenseArray(shape: [results.count], baseArray: results)
-        }
-        
-        return DenseArray(collection: slice.map { $0.scan(combine) } )
     }
     
     /// Returns a sequence containing pairs of indices and `Element`s.
@@ -182,7 +129,66 @@ public extension Array {
         return AnySequence(anyGenerator {
             guard let indices = indexGenerator.next() else { return nil }
             return (indices, self[indices]) // TODO: Linear indexing is cheaper for DenseArrays. Consider specializing.
-        })
+            })
+    }
+    
+}
+
+// MARK: - Reduce, Scan, ReduceFirst, ScanFirst
+public extension Array {
+    
+    private func recurseTo<A>(rowVector rowVector: Bool, transform: ([Element]) -> [A]) -> DenseArray<A> {
+        if let s = scalar {
+            return transform([s]).ravel()
+        }
+        
+        let slice = rowVector ? sequenceFirst : sequenceLast
+        if let first = slice.first where first.isScalar { // Slice is a [ArraySlice<Element>], we need to know if it's constituent Arrays are themselves scalar.
+            return transform(slice.map { $0.scalar! }).ravel()
+        }
+        
+        let partialResults = slice.map { $0.recurseTo(rowVector: rowVector, transform: transform) }
+        return rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults)
+    }
+    
+    /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
+    public func reduce<A>(initial: A, combine: ((A, Element)-> A)) -> DenseArray<A> {
+        return recurseTo(rowVector: true, transform: {[$0.reduce(initial, combine: combine)]})
+    }
+    
+    /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
+    public func reduce(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+        return recurseTo(rowVector: true, transform: {[$0.reduce(combine)]})
+    }
+    
+    /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
+    public func scan<A>(initial: A, combine: (A, Element) -> A) -> DenseArray<A> {
+        return recurseTo(rowVector: true, transform: {$0.scan(initial, combine: combine)})
+    }
+    
+    /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
+    public func scan(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+        return recurseTo(rowVector: true, transform: {$0.scan(combine)})        
+    }
+    
+    /// Applies the `combine` upon the first axis of the Array; returning an Array with the first element of `self`'s shape dropped.
+    public func reduceFirst<A>(initial: A, combine: ((A, Element)-> A)) -> DenseArray<A> {
+        return recurseTo(rowVector: false, transform: {[$0.reduce(initial, combine: combine)]})
+    }
+    
+    /// Applies the `combine` upon the first axis of the Array; returning an Array with the first element of `self`'s shape dropped.
+    public func reduceFirst(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+        return recurseTo(rowVector: false, transform: {[$0.reduce(combine)]})
+    }
+    
+    /// Applies the `combine` upon the first axis of the Array, returning the partial results of it's appplication.
+    public func scanFirst<A>(initial: A, combine: (A, Element) -> A) -> DenseArray<A> {
+        return recurseTo(rowVector: false, transform: {$0.scan(initial, combine: combine)})
+    }
+    
+    /// Applies the `combine` upon the first axis of the Array, returning the partial results of it's appplication.
+    public func scanFirst(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+        return recurseTo(rowVector: false, transform: {$0.scan(combine)})
     }
     
 }

@@ -139,13 +139,15 @@ thou.subjectType
 //print(superCube.sequence(0))
 //
 //
-let threesCube = DenseArray(shape: [3, 3, 3], baseArray: Swift.Array(0...26))
+let threesCube = Swift.Array(0...26).reshape([3, 3, 3])
 print("\n\n\n\n", inner(threesCube, threesCube, product: *, sum: +), "\n\n\n\n")
 
 
-let jj = DenseArray(shape: [2, 3], baseArray: [0, 1, 2, 3, 4, 5])
+let jj = [Int](0...5).reshape([2, 3])
 jj.reduce(+) 
 jj.scan(+)
+jj.reduceFirst(+)
+jj.scanFirst(+)
 
 let ajjj: DenseArray<Int> = eye(4, rank: 4)
 //print(ajjj)
