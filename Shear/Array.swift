@@ -71,9 +71,7 @@ public extension Array {
     ///     If the Array is a row vector of 6 elements, its rank is 0
     ///     If the Array is a scalar or the Empty Array, its rank is 0
     var rank: Int {
-        if isEmpty { return 0 }
-        
-        return shape.filter {$0 != 1}.count
+        return shape.count
     }
     
     /// Returns true iff `self` is empty.

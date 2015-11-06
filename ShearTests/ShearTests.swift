@@ -60,8 +60,6 @@ class ShearTests: XCTestCase {
         big.isEmpty
         big.isScalar
         big.isVector
-        big.isRowVector
-        big.isColumnVector
         big.scalar
         
         //let smallish = ArraySlice(baseArray: big, viewIndices: [ArrayIndex.All, .SingleValue(0), .Range(0, 2), .List([0, 2, 3]), .All])
@@ -109,7 +107,7 @@ class ShearTests: XCTestCase {
         
 //        inner(vecA, right: vecB, transform: *, initial: 0, combine: +)
         
-        inner(iotaCube, right: iotaCube, transform: *, initial: 0, combine: +)
+        inner(iotaCube, iotaCube, product: *, sum: +, initialSum: 0)
     }
     
     func testPerformanceExample() {

@@ -159,7 +159,7 @@ extension DenseArray {
     
     func getStorageIndex(indices: [Int]) -> Int {
         // First, we check to see if we have the right number of indices to address an element:
-        if indices.count != shape.count {
+        if indices.count != rank {
             fatalError("Array indices don't match array shape")
         }
         

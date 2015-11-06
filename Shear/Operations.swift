@@ -14,9 +14,9 @@ public extension Array {
     /// Slices the Array into a sequence of `ArraySlice`s on its nth `deminsion`.
     func sequence(deminsion: Int) -> [ArraySlice<Element>] {
         //        guard !shape.isEmpty else { return [self[ArrayIndex.All]] }
-        guard deminsion < shape.count else { fatalError("An array cannot be sequenced on a deminsion it does not have.") }
+        guard deminsion < rank else { fatalError("An array cannot be sequenced on a deminsion it does not have.") }
         
-        let viewIndices = Swift.Array(count: shape.count, repeatedValue: ArrayIndex.All)
+        let viewIndices = Swift.Array(count: rank, repeatedValue: ArrayIndex.All)
         return (0..<shape[deminsion]).map {
             var nViewIndices = viewIndices
             nViewIndices[deminsion] = .SingleValue($0)
@@ -34,7 +34,7 @@ public extension Array {
     /// Slices the Array on its last dimension.
     /// Tends to not be cache friendly...
     var sequenceLast: [ArraySlice<Element>] {
-        return sequence(shape.count - 1)
+        return sequence(rank - 1)
     }
     
 }
@@ -63,7 +63,7 @@ public extension Array {
     public func enclose(axes: Int...) -> DenseArray<ArraySlice<Element>> {
         // Since this algo is recursive, we only check and operate on the head of the list.
         guard let axis = axes.first else { fatalError("ran out of axes") }
-        guard axis < shape.count else { fatalError("domain") }
+        guard axis < rank else { fatalError("domain") }
         
         let newShape = Swift.Array(shape.enumerate().lazy.filter { $0.index != axis }.map { $0.element })
         
@@ -213,7 +213,7 @@ public func outer<X, Y, A: Array, B: Array where A.Element == X, B.Element == X>
 /// For example the dot product of A & B is defined as `inner(A, B, *, +)`.
 public func inner<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
     (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> DenseArray<Y>, sum: (Y, Y) -> Y) -> DenseArray<Y> {
-        let enclosedA = left.enclose(left.shape.count - 1)
+        let enclosedA = left.enclose(left.rank - 1)
         let enclosedB = right.enclose(0)
         
         let outerProduct = outer(enclosedA, enclosedB, product: product)
@@ -225,7 +225,7 @@ public func inner<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
 /// For example the dot product of A & B is defined as `inner(A, B, *, 0, +)`.
 public func inner<A: Array, B: Array, X, Y, Z where A.Element == X, B.Element == X>
     (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> DenseArray<Y>, sum: (Z, Y) -> Z, initialSum: Z) -> DenseArray<Z> {
-        let enclosedA = left.enclose(left.shape.count - 1)
+        let enclosedA = left.enclose(left.rank - 1)
         let enclosedB = right.enclose(0)
         
         let outerProduct = outer(enclosedA, enclosedB, product: product)
@@ -243,16 +243,14 @@ public func map<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
         return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(transform))
 }
 
-public extension Array {
+extension Array {
     
-    // I imagine this could simplify comparing shape appropraiteness, but don't actually know if they're that useful.
-    
-    /// The length of the Array in a particular dimension
+    /// The length of the Array in a particular dimension.
     func size(d: Int) -> Int {
-        return d < shape.count ? shape[d] : 1
+        return d < rank ? shape[d] : 1
     }
     
-    /// The length of the Array in several dimensions
+    /// The length of the Array in several dimensions.
     func size(ds: [Int]) -> [Int] {
         return ds.map(size)
     }

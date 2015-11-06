@@ -45,7 +45,7 @@ extension ArraySlice {
     
     /// Construct a ArraySlice from a complete view into `baseArray`.
     init(baseArray: DenseArray<Element>) {
-        self = ArraySlice(baseArray: baseArray, viewIndices: Swift.Array(count: baseArray.shape.count, repeatedValue: ArrayIndex.All))
+        self = ArraySlice(baseArray: baseArray, viewIndices: Swift.Array(count: baseArray.rank, repeatedValue: ArrayIndex.All))
     }
     
     /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
@@ -63,7 +63,7 @@ extension ArraySlice {
     
     /// Construct a ArraySlice from a complete view into `baseArray`.
     init(baseArray: ArraySlice<Element>) {
-        self = ArraySlice(baseArray: baseArray, viewIndices: Swift.Array(count: baseArray.shape.count, repeatedValue: ArrayIndex.All))
+        self = ArraySlice(baseArray: baseArray, viewIndices: Swift.Array(count: baseArray.rank, repeatedValue: ArrayIndex.All))
     }
     
     /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
@@ -107,7 +107,7 @@ extension ArraySlice {
     
     private func getStorageIndices(indices: [Int]) -> [Int] {
         // First, we check to see if we have the right number of indices to address an element:
-        if indices.count != shape.count {
+        if indices.count != rank {
             fatalError("Array indices don't match array shape")
         }
         
