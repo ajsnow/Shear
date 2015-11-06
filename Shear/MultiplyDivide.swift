@@ -56,7 +56,7 @@ public func ×<A: Array, B: Array where A.Element == B.Element, A.Element: Numer
         let bx = right[linear: 0],
             by = right[linear: 1],
             bz = right[linear: 2]
-        let cx = ay*bz - by*az, // Xcode 7.1b has a hard time with parsing these as a Swift.Array literal.
+        let cx = ay*bz - by*az, // Xcode 7.1 has a hard time with parsing these as a Swift.Array literal.
             cy = az*bx - bz*ax,
             cz = ax*by - bx*ay
         return DenseArray(shape: [3], baseArray: [cx, cy, cz])

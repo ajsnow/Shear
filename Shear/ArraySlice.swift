@@ -8,11 +8,6 @@
 
 import Foundation
 
-// There are two hard functions that we need to impliment:
-// Cartiasian indexing
-// linear indexing
-// plus the ability to subslice slices and bounds check all of this...
-
 public struct ArraySlice<T>: Array {
     
     // MARK: - Associated Types
@@ -56,7 +51,7 @@ extension ArraySlice {
     /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
     init(baseArray: DenseArray<Element>, viewIndices: [ArrayIndex]) {
         guard let shapeAndCompactedView = makeShape(baseArray.shape, viewIndices: viewIndices) else {
-            fatalError("ArraySlice's bounds must be within the DenseArray")
+            fatalError("Invalid bounds for an ArraySlice")
         }
         
         self.storage = baseArray
@@ -83,7 +78,6 @@ extension ArraySlice {
 extension ArraySlice {
     
     public var allElements: AnyRandomAccessCollection<Element> {
-        
         return AnyRandomAccessCollection(AllElementsCollection(array: self))
     }
     
@@ -181,6 +175,8 @@ extension ArraySlice {
 
 // MARK: - Private Helpers
 
+// TODO: Make these less ugly.
+
 private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> (shape: [Int], compactedView: [Int?])? {
     // Check for correct number of indices
     guard initialShape.count == viewIndices.count else { return nil }
@@ -188,7 +184,7 @@ private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> (shape
     let pairs = zip(initialShape, viewIndices)
     
     // Bounds check indices
-    guard pairs.map({$1.isInbounds($0)}).filter({$0 == false}).isEmpty else { return nil }
+    guard !pairs.map({$1.isInbounds($0)}).contains(false) else { return nil }
     
     let shape = pairs.map { (initialBound, index) -> Int in
         switch index {
@@ -197,11 +193,13 @@ private func makeShape(initialShape: [Int], viewIndices: [ArrayIndex]) -> (shape
         case .SingleValue:
             return 1
         case .List(let list):
-            return list.count // need to handle zeros
+            return list.count
         case .Range(let low, let high):
-            return high - low // need to handle zeros
+            return high - low
         }
     }
+    
+    guard !shape.contains({$0 < 1}) else { return nil }
     
     let compactedView = zip(shape, viewIndices).map { (bound, index) -> Int? in
         guard bound == 1 else { return nil }
