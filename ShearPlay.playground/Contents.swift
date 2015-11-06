@@ -3,6 +3,12 @@
 import Cocoa
 import Shear
 
+let a1 = [1, 2, 3, 4, 5, 20, 2, 10]
+let a2 = [1, 2, 3, 4]
+
+let a3 = zip(a1, a2).map {$0}
+a3.count
+
 
 
 var str = "Hello, playground"
@@ -157,4 +163,9 @@ print(b)
 print(b.flip())
 print(b.reverse())
 print(b.transpose())
+
+print(threesCube.append(iota(9).reshape([3,3])))
+print(threesCube.concat(iota(9).reshape([3,3])))
+print(threesCube.append(threesCube).shape)
+print(threesCube.concat(threesCube).shape)
 

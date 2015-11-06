@@ -98,6 +98,20 @@ public extension Array {
         return transposedSeq.map { $0 } .reshape(shape.reverse())
     }
     
+    /// Returns a DenseArray with the contents of additionalItems appended to the Array.
+    /// Note: this addes extra length in all but the last dimension, it does not change the shape.
+    /// Use DenseArray(collection: [Arrays]) to make a higher order Array.
+    public func append<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
+        return zipVectorMap(self, additionalItems, byRows: true, transform: {$0 + $1})
+    }
+    
+    /// Returns a DenseArray with the contents of additionalItems concatenated to the Array.
+    /// Note: this addes extra length in all but the first dimension, it does not change the shape.
+    /// Use DenseArray(collection: [Arrays]) to make a higher order Array.
+    public func concat<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
+        return zipVectorMap(self, additionalItems, byRows: false, transform: {$0 + $1})
+    }
+    
 }
 
 // MARK: - Map, VectorMap, Enumerate
@@ -242,6 +256,46 @@ public func map<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
         
         return DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(transform))
 }
+
+// Currently not exposed as part of the public API. Not sure it's useful for much else.
+/// Returns an Array with a rank equal to left's and a shape equal to the sums of the shapes (offset by one if byRows = false), whose (row or highest-dimensional) vectors are the output of the transform applied to pairs of left's & right's (row or highest-dimensional) vectors.
+func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> DenseArray<Y> {
+    if rowVector {
+        guard (left.rank == right.rank || left.rank == right.rank + 1) &&
+            !zip(left.shape.dropLast(), right.shape).contains(!=) else {
+                fatalError("Shape of additionalItems must match the base array in all but the last dimension")
+        }
+    } else {
+        guard (left.rank == right.rank && !zip(left.shape.dropFirst(), right.shape.dropFirst()).contains(!=)) ||
+            (left.rank == right.rank + 1 && !zip(left.shape.dropFirst(), right.shape).contains(!=)) else {
+                fatalError("Shape of additionalItems must match the base array in all but the first dimension")
+        }
+    }
+    
+    func internalZipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> DenseArray<Y> {
+        if let s = left.scalar, r = right.scalar {
+            return try transform([s], [r]).ravel()
+        }
+        
+        let slice = rowVector ? left.sequenceFirst : left.sequenceLast
+        if let first = slice.first where first.isScalar { // Slice is a [ArraySlice<Element>], we need to know if it's constituent Arrays are themselves scalar.
+            if let r = right.scalar {
+                return try transform(slice.map { $0.scalar! }, [r]).ravel()
+            } else {
+                let rslice = rowVector ? right.sequenceFirst : right.sequenceLast
+                return try transform(slice.map { $0.scalar! }, rslice.map { $0.scalar! }).ravel()
+            }
+        }
+        
+        let rslice = rowVector ? right.sequenceFirst : right.sequenceLast
+        let partialResults = try zip(slice, rslice).map { try zipVectorMap($0.0, $0.1, byRows: rowVector, transform: transform) }
+        return rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults)
+    }
+    
+    return try internalZipVectorMap(left, right, byRows: rowVector, transform: transform)
+}
+
+
 
 extension Array {
     
