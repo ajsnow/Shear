@@ -98,18 +98,36 @@ public extension Array {
         return transposedSeq.map { $0 } .reshape(shape.reverse())
     }
     
-    /// Returns a DenseArray with the contents of additionalItems appended to the Array.
+    /// Returns a DenseArray with the contents of additionalItems appended to the last axis of the Array.
     /// Note: this addes extra length in all but the last dimension, it does not change the shape.
     /// Use DenseArray(collection: [Arrays]) to make a higher order Array.
     public func append<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
         return zipVectorMap(self, additionalItems, byRows: true, transform: {$0 + $1})
     }
     
-    /// Returns a DenseArray with the contents of additionalItems concatenated to the Array.
+    /// Returns a DenseArray with the contents of additionalItems concatenated to the first axis of the Array.
     /// Note: this addes extra length in all but the first dimension, it does not change the shape.
     /// Use DenseArray(collection: [Arrays]) to make a higher order Array.
     public func concat<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
         return zipVectorMap(self, additionalItems, byRows: false, transform: {$0 + $1})
+    }
+    
+    /// Returns a DenseArray with the contents of additionalItems appended to the last axis of the Array.
+    /// Note: this addes extra length in all but the last dimension, it does not change the shape.
+    /// Use DenseArray(collection: [Arrays]) to make a higher order Array.
+    public func append(additionalItem: Element) -> DenseArray<Element> {
+        return vectorMap(byRows: true, transform: {$0 + [additionalItem]})
+    }
+    
+    /// Returns a DenseArray with the contents of additionalItems concatenated to the first axis of the Array.
+    /// Note: this addes extra length in all but the first dimension, it does not change the shape.
+    /// Use DenseArray(collection: [Arrays]) to make a higher order Array.
+    public func concat(additionalItem: Element) -> DenseArray<Element> {
+        return vectorMap(byRows: false, transform: {$0 + [additionalItem]})
+        // This could be optimized to the following:
+        //     return DenseArray(shape: [shape[0] + 1] + shape.dropFirst(), baseArray: [Element](allElements) + [Element](count: shape.dropFirst().reduce(*), repeatedValue: additionalItem))
+        // But given all preformance we're leaving on the table elsewhere, it seems silly to break the nice symmetry for an unimportant function.
+        // I've also not benched, so this could turn out to be pessimized, though that would shock me.
     }
     
 }

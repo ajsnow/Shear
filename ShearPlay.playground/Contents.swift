@@ -166,6 +166,6 @@ print(b.transpose())
 
 print(threesCube.append(iota(9).reshape([3,3])))
 print(threesCube.concat(iota(9).reshape([3,3])))
-print(threesCube.append(threesCube).shape)
-print(threesCube.concat(threesCube).shape)
+print(threesCube.append(9999))
+print(threesCube.concat(9999))
 
