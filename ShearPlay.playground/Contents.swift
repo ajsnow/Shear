@@ -10,7 +10,6 @@ let a3 = zip(a1, a2).map {$0}
 a3.count
 
 
-
 var str = "Hello, playground"
 
 let a = DenseArray(shape: [1, 2, 3, 4, 5], repeatedValue: 0).allElements.count
@@ -169,3 +168,14 @@ print(threesCube.concat(iota(9).reshape([3,3])))
 print(threesCube.append(9999))
 print(threesCube.concat(9999))
 
+threesCube.enclose()
+print("\n\n\n\n\n\n")
+print(threesCube.enclose(0))
+print(threesCube.enclose(1))
+print(threesCube.enclose(2))
+print(threesCube.enclose(0, 1))
+print(threesCube.sequence(2))
+print(threesCube.enclose(1, 2))
+print(threesCube.sequence(0))
+print(threesCube.enclose(2, 0))
+print(threesCube.sequence(1))

@@ -14,7 +14,7 @@ public extension Array {
     /// Slices the Array into a sequence of `ArraySlice`s on its nth `deminsion`.
     func sequence(deminsion: Int) -> [ArraySlice<Element>] {
         //        guard !shape.isEmpty else { return [self[ArrayIndex.All]] }
-        guard deminsion < rank else { fatalError("An array cannot be sequenced on a deminsion it does not have.") }
+        guard deminsion < rank else { fatalError("An array cannot be sequenced on a deminsion it does not have") }
         
         let viewIndices = Swift.Array(count: rank, repeatedValue: ArrayIndex.All)
         return (0..<shape[deminsion]).map {
@@ -51,30 +51,30 @@ public extension Array {
     public func ravel() -> DenseArray<Element> {
         return allElements.ravel()
     }
-    
-    /// Encloses the Array, resulting in a DenseArray whose sole element is Self.
-    /// Author's note: I'm not sure this is particularly useful in the context of this library, it's just here to complement the axis version (both of which having been stolen from APL)
-    public func enclose() -> DenseArray<Self> {
-        return DenseArray(shape: [], baseArray: [self])
-    }
-    
-    /// Encloses the Array upon the `axes` specified, resulting in an Array of Arrays.
-    // TODO: Currently only supports a single axis... Add the rest of the function.
-    public func enclose(axes: Int...) -> DenseArray<ArraySlice<Element>> {
-        // Since this algo is recursive, we only check and operate on the head of the list.
-        guard let axis = axes.first else { fatalError("ran out of axes") }
-        guard axis < rank else { fatalError("domain") }
         
-        let newShape = Swift.Array(shape.enumerate().lazy.filter { $0.index != axis }.map { $0.element })
+    /// Encloses the Array upon the `axes` specified, resulting in an Array of Arrays.
+    /// If no `axes` are provided, encloses over the whole Array.
+    /// Enclose is equivilant to APL's enclose when the axes are in accending order.
+    /// i.e.
+    ///     A.enclose(2, 0, 5) == ⊂[0 2 5]A
+    ///     A.enclose(2, 0, 5) != ⊂[2 0 5]A
+    public func enclose(axes: Int...) -> DenseArray<ArraySlice<Element>> {
+        guard !axes.isEmpty else { return ([ArraySlice(baseArray: self)] as [ArraySlice<Element>]).ravel() }
+        
+        let axes = Set(axes).sort() // Filter out any repeated axes.
+        guard !axes.contains({ $0 >= rank }) else { fatalError("No axis can be greater or equal to the rank of the array") }
+        
+        let newShape = [Int](shape.enumerate().lazy.filter { !axes.contains($0.index) }.map { $0.element })
         
         let internalIndicesList = makeRowMajorIndexGenerator(newShape).map { newIndices -> [ArrayIndex] in
             var internalIndices = newIndices.map { ArrayIndex.SingleValue($0) }
-            internalIndices.insert(.All, atIndex: axis)
+            for a in axes {
+                internalIndices.insert(.All, atIndex: a) // N.B. This only works when the axes are sorted.
+            }
             return internalIndices
         }
         
         let subarrays = internalIndicesList.map { self[$0] }
-        
         return DenseArray(shape: newShape, baseArray: subarrays)
     }
     

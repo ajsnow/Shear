@@ -108,6 +108,10 @@ class ShearTests: XCTestCase {
 //        inner(vecA, right: vecB, transform: *, initial: 0, combine: +)
         
         inner(iotaCube, iotaCube, product: *, sum: +, initialSum: 0)
+        
+        iotaCube.enclose(0, 1)
+        iotaCube.enclose(1, 2)
+        iotaCube.enclose(2, 0)
     }
     
     func testPerformanceExample() {
