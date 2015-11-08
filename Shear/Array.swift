@@ -111,7 +111,7 @@ public func ==<A: Array, B: Array where A.Element == B.Element, A.Element: Equat
 public extension Array {
     
     public var description: String {
-        return toString(Swift.ArraySlice(shape), elementGenerator: allElements.generate())
+        return "A" + toString(Swift.ArraySlice(shape), elementGenerator: allElements.generate())
     }
     
 }
