@@ -51,7 +51,8 @@ public extension Array {
     public func ravel() -> DenseArray<Element> {
         return allElements.ravel()
     }
-        
+    
+    // TODO: Supporting the full APL-style axes enclose requires support for general dimensional reodering.
     /// Encloses the Array upon the `axes` specified, resulting in an Array of Arrays.
     /// If no `axes` are provided, encloses over the whole Array.
     /// Enclose is equivilant to APL's enclose when the axes are in accending order.
@@ -127,7 +128,7 @@ public extension Array {
         // This could be optimized to the following:
         //     return DenseArray(shape: [shape[0] + 1] + shape.dropFirst(), baseArray: [Element](allElements) + [Element](count: shape.dropFirst().reduce(*), repeatedValue: additionalItem))
         // But given all preformance we're leaving on the table elsewhere, it seems silly to break the nice symmetry for an unimportant function.
-        // I've also not benched, so this could turn out to be pessimized, though that would shock me.
+        // I've also not benched, so this could turn out to be a pessimization, though that would shock me.
     }
     
 }

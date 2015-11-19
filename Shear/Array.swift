@@ -104,14 +104,18 @@ public extension Array {
 // (which can be faster since native arrays can test if they point to the same underlying buffer).
 // Likewise, ArraySlices equality could check their underlying DenseArrays for equality which could sometimes get the same optimization.
 public func ==<A: Array, B: Array where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
-    return map(left, right, transform: ==).allElements.filter { $0 == false }.isEmpty
+    return left.shape == right.shape && map(left, right, transform: ==).allElements.filter { $0 == false }.isEmpty
+}
+
+public func !=<A: Array, B: Array where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
+    return !(left == right)
 }
 
 // MARK: - CustomStringConvertible
 public extension Array {
     
     public var description: String {
-        return "A" + toString(Swift.ArraySlice(shape), elementGenerator: allElements.generate())
+        return "A{" + toString(Swift.ArraySlice(shape), elementGenerator: allElements.generate()) + "}"
     }
     
 }

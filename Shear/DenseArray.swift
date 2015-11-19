@@ -141,8 +141,6 @@ extension DenseArray {
         return AnyRandomAccessCollection(storage)
     }
     
-    //enumerate()-like view that has indexes
-    
     public subscript(linear linearIndex: Int) -> Element {
         get {
             return storage[linearIndex]

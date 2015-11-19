@@ -42,10 +42,14 @@ public enum ArrayIndex: NilLiteralConvertible, IntegerLiteralConvertible, ArrayL
     
 }
 
-// A "RangeLiteralConvertible" of a sort.
+// "RangeLiteralConvertibles" of a sort.
 func ..<(start: Int, end: Int) -> ArrayIndex {
     precondition(start <= end, "ArrayIndex.Range: start must be less than or equal to end")
     return .Range(start, end)
+}
+
+func ...(start: Int, end: Int) -> ArrayIndex {
+    return start ..< end - 1
 }
 
 public let $ = ArrayIndex.All // TODO: decide if this or nil or some other symbol is best to express grabbing all of a dim

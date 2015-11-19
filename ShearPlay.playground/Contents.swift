@@ -29,8 +29,8 @@ let c = DenseArray(shape: [2, 3], baseArray: [0, 1, 2, 3, 4, 5])
 print(c)
 
 c[1, 2]
-
-        let d = c[$, [0, 2]]
+let range: ArrayIndex = 0..<2
+let d = c[$, 0..<2]
 //let d = ArraySlice(baseArray: c, viewIndices: [nil, [0, 2]])
 
 print(d)

@@ -45,7 +45,12 @@ public func eye<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Eleme
 
 public func iota<Element: NumericType>(count: Int) -> DenseArray<Element> {
     let range = Range(0..<count)
-    return DenseArray<Element>(shape: [count], baseArray: range.map { $0 as! Element })
+    return DenseArray(shape: [count], baseArray: range.map { $0 as! Element })
+}
+
+public func iota(count: Int) -> DenseArray<Int> {
+    let range = Range(0..<count)
+    return DenseArray(shape: [count], baseArray: range.map { $0 })
 }
 
 public protocol NumericArray: Array {
