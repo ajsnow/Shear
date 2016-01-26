@@ -39,9 +39,41 @@ class OpertaionsTests: XCTestCase {
         
         zip(allArrays, correctValues).forEach {
             XCTAssert($0.0.sequenceFirst.first! == $0.1.0)
-            XCTAssert($0.0.sequenceLast.last! == $0.1.1, "\($0.0.sequenceLast.last!) != \($0.1.1)")
+            XCTAssert($0.0.sequenceLast.last! == $0.1.1)
         }
         
     }
-
+    
+    func testReshape() {
+        let testVectors: [([Int], Shear.DenseArray<Int>)] = [
+            ([2, 4], DenseArray(shape: [2, 4], baseArray: iota(8))),
+            ([16], iota(16)),
+            ([1, 3, 1, 1, 1, 9, 1], DenseArray(shape: [3, 9], baseArray: iota(27))),
+            ([2, 2], DenseArray(shape: [2, 2], baseArray: [0, 2, 4, 6])),
+            ([1, 4], DenseArray(shape: [4, 1], baseArray: [1, 3, 5, 7])),
+        ]
+        
+        zip(allArrays, testVectors).forEach {
+            XCTAssert($0.0.reshape($0.1.0) == $0.1.1)
+        }
+    }
+    
+    func testRavel() {
+        let correctValues = [
+            iota(8),
+            iota(16),
+            iota(27),
+            iota(4) * 2,
+            iota(4) * 2 + 1,
+            iota(120),
+            iota(1),
+        ]
+        
+        zip(allArrays, correctValues).forEach {
+            XCTAssert($0.0.ravel() == $0.1)
+        }
+    }
+    
+    
+    
 }
