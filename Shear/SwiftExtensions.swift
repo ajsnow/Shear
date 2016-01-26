@@ -85,3 +85,4 @@ private func modulo(count: Int, base: Int) -> Int {
     let m = count % base
     return m < 0 ? m + base : m
 }
+

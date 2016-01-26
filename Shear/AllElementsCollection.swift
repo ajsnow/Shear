@@ -42,7 +42,11 @@ struct AllElementsCollection<A: Array>: CollectionType {
     }
     
     subscript(position: Int) -> A.Element {
-        return self.array[stride.map { position % $0 }]
+        let coordinates = stride.reverse().reduce([position]) { (coordinates, s) -> [Int] in
+            let (div, rem) = divrem(coordinates.last!, denominator: s)
+            return coordinates.dropLast() + [div, rem]
+        }.reverse() as [Int]
+        return self.array[coordinates]
     }
     
 }
@@ -112,4 +116,8 @@ func makeColumnMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
         accRev.inc()
         return elementRev
     }
+}
+
+func divrem(numerator: Int, denominator: Int) -> (dividend: Int, remainder: Int) {
+    return (numerator/denominator, numerator%denominator)
 }
