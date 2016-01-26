@@ -25,11 +25,6 @@ class ArrayBasicsTests: XCTestCase {
         super.setUp()
         allArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
     }
-    
-    override func tearDown() {
-        
-        super.tearDown()
-    }
 
     // MARK: Basics - from Array.swift
     func testRank() {

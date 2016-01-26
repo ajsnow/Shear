@@ -13,7 +13,9 @@ public extension Array {
     
     /// Slices the Array into a sequence of `ArraySlice`s on its nth `deminsion`.
     func sequence(deminsion: Int) -> [ArraySlice<Element>] {
-        //        guard !shape.isEmpty else { return [self[ArrayIndex.All]] }
+        if (isEmpty || isScalar) && deminsion == 0 {
+            return [ArraySlice(baseArray: self)]
+        }
         guard deminsion < rank else { fatalError("An array cannot be sequenced on a deminsion it does not have") }
         
         let viewIndices = Swift.Array(count: rank, repeatedValue: ArrayIndex.All)
@@ -34,7 +36,7 @@ public extension Array {
     /// Slices the Array on its last dimension.
     /// Tends to not be cache friendly...
     var sequenceLast: [ArraySlice<Element>] {
-        return sequence(rank - 1)
+        return sequence(rank != 0 ? rank - 1 : 0)
     }
     
 }
