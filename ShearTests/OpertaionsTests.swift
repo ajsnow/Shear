@@ -74,6 +74,13 @@ class OpertaionsTests: XCTestCase {
         }
     }
     
+    func testEnclose() {
+        // test vecs will be hard for this one since it takes ints instead of [int]
+        XCTAssert(false)
+    }
     
+    func testFlip() {
+        XCTAssert(false)
+    }
     
 }

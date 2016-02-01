@@ -67,8 +67,7 @@ public extension Array {
     /// The number of non-unitary demensions of this Array.
     /// e.g.
     ///     If the Array represents a 3 by 4 matrix, its rank is 2
-    ///     If the Array is a column vector of 5 elements, its rank is 1
-    ///     If the Array is a row vector of 6 elements, its rank is 0
+    ///     If the Array is a vector of 5 elements, its rank is 1
     ///     If the Array is a scalar or the Empty Array, its rank is 0
     var rank: Int {
         return shape.count

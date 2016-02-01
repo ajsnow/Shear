@@ -118,6 +118,6 @@ func makeColumnMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
     }
 }
 
-func divrem(numerator: Int, denominator: Int) -> (dividend: Int, remainder: Int) {
+private func divrem(numerator: Int, denominator: Int) -> (dividend: Int, remainder: Int) {
     return (numerator/denominator, numerator%denominator)
 }
