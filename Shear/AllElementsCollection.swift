@@ -23,7 +23,7 @@ struct AllElementsCollection<A: Array>: CollectionType {
         
         let indexGenerator = makeRowMajorIndexGenerator(array.shape)
         
-        return anyGenerator { () -> A.Element? in
+        return AnyGenerator { () -> A.Element? in
             guard let indices = indexGenerator.next() else { return nil }
             return self.array[indices]
         }
@@ -102,7 +102,7 @@ struct BoundedAccumulator {
 // We reverse that because we need row major order, which means incrementing the rows (indices.first) last.
 func makeRowMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
     var accRev = BoundedAccumulator(bounds: shape.reverse(), onOverflow: .Nil)
-    return anyGenerator { () -> [Int]? in
+    return AnyGenerator { () -> [Int]? in
         let elementRev = accRev.current
         accRev.inc()
         return elementRev?.reverse()
@@ -111,7 +111,7 @@ func makeRowMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
 
 func makeColumnMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
     var accRev = BoundedAccumulator(bounds: shape, onOverflow: .Nil)
-    return anyGenerator { () -> [Int]? in
+    return AnyGenerator { () -> [Int]? in
         let elementRev = accRev.current
         accRev.inc()
         return elementRev

@@ -43,12 +43,12 @@ public enum ArrayIndex: NilLiteralConvertible, IntegerLiteralConvertible, ArrayL
 }
 
 // "RangeLiteralConvertibles" of a sort.
-func ..<(start: Int, end: Int) -> ArrayIndex {
+public func ..<(start: Int, end: Int) -> ArrayIndex {
     precondition(start <= end, "ArrayIndex.Range: start must be less than or equal to end")
     return .Range(start, end)
 }
 
-func ...(start: Int, end: Int) -> ArrayIndex {
+public func ...(start: Int, end: Int) -> ArrayIndex {
     return start ..< end - 1
 }
 

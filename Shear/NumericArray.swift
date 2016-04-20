@@ -55,7 +55,7 @@ public func iota(count: Int) -> DenseArray<Int> {
 
 public protocol NumericArray: Array {
 
-    typealias Element: NumericType
+    associatedtype Element: NumericType
 //    // Elementwise addition
 //    func +(lhs: Self, rhs: Self) -> Self
 //

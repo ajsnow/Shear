@@ -90,7 +90,8 @@ extension ArraySlice {
         }
     }
     
-    private func linearToCartesianIndices(var i: Int) -> [Int] {
+    private func linearToCartesianIndices(index: Int) -> [Int] {
+        var i = index
         var indices = [Int]()
         for s in stride {
             indices.append(i/s)

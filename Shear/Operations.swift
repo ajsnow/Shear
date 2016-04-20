@@ -94,7 +94,7 @@ public extension Array {
     /// Returns a DenseArray whose dimensions are reversed.
     public func transpose() -> DenseArray<Element> {
         let indexGenerator = makeColumnMajorIndexGenerator(shape)
-        let transposedSeq = AnySequence(anyGenerator { () -> Element? in
+        let transposedSeq = AnySequence(AnyGenerator { () -> Element? in
             guard let indices = indexGenerator.next() else { return nil }
             return self[indices]
             })
@@ -163,7 +163,7 @@ public extension Array {
     public func enumerate() -> AnySequence<([Int], Element)> {
         let indexGenerator = makeRowMajorIndexGenerator(shape)
         
-        return AnySequence(anyGenerator {
+        return AnySequence(AnyGenerator {
             guard let indices = indexGenerator.next() else { return nil }
             return (indices, self[indices]) // TODO: Linear indexing is cheaper for DenseArrays. Consider specializing.
             })

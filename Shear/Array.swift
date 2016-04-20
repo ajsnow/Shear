@@ -14,7 +14,7 @@ public protocol Array: CustomStringConvertible {
     // MARK: - Associated Types
     
     /// The type of element stored by this `Array`.
-    typealias Element
+    associatedtype Element
     
     //    /// A collection of `Elements` that constitute an `Array`.
     //    typealias ElementsView = CollectionType // TODO: Not as typesafe as I'd like as there's no typecheck that `ElementsView` generates `Elements`

@@ -58,8 +58,8 @@ public extension Swift.Array {
         return DenseArray(shape: shape, baseArray: self)
     }
     
-    public func rotate(var shift: Int) -> [Generator.Element] {
-        shift = modulo(shift, base: count)
+    public func rotate(s: Int) -> [Generator.Element] {
+        let shift = modulo(s, base: count)
         let back = self[0..<shift]
         let front = self[shift..<count]
         return [Element](front) + back
