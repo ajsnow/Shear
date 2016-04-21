@@ -1,10 +1,6 @@
-//
-//  Products.swift
-//  Shear
-//
-//  Created by Andrew Snow on 7/12/15.
-//  Copyright © 2015 Andrew Snow. All rights reserved.
-//
+// Copyright 2016 The Shear Authors. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 
 import Foundation
 import Accelerate
@@ -21,7 +17,7 @@ infix operator ∙ {} /// Matrix / Dot / Inner Product Operator
 /// Element-wise Multiplication
 public func *<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> DenseArray<A.Element> {
-        return map(left, right, transform: *)
+        return zipMap(left, right, transform: *)
 }
 
 /// Scalar Multiplication
@@ -71,7 +67,7 @@ public func ∙<A: Array, B: Array where A.Element == B.Element, A.Element: Nume
 /// Element-wise Division
 public func /<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> DenseArray<A.Element> {
-        return map(left, right, transform: /)
+        return zipMap(left, right, transform: /)
 }
 
 /// Scalar Division

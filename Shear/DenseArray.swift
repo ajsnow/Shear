@@ -1,10 +1,6 @@
-//
-//  DenseArray.swift
-//  Sheep
-//
-//  Created by Andrew Snow on 7/11/15.
-//  Copyright © 2015 Andrew Snow. All rights reserved.
-//
+// Copyright 2016 The Shear Authors. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 
 import Foundation
 
@@ -111,30 +107,7 @@ extension DenseArray {
     
 }
 
-// MARK: - Init from Array (of Array (...)) of Elements
-extension DenseArray {
-    
-    init(array: [Element]) {
-        shape = [array.count]
-        stride = calculateStride(shape)
-        storage = array
-    }
-    
-    init(array: [[Element]]) { // Need to assert that the count of sub-arrays are equal
-        shape = [array.count, array.first!.count]
-        stride = calculateStride(shape)
-        storage = array.flatMap { $0 }
-    }
-    
-    init(array: [[[Element]]]) { // Need to assert that the count of sub-arrays are equal
-        shape = [array.count, array.first!.count, array.first!.first!.count]
-        stride = calculateStride(shape)
-        storage = array.flatMap { $0 }.flatMap { $0 }
-    }
-    
-}
-
-// MARK: - All Elements Views
+// MARK: - Linear Access
 extension DenseArray {
     
     public var allElements: AnyRandomAccessCollection<Element> {

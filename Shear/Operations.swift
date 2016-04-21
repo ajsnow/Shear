@@ -1,10 +1,6 @@
-//
-//  Operations.swift
-//  Shear
-//
-//  Created by Andrew Snow on 10/18/15.
-//  Copyright © 2015 Andrew Snow. All rights reserved.
-//
+// Copyright 2016 The Shear Authors. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 
 import Foundation
 
@@ -130,7 +126,7 @@ public extension Array {
         // This could be optimized to the following:
         //     return DenseArray(shape: [shape[0] + 1] + shape.dropFirst(), baseArray: [Element](allElements) + [Element](count: shape.dropFirst().reduce(*), repeatedValue: additionalItem))
         // But given all preformance we're leaving on the table elsewhere, it seems silly to break the nice symmetry for an unimportant function.
-        // I've also not benched, so this could turn out to be a pessimization, though that would shock me.
+        // I've also not benchmarked the difference, so this could turn out to be a pessimization, though that would shock me.
     }
     
 }
@@ -271,10 +267,10 @@ public func inner<A: Array, B: Array, X, Y, Z where A.Element == X, B.Element ==
 // MARK: - Multi-Map
 
 /// Returns an Array with the same shape of the inputs, whose elements are the output of the transform applied to pairs of left's & right's elements.
-public func map<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
+public func zipMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
     (left: A, _ right: B, transform: (X, X) throws -> Y) rethrows -> DenseArray<Y> {
         precondition(left.shape == right.shape, "Arrays must have the same shape to map a function element-wise")
-        
+    
         return try DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(transform))
 }
 
@@ -321,11 +317,13 @@ func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
 extension Array {
     
     /// The length of the Array in a particular dimension.
+    /// Safe to call without checking the Array's rank (unlike .shape[d])
     func size(d: Int) -> Int {
         return d < rank ? shape[d] : 1
     }
     
     /// The length of the Array in several dimensions.
+    /// Safe to call without checking the Array's rank (unlike .shape[d])
     func size(ds: [Int]) -> [Int] {
         return ds.map(size)
     }

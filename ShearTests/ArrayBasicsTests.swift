@@ -1,10 +1,6 @@
-//
-//  ArrayOperationsTests.swift
-//  Shear
-//
-//  Created by Andrew Snow on 11/18/15.
-//  Copyright © 2015 Andrew Snow. All rights reserved.
-//
+// Copyright 2016 The Shear Authors. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 
 import XCTest
 import Shear

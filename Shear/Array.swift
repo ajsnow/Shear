@@ -1,10 +1,6 @@
-//
-//  Array.swift
-//  Sheep
-//
-//  Created by Andrew Snow on 6/14/15.
-//  Copyright © 2015 Andrew Snow. All rights reserved.
-//
+// Copyright 2016 The Shear Authors. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 
 import Foundation
 
@@ -13,36 +9,29 @@ public protocol Array: CustomStringConvertible {
     
     // MARK: - Associated Types
     
-    /// The type of element stored by this `Array`.
+    /// The type of elements stored by this `Array`.
     associatedtype Element
     
-    //    /// A collection of `Elements` that constitute an `Array`.
-    //    typealias ElementsView = CollectionType // TODO: Not as typesafe as I'd like as there's no typecheck that `ElementsView` generates `Elements`
-    
-    // MARK: - Initializers
-    
-//    init(shape newShape: [Int], repeatedValue: Element)
-//    init(shape newShape: [Int], baseArray: [Element])
-//    init<A: Array where A.Element == Element>(shape newShape: [Int], baseArray: A)
+    // /// The type of a linear view of the elements stored by this `Array`.
+    // // TODO: As of Swift 2.2, we cannot contrain the CollecitonType's Element to be the same as the Array's Element. According to the mailing list, this ability will land in Swift 3
+    // associatedtype ElementsView: CollectionType
     
     // MARK: - Properties
     
-    /// The shape (lenght in each demision) of this `Array`.
+    /// The shape (length in each demision) of this `Array`. 
+    /// The last element is the count of columns; the first is the count along the `Array`'s highest dimension.
     /// e.g. 
     ///     If the Array is a 3 by 4 matrix, its shape is [3, 4]
-    ///     If the Array is a column vector of 5 elements, its shape is [5, 1]
-    ///     If the Array is a row vector of 6 elements, its shape is [1, 6]
     ///     If The Array is a vector of 7 elements, its shape is [7]
     ///     If the Array is a scalar, its shape is []
-    ///     The Empty Array has an empty shape or at least one 0 in its shape
+    ///     If the Array is empty, its shape is also []
     var shape: [Int] { get }
     
     /// A view that provides a `CollectionType` over all the items stored in the array.
     /// The first element is at the all-zeros index of the array. 
     /// Elements thereafter are in row-major ordering.
-    var allElements: AnyRandomAccessCollection<Element> { get } // TODO: Consider renaming "elementsView" "flatView" "linearView", something else that makes it clear you lose the position information
-    // TODO: we'd prefer the type of allEmements to be a contrainted CollectionType but I'm not sure this currently possible with Swift's typesystem see ElementsView
-    // TODO: we want an enumerate()-like function to return ([index], element) pairs
+    var allElements: AnyRandomAccessCollection<Element> { get }
+    // TODO: Consider renaming "elementsView" "flatView" "linearView", something else that makes it clear you lose the position information
     
     // MARK: - Methods
     
@@ -50,12 +39,11 @@ public protocol Array: CustomStringConvertible {
     
     subscript(indices: [Int]) -> Element { get set }
 
-    // In a 3 array: [Depth, Row, Column]
     subscript(indices: ArrayIndex...) -> ArraySlice<Element> { get }
     
     subscript(indices: [ArrayIndex]) -> ArraySlice<Element> { get }
     
-    subscript(linear linear: Int) -> Element { get set } // We'd prefer all linear indexing happen via .allElements; however, coaxing .allElements into holding a mutable reference to it's value-typed parent is hard, so for the time being, we're doing this.
+    subscript(linear linear: Int) -> Element { get set }
     
     func enumerate() -> AnySequence<([Int], Element)>
 
@@ -101,9 +89,9 @@ public extension Array {
 // MARK: - Not-Really-Equatable-For-Reasons-Beyond-Our-Control
 // We could make an optimized version for DenseArrays that compares shape && storage
 // (which can be faster since native arrays can test if they point to the same underlying buffer).
-// Likewise, ArraySlices equality could check their underlying DenseArrays for equality which could sometimes get the same optimization.
+// Likewise, ArraySlices equality could check their masks & underlying DenseArrays for equality which could sometimes get the same optimization.
 public func ==<A: Array, B: Array where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
-    return left.shape == right.shape && map(left, right, transform: ==).allElements.filter { $0 == false }.isEmpty
+    return left.shape == right.shape && zipMap(left, right, transform: ==).allElements.filter { $0 == false }.isEmpty
 }
 
 public func !=<A: Array, B: Array where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {

@@ -1,15 +1,8 @@
-//
-//  NumericArray.swift
-//  Sheep
-//
-//  Created by Andrew Snow on 7/11/15.
-//  Copyright © 2015 Andrew Snow. All rights reserved.
-//
+// Copyright 2016 The Shear Authors. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
 
 import Foundation
-import Accelerate
-
-// TODO: Consider overload these so that a default type can be inferred.
 
 public func ones<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Element> {
     return DenseArray<Element>(shape: newShape, repeatedValue: 1)
@@ -52,101 +45,3 @@ public func iota(count: Int) -> DenseArray<Int> {
     let range = Range(0..<count)
     return DenseArray(shape: [count], baseArray: range.map { $0 })
 }
-
-public protocol NumericArray: Array {
-
-    associatedtype Element: NumericType
-//    // Elementwise addition
-//    func +(lhs: Self, rhs: Self) -> Self
-//
-//    // Elementwise subtraction
-//    func -(lhs: Self, rhs: Self) -> Self
-//    
-//    // Elementwise multiplication (Hadamard or Schur product)
-//    // OR
-//    // Matrix Multiplication
-//    func *(lhs: Self, rhs: Self) -> Self
-//    func /(lhs: Self, rhs: Self) -> Self
-    
-    
-    // inhereited
-    
-//    func *(lhs: Self, rhs: Self) -> Self
-//    func *(lhs: Self, rhs: NumericArray) -> NumericArray
-//    func *(lhs: NumericArray, rhs: Self) -> NumericArray
-
-//    func *(lhs: Element, rhs: Self) -> Self
-//    func *(lhs: Self, rhs: Element) -> Self
-//    func *=(inout lhs: double2x4, rhs: Double)
-//    func *=(inout lhs: double2x4, rhs: double2x2)
-    
-//    func +(lhs: Self, rhs: Self) -> Self
-//    func +=(inout lhs: Self, rhs: Self)
-//    func -(lhs: Self, rhs: Self) -> Self
-//    prefix func -(rhs: Self) -> Self
-//    func -=(inout lhs: Self, rhs: Self)
-
-}
-
-
-protocol Vector: NumericArray {
-    
-}
-
-protocol Matrix: NumericArray {
-//    var transpose: Matrix { get }
-}
-
-protocol SimdArray {
-//    *
-//    *=
-//    +
-//    +=
-//    -
-//    -=
-//    /
-//    /=
-//    abs
-//    ceil
-//    clamp
-//    cross
-//    distance
-//    distance_squared
-//    dot
-//    floor
-//    fmax
-//    fmin
-//    fract
-//    length
-//    length_squared
-//    max
-//    min
-//    mix
-//    norm_inf
-//    norm_one
-//    normalize
-//    project
-//    recip
-//    reduce_add
-//    reduce_max
-//    reduce_min
-//    reflect
-//    refract
-//    rsqrt
-//    sign
-//    smoothstep
-//    step
-//    trunc
-//    prefix -
-}
-
-//extension double2x4: Array {
-//    public typealias Element = Double
-//    
-//    public var shape: [Int] { return [2, 4] }
-//    public var rank: Int { return 2 }
-//}
-//
-//extension double2x4: NumericArray {
-//    
-//}
