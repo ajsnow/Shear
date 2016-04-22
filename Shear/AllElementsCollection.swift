@@ -38,15 +38,7 @@ struct AllElementsCollection<A: Array>: CollectionType {
     }
     
     subscript(position: Int) -> A.Element {
-        // Calculating the cartesian coordinates for a linear index amount to undoing the dot product of the coordinates with the stride.
-        // While the dot product is in-general not reversible, since the cordinates must always be less than their stride counterparts, in this case, there is always a single correct solution that can be obtained by dividing the remaining portion of linear index by each member in the stride.
-        // N.B. If we changed to column major order, we'd need to reverse the stride and then reverse the result.
-        var position = position
-        var coordinates = Swift.Array(count: self.array.rank, repeatedValue: 0)
-        for (i, s) in stride.enumerate() {
-            (coordinates[i], position) = divrem(position, denominator: s) // Doing this with reduce seems gratuitous.
-        }
-        return self.array[coordinates]
+        return array[linear: position]
     }
     
 }
@@ -116,8 +108,4 @@ func makeColumnMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
         accRev.inc()
         return elementRev
     }
-}
-
-private func divrem(numerator: Int, denominator: Int) -> (dividend: Int, remainder: Int) {
-    return (numerator/denominator, numerator%denominator)
 }
