@@ -58,6 +58,17 @@ public extension Array {
     ///     A.enclose(2, 0, 5) == ⊂[0 2 5]A
     ///     A.enclose(2, 0, 5) != ⊂[2 0 5]A
     public func enclose(axes: Int...) -> DenseArray<ArraySlice<Element>> {
+        return enclose(axes)
+    }
+    
+    // TODO: Supporting the full APL-style axes enclose requires support for general dimensional reodering.
+    /// Encloses the Array upon the `axes` specified, resulting in an Array of Arrays.
+    /// If no `axes` are provided, encloses over the whole Array.
+    /// Enclose is equivilant to APL's enclose when the axes are in accending order.
+    /// i.e.
+    ///     A.enclose([2, 0, 5]) == ⊂[0 2 5]A
+    ///     A.enclose([2, 0, 5]) != ⊂[2 0 5]A
+    public func enclose(axes: [Int]) -> DenseArray<ArraySlice<Element>> {
         guard !axes.isEmpty else { return ([ArraySlice(baseArray: self)] as [ArraySlice<Element>]).ravel() }
         
         let axes = Set(axes).sort() // Filter out any repeated axes.
@@ -77,12 +88,12 @@ public extension Array {
         return DenseArray(shape: newShape, baseArray: subarrays)
     }
     
-    /// Reverse the order of Elements along the first axis
+    /// Reverse the order of Elements along the first axis.
     public func flip() -> DenseArray<Element> {
         return DenseArray(collection: sequenceFirst.reverse())
     }
     
-    /// Reverse the order of Elements along the last axis (columns)
+    /// Reverse the order of Elements along the last axis (columns).
     public func reverse() -> DenseArray<Element> {
         return DenseArray(collectionOnLastAxis: sequenceLast.reverse()) // Pretty sure one could do this much more efficiently with linear indexing.
     }
