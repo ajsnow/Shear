@@ -13,12 +13,13 @@ class DenseArrayTests: XCTestCase {
     let vEvens = iota(4) * 2
     let vOdds = iota(4) * 2 + 1
     let FiveFactorial = iota(120).reshape([1, 2, 3, 1, 4, 5, 1, 1])
+    let Scalar = iota(1)
     
     var allArrays: [DenseArray<Int>] = []
     
     override func setUp() {
         super.setUp()
-        allArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial]
+        allArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
     }
     
     override func tearDown() {
@@ -37,7 +38,8 @@ class DenseArrayTests: XCTestCase {
             [3, 3, 3],
             [4],
             [4],
-            [2, 3, 4, 5]
+            [2, 3, 4, 5],
+            []
         ]
         
         zip(allArrays, correctBehavior).forEach {
@@ -52,7 +54,8 @@ class DenseArrayTests: XCTestCase {
             [Int](0..<27),
             [0, 2, 4, 6],
             [1, 3, 5, 7],
-            [Int](0..<120)
+            [Int](0..<120),
+            [0]
         ]
         
         zip(allArrays, correctBehavior).forEach {
@@ -75,6 +78,7 @@ class DenseArrayTests: XCTestCase {
             [],
             [],
             [([0, 1, 2, 3], 33)],
+            [([], 0)]
         ]
         
         zip(allArrays, spotChecks).forEach { (array, checks) in
@@ -84,8 +88,64 @@ class DenseArrayTests: XCTestCase {
         }
     }
     
-    func testSliceIndexing() {
-        XCTAssert(false)
+    // MARK: - Slicing
+    
+    func testSliceIndexingFull() {
+        let testVec = allArrays.map { $0.shape.map { _ in $ } }
+        
+        zip(allArrays, testVec).forEach { (array, indices) in
+            XCTAssert(array[indices] == array)
+        }
+    }
+    
+    func testSliceIndexingSingular() {
+        // First value
+        let testVec = allArrays.map { $0.shape.map { _ in ArrayIndex.SingleValue(0) } }
+        
+        zip(allArrays, testVec).forEach { (array, indices) in
+            XCTAssert(Array(array[indices].allElements) == [array.allElements.first!])
+        }
+        
+        // Last value
+        let testVec2 = allArrays.map { $0.shape.map { count in ArrayIndex.SingleValue(count - 1) } }
+        
+        zip(allArrays, testVec2).forEach { (array, indices) in
+            XCTAssert(Array(array[indices].allElements) == [array.allElements.last!])
+        }
+        
+        
+        let randish = 893746573 // Arbitrary value that won't change between test runs.
+        let indices = allArrays.map { $0.shape.map { count in randish % count } }
+        let testVec3 = indices.map { $0.map { ArrayIndex.SingleValue($0) } }
+        
+        let values = zip(allArrays, indices).map { $0[$1] }
+        let slices = zip(allArrays, testVec3).map { $0[$1] }
+        
+        zip(slices, values).forEach { (slice, value) in
+            XCTAssert(slice.allElements.first! == value)
+        }
+    }
+    
+    func testSliceIndexingRange() {
+        let testVec = [
+            ([3..<8], (3, 7)),
+            ([0...3, 2..<4], (2, 15)),
+            ([0..<3, 1...1, 1...2], (4, 23)),
+            ([0..<4], (0, 6)),
+            ([1...2], (3, 5)),
+            ([0..<2, 0...2, 2...3, 3..<4], (13, 118)),
+            ([], (0, 0))
+        ]
+        
+        zip(allArrays, testVec).forEach { (array, test) in
+            let slice = array[test.0]
+            XCTAssert(slice.allElements.first == test.1.0)
+            XCTAssert(slice.allElements.last == test.1.1)
+        }
+    }
+    
+    func testSliceIndexingList() {
+        
     }
     
 }
