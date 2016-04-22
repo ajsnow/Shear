@@ -23,8 +23,8 @@ public extension Array {
     }
     
     /// Slices the Array on its first dimension.
-    /// Since our DenseArray is stored in Row-Major order & the row is the last dimension,
-    /// sequencing on the first dimension allows for better memory access patterns than any other sequence.
+    /// Since our DenseArray is stored in Row-Major order, sequencing on the first
+    /// dimension allows for better memory access patterns than any other sequence.
     var sequenceFirst: [ArraySlice<Element>] {
         return sequence(0)
     }
