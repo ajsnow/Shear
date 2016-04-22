@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 import XCTest
-import Shear
+@testable import Shear
 
 class DenseArrayTests: XCTestCase {
     
@@ -28,7 +28,42 @@ class DenseArrayTests: XCTestCase {
     }
     
     func testInits() {
-        XCTAssert(false)
+        let aLonelyNumber = DenseArray(shape: [], repeatedValue: 1)
+        XCTAssert(aLonelyNumber.shape == [])
+        XCTAssert(aLonelyNumber[[] as [Int]] == 1)
+        XCTAssert(aLonelyNumber.isScalar)
+        XCTAssert(aLonelyNumber.scalar! == 1)
+        
+        let eight = DenseArray(shape: [1, 2, 4, 11], repeatedValue: "8")
+        XCTAssert(eight.shape == [2, 4, 11])
+        eight.allElements.forEach {
+            XCTAssert($0 == "8")
+        }
+        
+        let reshape = DenseArray(shape: [1, 11, 1, 8, 1], baseArray: eight)
+        XCTAssert(reshape.shape == [11, 8])
+        reshape.allElements.forEach {
+            XCTAssert($0 == "8")
+        }
+        
+        let slice = Shear.ArraySlice(baseArray: eight)
+        let rereshape = DenseArray(shape: [1, 11, 1, 8, 1], baseArray: slice)
+        XCTAssert(rereshape.shape == [11, 8])
+        rereshape.allElements.forEach {
+            XCTAssert($0 == "8")
+        }
+        
+        let collated = DenseArray(collection: slice.sequenceFirst)
+        XCTAssert(collated.shape == [2, 4, 11])
+        collated.allElements.forEach {
+            XCTAssert($0 == "8")
+        }
+        
+        let recollated = DenseArray(collectionOnLastAxis: slice.sequence(1))
+        XCTAssert(recollated.shape == [2, 11, 4])
+        recollated.allElements.forEach {
+            XCTAssert($0 == "8")
+        }
     }
     
     func testShape() {
