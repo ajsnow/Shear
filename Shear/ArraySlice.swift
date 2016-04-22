@@ -104,7 +104,7 @@ extension ArraySlice {
     
     private func getStorageIndices(indices: [Int]) -> [Int] {
         // First, we check to see if we have the right number of indices to address an element:
-        if indices.count != rank {
+        if !isScalar && indices.count != rank {
             fatalError("Array indices don't match array shape")
         }
         
