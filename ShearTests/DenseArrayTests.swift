@@ -145,7 +145,21 @@ class DenseArrayTests: XCTestCase {
     }
     
     func testSliceIndexingList() {
+        let testVec: [([ArrayIndex], (Int, Int))] = [
+            ([[7, 3]], (7, 3)),
+            ([[0, 3], [2, 3]], (2, 15)),
+            ([[2, 1, 0], [1], [2, 1]], (23, 4)),
+            ([[0, 1, 3]], (0, 6)),
+            ([[1, 2]], (3, 5)),
+            ([[0, 1], [0, 2], [2, 3], [3]], (13, 118)),
+            ([], (0, 0))
+        ]
         
+        zip(allArrays, testVec).forEach { (array, test) in
+            let slice = array[test.0]
+            XCTAssert(slice.allElements.first == test.1.0)
+            XCTAssert(slice.allElements.last == test.1.1)
+        }
     }
     
 }
