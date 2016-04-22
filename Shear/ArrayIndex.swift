@@ -30,7 +30,7 @@ public enum ArrayIndex: NilLiteralConvertible, IntegerLiteralConvertible, ArrayL
         case .SingleValue(let index):
             return index < bound
         case .Range(let startIndex, let endIndex):
-            return startIndex <= endIndex && endIndex < bound
+            return startIndex <= endIndex && endIndex <= bound
         case .List(let indices):
             return indices.filter {$0 >= bound}.isEmpty
         }
@@ -45,7 +45,7 @@ public func ..<(start: Int, end: Int) -> ArrayIndex {
 }
 
 public func ...(start: Int, end: Int) -> ArrayIndex {
-    return start ..< end - 1
+    return start ..< (end + 1)
 }
 
 public let $ = ArrayIndex.All // TODO: decide if this or nil or some other symbol is best to express grabbing all of a dim
