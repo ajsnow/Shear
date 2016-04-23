@@ -5,7 +5,7 @@
 import XCTest
 @testable import Shear
 
-class DenseArrayTests: XCTestCase {
+class ArraySliceTests: XCTestCase {
     
     let iotaVec = iota(8)
     let iotaSq = iota(16).reshape([4, 4])
@@ -15,49 +15,25 @@ class DenseArrayTests: XCTestCase {
     let FiveFactorial = iota(120).reshape([1, 2, 3, 1, 4, 5, 1, 1])
     let Scalar = iota(1)
     
-    var allArrays: [DenseArray<Int>] = []
+    var denseArrays: [DenseArray<Int>] = []
+    var allArrays: [Shear.ArraySlice<Int>] = []
     
     override func setUp() {
         super.setUp()
-        allArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
+        denseArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
+        allArrays = denseArrays.map { ArraySlice(baseArray: $0) }
     }
     
     func testInits() {
-        let aLonelyNumber = DenseArray(shape: [], repeatedValue: 1)
-        XCTAssert(aLonelyNumber.shape == [])
-        XCTAssert(aLonelyNumber[[] as [Int]] == 1)
-        XCTAssert(aLonelyNumber.isScalar)
-        XCTAssert(aLonelyNumber.scalar! == 1)
+        let ba = iota(10).reshape([5, 2])
+        let fda = Shear.ArraySlice(baseArray: ba)
+        let pda = Shear.ArraySlice(baseArray: ba, viewIndices: [$, $])
+        let fsa = Shear.ArraySlice(baseArray: pda)
+        let psa = Shear.ArraySlice(baseArray: fsa, viewIndices: [$, $])
         
-        let eight = DenseArray(shape: [1, 2, 4, 11], repeatedValue: "8")
-        XCTAssert(eight.shape == [2, 4, 11])
-        eight.allElements.forEach {
-            XCTAssert($0 == "8")
-        }
-        
-        let reshape = DenseArray(shape: [1, 11, 1, 8, 1], baseArray: eight)
-        XCTAssert(reshape.shape == [11, 8])
-        reshape.allElements.forEach {
-            XCTAssert($0 == "8")
-        }
-        
-        let slice = Shear.ArraySlice(baseArray: eight)
-        let rereshape = DenseArray(shape: [1, 11, 1, 8, 1], baseArray: slice)
-        XCTAssert(rereshape.shape == [11, 8])
-        rereshape.allElements.forEach {
-            XCTAssert($0 == "8")
-        }
-        
-        let collated = DenseArray(collection: slice.sequenceFirst)
-        XCTAssert(collated.shape == [2, 4, 11])
-        collated.allElements.forEach {
-            XCTAssert($0 == "8")
-        }
-        
-        let recollated = DenseArray(collectionOnLastAxis: slice.sequence(1))
-        XCTAssert(recollated.shape == [2, 11, 4])
-        recollated.allElements.forEach {
-            XCTAssert($0 == "8")
+        let arrays = [fda, pda, fsa, psa]
+        arrays.forEach {
+            XCTAssert($0.shape == [5, 2])
         }
     }
     
@@ -101,7 +77,7 @@ class DenseArrayTests: XCTestCase {
     }
     
     func testLinearIndexAssignment() {
-        var eight = DenseArray(shape: [1, 2, 4, 11], repeatedValue: "8")
+        var eight = DenseArray(shape: [1, 2, 4, 11], repeatedValue: "8")[$, $, $]
         XCTAssert(eight[linear: 55] == "8")
         eight[linear: 55] = "55"
         XCTAssert(eight[linear: 55] == "55")
@@ -126,7 +102,7 @@ class DenseArrayTests: XCTestCase {
     }
     
     func testScalarIndexAssignment() {
-        var eight = DenseArray(shape: [1, 2, 4, 11], repeatedValue: "8")
+        var eight = DenseArray(shape: [1, 2, 4, 11], repeatedValue: "8")[$, $, $]
         XCTAssert(eight[0, 2, 5] == "8")
         eight[0, 2, 5] = "025"
         XCTAssert(eight[0, 2, 5] == "025")
@@ -203,6 +179,31 @@ class DenseArrayTests: XCTestCase {
             let slice = array[test.0]
             XCTAssert(slice.allElements.first == test.1.0)
             XCTAssert(slice.allElements.last == test.1.1)
+        }
+    }
+    
+    func testSliceIndexingBetweenNestedSlices() {
+        let baseArray = iota(3125).reshape([5, 5, 5, 5, 5])
+        let firstSlice = baseArray[$, [4, 1, 3, 2], 1..<4, 4, 0]
+        XCTAssert(firstSlice.shape == [5, 4, 3])
+        
+        let view = [$, 1, 1..<3, [2, 0]]
+        let views = (0..<4).map {
+            [ArrayIndex]((view[$0..<4] + view[0..<$0]).dropLast())
+        }
+        
+        // !!! n.b. this is just codifying the results as they exist so as to detect changes in behavior.
+        // At somepoint, I will need to actually check these results really are _correct_ !!!
+        let expectedResults = [
+            [195, 220, 820, 845, 1445, 1470, 2070, 2095, 2695, 2720].reshape([5, 2]),
+            [845, 795, 1095, 1045].reshape([2, 2]),
+            [1045, 1070, 1095, 1170, 1195, 1220, 1670, 1695, 1720, 1795, 1820, 1845].reshape([2, 2, 3]),
+            [1820, 1445, 1695, 1570, 570, 195, 445, 320].reshape([2, 4]),
+        ]
+        
+        zip(views, expectedResults).forEach { (view, result) in
+            let secondSlice = firstSlice[view]
+            XCTAssert(secondSlice == result)
         }
     }
     

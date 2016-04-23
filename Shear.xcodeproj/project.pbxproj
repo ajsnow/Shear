@@ -24,6 +24,7 @@
 		EBE0D99C1B536BDB0092817E /* MultiplyDivide.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE0D99B1B536BDB0092817E /* MultiplyDivide.swift */; };
 		EBE948C01BD44DBB001A40C8 /* Stride.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE948BF1BD44DBB001A40C8 /* Stride.swift */; };
 		EBEB92C21B77FC660092817E /* ArraySlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEB92C11B77FC660092817E /* ArraySlice.swift */; };
+		EBF74CA41CCABB86006FE242 /* ArraySliceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBF74CA31CCABB86006FE242 /* ArraySliceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 		EBE0D99B1B536BDB0092817E /* MultiplyDivide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultiplyDivide.swift; sourceTree = "<group>"; };
 		EBE948BF1BD44DBB001A40C8 /* Stride.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stride.swift; sourceTree = "<group>"; };
 		EBEB92C11B77FC660092817E /* ArraySlice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArraySlice.swift; sourceTree = "<group>"; };
+		EBF74CA31CCABB86006FE242 /* ArraySliceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArraySliceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +114,7 @@
 			isa = PBXGroup;
 			children = (
 				EB1C614A1B5327380092817E /* DenseArrayTests.swift */,
+				EBF74CA31CCABB86006FE242 /* ArraySliceTests.swift */,
 				EBD9F4E31BFD1B09001A40C8 /* ArrayBasicsTests.swift */,
 				EB8602271BFE8E87001A40C8 /* OpertaionsTests.swift */,
 				EB1C614C1B5327380092817E /* Info.plist */,
@@ -281,6 +284,7 @@
 			files = (
 				EB1C614B1B5327380092817E /* DenseArrayTests.swift in Sources */,
 				EBD9F4E41BFD1B09001A40C8 /* ArrayBasicsTests.swift in Sources */,
+				EBF74CA41CCABB86006FE242 /* ArraySliceTests.swift in Sources */,
 				EB8602281BFE8E87001A40C8 /* OpertaionsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
