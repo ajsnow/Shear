@@ -4,16 +4,12 @@
 
 import Foundation
 
-public enum ArrayIndex: NilLiteralConvertible, IntegerLiteralConvertible, ArrayLiteralConvertible {
+public enum ArrayIndex: IntegerLiteralConvertible, ArrayLiteralConvertible {
     
     case All
     case SingleValue(Int)
     case Range(Int, Int)
     case List([Int])
-    
-    public init(nilLiteral: ()) {
-        self = .All
-    }
     
     public init(integerLiteral value: Int) {
         self = .SingleValue(value)

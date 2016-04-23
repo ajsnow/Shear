@@ -9,7 +9,7 @@ public extension Array {
     
     /// Slices the Array into a sequence of `ArraySlice`s on its nth `deminsion`.
     func sequence(deminsion: Int) -> [ArraySlice<Element>] {
-        if (isEmpty || isScalar) && deminsion == 0 {
+        if (isEmpty || isScalar) && deminsion == 0 { // TODO: Consider making sequencing scalar or empty arrays an error.
             return [ArraySlice(baseArray: self)]
         }
         guard deminsion < rank else { fatalError("An array cannot be sequenced on a deminsion it does not have") }

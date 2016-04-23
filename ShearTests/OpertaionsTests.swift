@@ -75,8 +75,27 @@ class OpertaionsTests: XCTestCase {
         XCTAssert(false)
     }
     
-    func testFlip() {
+    func testFlipReverseTransposeRotate() {
         XCTAssert(false)
     }
     
+    func testAppendConcat() {
+        XCTAssert(false)
+    }
+    
+    func testMaps() {
+        XCTAssert(false)
+    }
+    
+    func testEnumerate() {
+        XCTAssert(false)
+    }
+    
+    func testReduceScan() {
+        XCTAssert(false)
+    }
+    
+    func testOuterInner() {
+        XCTAssert(false)
+    }
 }

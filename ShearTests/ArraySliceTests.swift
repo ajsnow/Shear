@@ -188,8 +188,10 @@ class ArraySliceTests: XCTestCase {
         XCTAssert(firstSlice.shape == [5, 4, 3])
         
         let view = [$, 1, 1..<3, [2, 0]]
+        
+        
         let views = (0..<4).map {
-            [ArrayIndex]((view[$0..<4] + view[0..<$0]).dropLast())
+            Array(view.rotate($0).dropLast())
         }
         
         // !!! n.b. this is just codifying the results as they exist so as to detect changes in behavior.
