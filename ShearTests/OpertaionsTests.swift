@@ -71,31 +71,49 @@ class OpertaionsTests: XCTestCase {
     }
     
     func testEnclose() {
-        // test vecs will be hard for this one since it takes ints instead of [int]
-        XCTAssert(false)
+        allArrays.dropLast().forEach { // we drop the last as enclosing scalar won't be fun.
+            // Empty enclose
+            let enclosedArray = $0.enclose([])
+            XCTAssert(enclosedArray.scalar! == $0)
+            
+            // Enclose with axis
+            let encloseFirst = $0.enclose(0)
+            XCTAssert(encloseFirst.shape == [Int]($0.shape.dropFirst()))
+            XCTAssert(encloseFirst[linear: 0].shape == [$0.shape.first!])
+            print(encloseFirst)
+            let encloseLast = $0.enclose($0.rank - 1)
+            XCTAssert(encloseLast.shape == [Int]($0.shape.dropLast()))
+            XCTAssert(encloseLast[linear: 0].shape == [$0.shape.last!])
+            print(encloseLast)
+        }
+        
+        // multi-axis enclose
+        let multi = FiveFactorial.enclose(1, 2)
+        XCTAssert(multi.shape == [2, 5])
+        XCTAssert(multi[linear: 0].shape == [3, 4])
     }
     
-    func testFlipReverseTransposeRotate() {
-        XCTAssert(false)
-    }
-    
-    func testAppendConcat() {
-        XCTAssert(false)
-    }
-    
-    func testMaps() {
-        XCTAssert(false)
-    }
-    
-    func testEnumerate() {
-        XCTAssert(false)
-    }
-    
-    func testReduceScan() {
-        XCTAssert(false)
-    }
-    
-    func testOuterInner() {
-        XCTAssert(false)
-    }
+//    func testFlipReverseTransposeRotate() {
+//        
+//    }
+//
+//    func testAppendConcat() {
+//        XCTAssert(false)
+//    }
+//    
+//    func testMaps() {
+//        XCTAssert(false)
+//    }
+//    
+//    func testEnumerate() {
+//        XCTAssert(false)
+//    }
+//    
+//    func testReduceScan() {
+//        XCTAssert(false)
+//    }
+//    
+//    func testOuterInner() {
+//        XCTAssert(false)
+//    }
 }
