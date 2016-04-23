@@ -10,7 +10,7 @@ public func +<A: Array, B: Array where A.Element == B.Element, A.Element: Numeri
         return zipMap(left, right, transform: +)
 }
 
-/// Right-scalar Addition
+/// Scalar Addition
 public func +<A: Array, X: NumericType where A.Element == X>
     (left: A, right: X) -> DenseArray<A.Element> {
         return left.map { $0 + right }
@@ -23,12 +23,12 @@ public func +<A: Array, X: NumericType where A.Element == X>
 }
 
 /// Element-wise Subtraction
-private func -<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
+public func -<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> DenseArray<A.Element> {
         return zipMap(left, right, transform: -)
 }
 
-/// Right-scalar Substraction
+/// Scalar Substraction
 public func -<A: Array, X: NumericType where A.Element == X>
     (left: A, right: X) -> DenseArray<A.Element> {
         return left.map { $0 - right }
