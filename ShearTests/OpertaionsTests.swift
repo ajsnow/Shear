@@ -82,11 +82,10 @@ class OpertaionsTests: XCTestCase {
             let encloseFirst = $0.enclose(0)
             XCTAssert(encloseFirst.shape == [Int]($0.shape.dropFirst()))
             XCTAssert(encloseFirst[linear: 0].shape == [$0.shape.first!])
-            print(encloseFirst)
+            
             let encloseLast = $0.enclose($0.rank - 1)
             XCTAssert(encloseLast.shape == [Int]($0.shape.dropLast()))
             XCTAssert(encloseLast[linear: 0].shape == [$0.shape.last!])
-            print(encloseLast)
         }
         
         // multi-axis enclose
@@ -148,10 +147,21 @@ class OpertaionsTests: XCTestCase {
 
     }
 
-//    func testAppendConcat() {
-//        XCTAssert(false)
-//    }
-//    
+    func testAppendConcatLaminateInterpose() {
+        let vEvenOdd = [0, 2, 4, 6, 1, 3, 5, 7, 9999].ravel()
+        XCTAssert(vEvens.append(vOdds).append(9999) == vEvenOdd)
+        XCTAssert(vEvens.concat(vOdds).concat(9999) == vEvenOdd)
+        
+        
+        let iotaRect = iota(9).reshape([3, 3])
+        XCTAssert(iotaCube.append(iotaRect) == [0, 1, 2, 0, 3, 4, 5, 1, 6, 7, 8, 2, 9, 10, 11, 3, 12, 13, 14, 4, 15, 16, 17, 5, 18, 19, 20, 6, 21, 22, 23, 7, 24, 25, 26, 8].reshape([3, 3, 4]))
+        XCTAssert(iotaCube.concat(iotaRect) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 0, 1, 2, 3, 4, 5, 6, 7, 8].reshape([4, 3, 3]))
+        
+        let conIotaRect = iotaRect.laminate(iotaRect).concat(iotaRect)
+        print(iotaCube.laminate(conIotaRect))
+        print(iotaCube.interpose(conIotaRect))
+    }
+
 //    func testMaps() {
 //        XCTAssert(false)
 //    }
