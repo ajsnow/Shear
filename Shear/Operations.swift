@@ -192,7 +192,7 @@ public extension Array {
         }
         
         let slice = rowVector ? sequenceFirst : sequenceLast
-        if let first = slice.first where first.isScalar { // Slice is a [ArraySlice<Element>], we need to know if it's constituent Arrays are themselves scalar.
+        if let first = slice.first where first.isScalar { // Slice is a [ArraySlice<Element>], we need to know if its constituent Arrays are themselves scalar.
             return try transform(slice.map { $0.scalar! }).ravel()
         }
         
