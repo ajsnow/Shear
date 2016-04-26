@@ -176,7 +176,7 @@ public extension Array {
     
 }
 
-// MARK: - Map, VectorMap, Enumerate
+// MARK: - Map, VectorMap, Coordinate
 public extension Array {
     
     /// Maps a `transform` upon each element of the Array returning an Array of the same shape with the results.
@@ -201,7 +201,7 @@ public extension Array {
     }
     
     /// Returns a sequence containing pairs of indices and `Element`s.
-    public func enumerate() -> AnySequence<([Int], Element)> {
+    public func coordinate() -> AnySequence<([Int], Element)> {
         let indexGenerator = makeRowMajorIndexGenerator(shape)
         
         return AnySequence(AnyGenerator {

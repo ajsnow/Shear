@@ -45,7 +45,7 @@ public protocol Array: CustomStringConvertible {
     
     subscript(linear linear: Int) -> Element { get set }
     
-    func enumerate() -> AnySequence<([Int], Element)>
+    func coordinate() -> AnySequence<([Int], Element)>
 
 }
 
