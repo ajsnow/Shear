@@ -173,10 +173,19 @@ class OpertaionsTests: XCTestCase {
         
     }
 
-//    func testEnumerate() {
-//        XCTAssert(false)
-//    }
-//
+    func testCoordinate() {
+        for (i, v) in iota(50).coordinate() {
+            XCTAssert(i == [v])
+        }
+        
+        let stride = calculateStride(FiveFactorial.shape)
+        FiveFactorial.coordinate().forEach { (i, v) in
+            let dot = zip(i, stride).map(*).reduce(+)
+            XCTAssert(dot == v)
+            XCTAssert(FiveFactorial[i] == v)
+        }
+    }
+
 //    func testReduceScan() {
 //        XCTAssert(false)
 //    }
