@@ -186,11 +186,20 @@ class OpertaionsTests: XCTestCase {
         }
     }
 
-//    func testReduceScan() {
-//        XCTAssert(false)
-//    }
-//    
-//    func testOuterInner() {
-//        XCTAssert(false)
-//    }
+    func testReduceScan() {
+        
+    }
+
+    func testOuterInner() {
+        let op = outer(vEvens, vOdds, product: *)
+        XCTAssert(op == [
+            0,  0,  0,  0,
+            2,  6, 10, 14,
+            4, 12, 20, 28,
+            6, 18, 30, 42
+            ].reshape([4, 4]))
+        
+        XCTAssert(inner(vEvens, vOdds, product: *, sum: +).scalar! == 68)
+        XCTAssert(inner(vEvens, vOdds, product: *, sum: +, initialSum: 5).scalar! == 68 + 5)
+    }
 }
