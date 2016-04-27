@@ -18,9 +18,9 @@ public protocol Array: CustomStringConvertible {
     
     // MARK: - Properties
     
-    /// The shape (length in each demision) of this `Array`. 
+    /// The shape (length in each demision) of this `Array`.
     /// The last element is the count of columns; the first is the count along the `Array`'s highest dimension.
-    /// e.g. 
+    /// e.g.
     ///     If the Array is a 3 by 4 matrix, its shape is [3, 4]
     ///     If The Array is a vector of 7 elements, its shape is [7]
     ///     If the Array is a scalar, its shape is []
@@ -28,7 +28,7 @@ public protocol Array: CustomStringConvertible {
     var shape: [Int] { get }
     
     /// A view that provides a `CollectionType` over all the items stored in the array.
-    /// The first element is at the all-zeros index of the array. 
+    /// The first element is at the all-zeros index of the array.
     /// Elements thereafter are in row-major ordering.
     var allElements: AnyRandomAccessCollection<Element> { get }
     // TODO: Consider renaming "elementsView" "flatView" "linearView", something else that makes it clear you lose the position information
@@ -38,7 +38,7 @@ public protocol Array: CustomStringConvertible {
     subscript(indices: Int...) -> Element { get set }
     
     subscript(indices: [Int]) -> Element { get set }
-
+    
     subscript(indices: ArrayIndex...) -> ArraySlice<Element> { get }
     
     subscript(indices: [ArrayIndex]) -> ArraySlice<Element> { get }
@@ -46,7 +46,7 @@ public protocol Array: CustomStringConvertible {
     subscript(linear linear: Int) -> Element { get set }
     
     func coordinate() -> AnySequence<([Int], Element)>
-
+    
 }
 
 // MARK: - Basic informational queries
@@ -65,7 +65,7 @@ public extension Array {
     var isEmpty: Bool {
         return allElements.isEmpty
     }
-
+    
     /// Returns true iff `self` is scalar.
     var isScalar: Bool {
         return !isEmpty && rank == 0
@@ -126,34 +126,15 @@ func aplString<A: Array>(array: A) -> String {
     guard !array.isEmpty else { return "" }
     guard !array.isScalar else { return String(array.scalar!) }
     
-    // Find padding
-    // I don't think this will handle wide character correctly. Sorry, CJK!
-    let paddingCount = array.allElements.lazy.map { String($0) }.maxElement { $0.characters.count < $1.characters.count }?.characters.count ?? 0
-    
-    
-    // Reserve total(-ish) count
-    let elementsCount = Int(array.allElements.count)
-    let whiteSpaceCount = array.shape.reverse().enumerate().map(*).reduce(+) + array.shape.last!
-    // Columns should have a weighted count of 1, not zero, but the reverse enumeration dot-product gets everything else correctly.
-    var str = ""
-    str.reserveCapacity(elementsCount * paddingCount + whiteSpaceCount)
-    
-    func aplString<A: Array>(array: A, inout partialStr: String, paddingCount: Int) {
-        var prevIndices = [Int](count: array.rank, repeatedValue: -1)
-        for (indices, element) in array.coordinate() {
-            let boarders = zip(indices, prevIndices).filter({$0 != $1}).count
-            if boarders == 1 {
-                partialStr.append(" " as Character)
-            } else {
-                let newlines = String(count: boarders - 1, repeatedValue: "\n" as Character)
-                partialStr.appendContentsOf(newlines)
-            }
-            partialStr.appendContentsOf(String(element).leftpad(paddingCount))
-            prevIndices = indices
+    func aplString<A: Array>(array: A, paddingCount: Int) -> String {
+        if array.isVector {
+            return array.allElements.map { String($0).leftpad(paddingCount) }.joinWithSeparator(" ")
         }
+        let newlines = String(count: array.rank - 1, repeatedValue: "\n" as Character)
+        return array.sequenceFirst.map { aplString($0, paddingCount: paddingCount) }.joinWithSeparator(newlines)
     }
     
-    aplString(array, partialStr: &str, paddingCount: paddingCount)
-    
-    return str
+    // I don't think this will handle wide character correctly. Sorry, CJK!
+    let paddingCount = array.allElements.lazy.map { String($0) }.maxElement { $0.characters.count < $1.characters.count }?.characters.count ?? 0
+    return aplString(array, paddingCount: paddingCount)
 }
