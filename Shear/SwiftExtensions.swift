@@ -77,8 +77,25 @@ extension CollectionType where Index.Distance: NumericType {
     
 }
 
-// MARK: - Private helpers
-private func modulo(count: Int, base: Int) -> Int {
+extension String {
+    
+    func leftpad(count: Int, padding: Character = " ") -> String {
+        let paddingCount = count - self.characters.count
+        
+        switch paddingCount {
+        case 0:
+            return self
+        case _ where paddingCount < 0:
+            return self[self.startIndex..<self.startIndex.advancedBy(count)]
+        default:
+            let pad = String(count: paddingCount, repeatedValue: padding)
+            return pad + self
+        }
+    }
+    
+}
+
+func modulo(count: Int, base: Int) -> Int {
     let m = count % base
     return m < 0 ? m + base : m
 }

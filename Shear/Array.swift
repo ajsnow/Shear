@@ -108,7 +108,7 @@ public extension Array {
 }
 
 // When called with the correct args, it returns a string that looks like the nested native array equivalent.
-private func toString<T>(remainingShape: Swift.ArraySlice<Int>, elementGenerator: AnyGenerator<T>) -> String {
+private func toString<A>(remainingShape: Swift.ArraySlice<Int>, elementGenerator: AnyGenerator<A>) -> String {
     guard let length = remainingShape.first else {
         return String(elementGenerator.next()!) // If the number of elements is not the scan-product of the shape, something terrible has already happened.
     }
@@ -118,5 +118,42 @@ private func toString<T>(remainingShape: Swift.ArraySlice<Int>, elementGenerator
         str += ", " + toString(remainingShape.dropFirst(), elementGenerator: elementGenerator)
     }
     str.append(Character("]"))
+    return str
+}
+
+
+func aplString<A: Array>(array: A) -> String {
+    guard !array.isEmpty else { return "" }
+    guard !array.isScalar else { return String(array.scalar!) }
+    
+    // Find padding
+    // I don't think this will handle wide character correctly. Sorry, CJK!
+    let paddingCount = array.allElements.lazy.map { String($0) }.maxElement { $0.characters.count < $1.characters.count }?.characters.count ?? 0
+    
+    
+    // Reserve total(-ish) count
+    let elementsCount = Int(array.allElements.count)
+    let whiteSpaceCount = array.shape.reverse().enumerate().map(*).reduce(+) + array.shape.last!
+    // Columns should have a weighted count of 1, not zero, but the reverse enumeration dot-product gets everything else correctly.
+    var str = ""
+    str.reserveCapacity(elementsCount * paddingCount + whiteSpaceCount)
+    
+    func aplString<A: Array>(array: A, inout partialStr: String, paddingCount: Int) {
+        var prevIndices = [Int](count: array.rank, repeatedValue: -1)
+        for (indices, element) in array.coordinate() {
+            let boarders = zip(indices, prevIndices).filter({$0 != $1}).count
+            if boarders == 1 {
+                partialStr.append(" " as Character)
+            } else {
+                let newlines = String(count: boarders - 1, repeatedValue: "\n" as Character)
+                partialStr.appendContentsOf(newlines)
+            }
+            partialStr.appendContentsOf(String(element).leftpad(paddingCount))
+            prevIndices = indices
+        }
+    }
+    
+    aplString(array, partialStr: &str, paddingCount: paddingCount)
+    
     return str
 }
