@@ -11,7 +11,7 @@ extension SequenceType {
     /// `self`, in turn, i.e. return
     /// `[initial, combine(results[0], self[0]),...combine(results[count-1], self[count-1]]`.
     func scan<T>(initial: T, @noescape combine: (T, Self.Generator.Element) -> T) -> [T] {
-        var results: Swift.Array<T> = [initial]
+        var results: [T] = [initial]
         for (i, v) in self.enumerate() {
             results.append(combine(results[i], v))
         }

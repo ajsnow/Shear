@@ -65,7 +65,7 @@ struct BoundedAccumulator {
     
     init(bounds: [Int], onOverflow: OverflowBehavior) {
         self.bounds = bounds
-        self.current = Swift.Array(count: bounds.count, repeatedValue: 0)
+        self.current = [Int](count: bounds.count, repeatedValue: 0)
         self.onOverflow = onOverflow
     }
     

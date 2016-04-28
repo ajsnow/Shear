@@ -15,10 +15,10 @@ public func zeros<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Ele
 public func eye<Element: NumericType>(count: Int, rank: Int = 2) -> DenseArray<Element> {
     guard rank > 1 else { return DenseArray<Element>(shape: [1], baseArray: [1]) }
     
-    let shape = Swift.Array(count: rank, repeatedValue: count)
+    let shape = [Int](count: rank, repeatedValue: count)
     var array: DenseArray<Element> = zeros(shape: shape)
     for i in 0..<count {
-        let indices = Swift.Array(count: rank, repeatedValue: i)
+        let indices = [Int](count: rank, repeatedValue: i)
         array[indices] = 1
     }
     return array
@@ -29,7 +29,7 @@ public func eye<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Eleme
     let count = newShape.minElement()!
     
     for i in 0..<count {
-        let indices = Swift.Array(count: newShape.count, repeatedValue: i)
+        let indices = [Int](count: newShape.count, repeatedValue: i)
         array[indices] = 1
     }
     

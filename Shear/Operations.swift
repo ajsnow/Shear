@@ -14,7 +14,7 @@ public extension Array {
         }
         guard deminsion < rank else { fatalError("An array cannot be sequenced on a deminsion it does not have") }
         
-        let viewIndices = Swift.Array(count: rank, repeatedValue: ArrayIndex.All)
+        let viewIndices = [ArrayIndex](count: rank, repeatedValue: ArrayIndex.All)
         return (0..<shape[deminsion]).map {
             var nViewIndices = viewIndices
             nViewIndices[deminsion] = .SingleValue($0)
@@ -273,7 +273,7 @@ public extension Array {
 /// The outer product is the result of  all elements of `left` and `right` being `transform`'d.
 public func outer<X, Y, A: Array, B: Array where A.Element == X, B.Element == X>
     (left: A, _ right: B, product: ((X, X) -> Y)) -> DenseArray<Y> {
-        var baseArray = Swift.Array<Y>()
+        var baseArray = [Y]()
         baseArray.reserveCapacity(Int(left.allElements.count * right.allElements.count))
         
         for l in left.allElements {
