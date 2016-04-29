@@ -57,6 +57,7 @@ extension DenseArray {
     }
     
     /// Construct a DenseArray from a `collection` of Arrays.
+    ///
     /// The count of the `collection` is the length of the resulting Array's first axis.
     public init<C: CollectionType, A: Array where
         A.Element == Element,
@@ -79,6 +80,7 @@ extension DenseArray {
     }
     
     /// Construct a DenseArray from a `collection` of Arrays.
+    ///
     /// The count of the `collection` is the length of the resulting Array's last axis.
     public init<C: CollectionType, A: Array where
         A.Element == Element,

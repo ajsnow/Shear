@@ -4,7 +4,7 @@
 
 import Foundation
 
-// MARK: - Requirements
+/// A protocol defining the interface for all multi-dimensional array.
 public protocol Array: CustomStringConvertible {
     
     // MARK: - Associated Types
@@ -20,6 +20,7 @@ public protocol Array: CustomStringConvertible {
     
     /// The shape (length in each demision) of this `Array`.
     /// The last element is the count of columns; the first is the count along the `Array`'s highest dimension.
+    ///
     /// e.g.
     ///     If the Array is a 3 by 4 matrix, its shape is [3, 4]
     ///     If The Array is a vector of 7 elements, its shape is [7]
@@ -28,6 +29,7 @@ public protocol Array: CustomStringConvertible {
     var shape: [Int] { get }
     
     /// A view that provides a `CollectionType` over all the items stored in the array.
+    ///
     /// The first element is at the all-zeros index of the array.
     /// Elements thereafter are in row-major ordering.
     var allElements: AnyRandomAccessCollection<Element> { get }
@@ -35,16 +37,22 @@ public protocol Array: CustomStringConvertible {
     
     // MARK: - Methods
     
+    /// Returns the element for the given set of indices.
     subscript(indices: Int...) -> Element { get set }
     
+    /// Returns the element for the given set of indices.
     subscript(indices: [Int]) -> Element { get set }
     
+    /// Returns an `ArraySlice` view into the base `Array` determined by the set of `ArrayIndex`s.
     subscript(indices: ArrayIndex...) -> ArraySlice<Element> { get }
     
+    /// Returns an `ArraySlice` view into the base `Array` determined by the set of `ArrayIndex`s.
     subscript(indices: [ArrayIndex]) -> ArraySlice<Element> { get }
     
+    /// Returns the element for the given linear index.
     subscript(linear linear: Int) -> Element { get set }
     
+    /// Returns a sequence containing pairs of cartesian indices and `Element`s.
     func coordinate() -> AnySequence<([Int], Element)>
     
 }
@@ -53,6 +61,7 @@ public protocol Array: CustomStringConvertible {
 public extension Array {
     
     /// The number of non-unitary demensions of this Array.
+    ///
     /// e.g.
     ///     If the Array represents a 3 by 4 matrix, its rank is 2
     ///     If the Array is a vector of 5 elements, its rank is 1
@@ -102,6 +111,7 @@ public func !=<A: Array, B: Array where A.Element == B.Element, A.Element: Equat
 public extension Array {
     
     public var description: String {
+        // We add the A{ ... }  to make it easy to spot nested `Arrays`.
         return "A{" + toString(Swift.ArraySlice(shape), elementGenerator: allElements.generate()) + "}"
     }
     
@@ -121,7 +131,7 @@ private func toString<A>(remainingShape: Swift.ArraySlice<Int>, elementGenerator
     return str
 }
 
-
+/// Provides a string similar to the APL printout of a given `Array`.
 func aplString<A: Array>(array: A) -> String {
     guard !array.isEmpty else { return "" }
     guard !array.isScalar else { return String(array.scalar!) }

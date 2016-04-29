@@ -38,10 +38,10 @@ public func ⊗<A: Array, B: Array where A.Element == B.Element, A.Element: Nume
         return outer(left, right, product: *)
 }
 
-/// Cross Product
 // As far as I can tell, no one actually uses a generalized cross product
 // (i.e. N vectors of N+1 length in N+1 space) for anything, so we just
 // support the 3-space case.
+/// Cross Product
 public func ×<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> DenseArray<A.Element> {
         precondition(left.shape == right.shape && left.shape == [3], "Shear only supports 3-space cross products. If you actually want this, we'll happily accept a PR for a generalized algo.")

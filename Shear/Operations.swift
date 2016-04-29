@@ -121,6 +121,7 @@ public extension Array {
     }
     
     /// Returns a DenseArray with the contents of additionalItems appended to the last axis of the Array.
+    ///
     /// e.g.
     ///    1 2 | 5 6 --> 1 2 5 6
     ///    3 4 | 7 8 --> 3 4 7 8
@@ -129,6 +130,7 @@ public extension Array {
     }
     
     /// Returns a DenseArray with the contents of additionalItems concatenated to the first axis of the Array.
+    ///
     /// e.g.
     ///    1 2 | 5 6 --> 1 2
     ///    3 4 | 7 8 --> 3 4
@@ -199,8 +201,8 @@ public extension Array {
         let partialResults = try slice.map { try $0.vectorMap(byRows: rowVector, transform: transform) }
         return rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults)
     }
-    
-    /// Returns a sequence containing pairs of indices and `Element`s.
+
+    /// Returns a sequence containing pairs of cartesian indices and `Element`s.
     public func coordinate() -> AnySequence<([Int], Element)> {
         let indexGenerator = makeRowMajorIndexGenerator(shape)
         
