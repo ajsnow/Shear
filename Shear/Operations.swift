@@ -109,24 +109,12 @@ public extension Array {
     }
     
     /// Returns a DenseArray with the contents of additionalItems appended to the last axis of the Array.
-    /// Note: this addes extra length in all but the last dimension, it does not change the shape.
-    public func append<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
-        return zipVectorMap(self, additionalItems, byRows: true, transform: {$0 + $1})
-    }
-    
-    /// Returns a DenseArray with the contents of additionalItems concatenated to the first axis of the Array.
-    /// Note: this addes extra length in all but the first dimension, it does not change the shape.
-    public func concat<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
-        return zipVectorMap(self, additionalItems, byRows: false, transform: {$0 + $1})
-    }
-    
-    /// Returns a DenseArray with the contents of additionalItems appended to the last axis of the Array.
     ///
     /// e.g.
     ///    1 2 | 5 6 --> 1 2 5 6
     ///    3 4 | 7 8 --> 3 4 7 8
-    public func append(additionalItem: Element) -> DenseArray<Element> {
-        return vectorMap(byRows: true, transform: {$0 + [additionalItem]})
+    public func append<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
+        return zipVectorMap(self, additionalItems, byRows: true, transform: {$0 + $1})
     }
     
     /// Returns a DenseArray with the contents of additionalItems concatenated to the first axis of the Array.
@@ -136,6 +124,16 @@ public extension Array {
     ///    3 4 | 7 8 --> 3 4
     ///                  5 6
     ///                  7 8
+    public func concat<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
+        return zipVectorMap(self, additionalItems, byRows: false, transform: {$0 + $1})
+    }
+    
+    /// Returns a DenseArray with a rank - 1 array of additionalitem appended to the last axis of the Array.
+    public func append(additionalItem: Element) -> DenseArray<Element> {
+        return vectorMap(byRows: true, transform: {$0 + [additionalItem]})
+    }
+    
+    /// Returns a DenseArray with a rank - 1 array of additionalitem concatenated to the first axis of the Array.
     public func concat(additionalItem: Element) -> DenseArray<Element> {
         return vectorMap(byRows: false, transform: {$0 + [additionalItem]})
         // This could be optimized to the following:
