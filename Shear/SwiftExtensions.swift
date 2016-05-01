@@ -45,6 +45,15 @@ extension CollectionType where SubSequence.Generator.Element == Generator.Elemen
     
 }
 
+extension CollectionType where Generator.Element: Comparable {
+    
+    func allEqual() -> Bool {
+        guard let first = self.first else { return true } // An empty array certainly has uniform contents.
+        return !self.contains { $0 != first }
+    }
+    
+}
+
 public extension Swift.Array {
     
     public func ravel() -> DenseArray<Generator.Element> {

@@ -4,44 +4,29 @@
 
 import Foundation
 
-public func ones<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Element> {
-    return DenseArray<Element>(shape: newShape, repeatedValue: 1)
+public func ones<Element: NumericType>(shape newShape: [Int]) -> ComputedArray<Element> {
+    return ComputedArray<Element>(shape: newShape, repeatedValue: 1)
 }
 
-public func zeros<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Element> {
-    return DenseArray<Element>(shape: newShape, repeatedValue: 0)
+public func zeros<Element: NumericType>(shape newShape: [Int]) -> ComputedArray<Element> {
+    return ComputedArray<Element>(shape: newShape, repeatedValue: 0)
 }
 
-public func eye<Element: NumericType>(count: Int, rank: Int = 2) -> DenseArray<Element> {
-    guard rank > 1 else { return DenseArray<Element>(shape: [1], baseArray: [1]) }
+public func eye<Element: NumericType>(count: Int, rank: Int = 2) -> ComputedArray<Element> {
+    guard rank > 1 else { return ones(shape: [1]) }
     
     let shape = [Int](count: rank, repeatedValue: count)
-    var array: DenseArray<Element> = zeros(shape: shape)
-    for i in 0..<count {
-        let indices = [Int](count: rank, repeatedValue: i)
-        array[indices] = 1
-    }
-    return array
+    return ComputedArray(shape: shape, cartesian: { $0.allEqual() ? 1 : 0 })
 }
 
-public func eye<Element: NumericType>(shape newShape: [Int]) -> DenseArray<Element> {
-    var array: DenseArray<Element> = zeros(shape: newShape)
-    let count = newShape.minElement()!
-    
-    for i in 0..<count {
-        let indices = [Int](count: newShape.count, repeatedValue: i)
-        array[indices] = 1
-    }
-    
-    return array
+public func eye<Element: NumericType>(shape newShape: [Int]) -> ComputedArray<Element> {
+    return ComputedArray(shape: newShape, cartesian: { $0.allEqual() ? 1 : 0 })
 }
 
-public func iota<Element: NumericType>(count: Int) -> DenseArray<Element> {
-    let range = Range(0..<count)
-    return DenseArray(shape: [count], baseArray: range.map { $0 as! Element })
+public func iota<Element: NumericType>(count: Int) -> ComputedArray<Element> {
+    return ComputedArray(shape: [count], linear: { Element($0) })
 }
 
-public func iota(count: Int) -> DenseArray<Int> {
-    let range = Range(0..<count)
-    return DenseArray(shape: [count], baseArray: range.map { $0 })
+public func iota(count: Int) -> ComputedArray<Int> {
+    return ComputedArray(shape: [count], linear: { $0 })
 }

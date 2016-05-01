@@ -12,8 +12,8 @@ public struct ArraySlice<T>: Array {
     
     // MARK: - Underlying Storage
     
-    /// The `DenseArray` that serves as the underlying backing storage for this `ArraySlice`.
-    private var storage: DenseArray<Element>
+    /// A type-erased array that serves as the underlying backing storage for this `ArraySlice`.
+    private var storage: ComputedArray<Element>
     
     /// The Swift.Array of `ArrayIndex` that define the view into `storage`.
     private let viewIndices: [ArrayIndex]
@@ -33,24 +33,18 @@ public struct ArraySlice<T>: Array {
 // MARK: - Initializers
 extension ArraySlice {
     
-    /// Construct a ArraySlice from a complete view into `baseArray` by converting it into a DenseArray first.
-    init<A: Array where A.Element == T>(baseArray: A) {
-        let denseArray = DenseArray(shape: baseArray.shape, baseArray: baseArray)
-        self = ArraySlice(baseArray: denseArray)
-    }
-    
     /// Construct a ArraySlice from a complete view into `baseArray`.
-    init(baseArray: DenseArray<Element>) {
-        self = ArraySlice(baseArray: baseArray, viewIndices: [ArrayIndex](count: baseArray.rank, repeatedValue: ArrayIndex.All))
+    init<A: Array where A.Element == Element>(baseArray: A) {
+        self.init(baseArray: baseArray, viewIndices: [ArrayIndex](count: baseArray.rank, repeatedValue: ArrayIndex.All))
     }
     
     /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
-    init(baseArray: DenseArray<Element>, viewIndices: [ArrayIndex]) {
+    init<A: Array where A.Element == Element>(baseArray: A, viewIndices: [ArrayIndex]) {
         guard let shapeAndCompactedView = makeShape(baseArray.shape, view: viewIndices) else {
             fatalError("Invalid bounds for an ArraySlice")
         }
         
-        self.storage = baseArray
+        self.storage = ComputedArray(baseArray)
         self.shape = shapeAndCompactedView.shape
         self.compactedView = shapeAndCompactedView.compactedView
         self.viewIndices = viewIndices
@@ -59,13 +53,13 @@ extension ArraySlice {
     
     /// Construct a ArraySlice from a complete view into `baseArray`.
     init(baseArray: ArraySlice<Element>) {
-        self = ArraySlice(baseArray: baseArray, viewIndices: [ArrayIndex](count: baseArray.rank, repeatedValue: ArrayIndex.All))
+        self.init(baseArray: baseArray, viewIndices: [ArrayIndex](count: baseArray.rank, repeatedValue: ArrayIndex.All))
     }
     
     /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
     init(baseArray: ArraySlice<Element>, viewIndices: [ArrayIndex]) {
         let absoluteViewIndices = transformToAbsoluteViewIndices(baseArray, view: viewIndices)
-        self = ArraySlice(baseArray: baseArray.storage, viewIndices: absoluteViewIndices)
+        self.init(baseArray: baseArray.storage, viewIndices: absoluteViewIndices)
     }
     
 }
@@ -78,12 +72,7 @@ extension ArraySlice {
     }
     
     public subscript(linear linearIndex: Int) -> Element {
-        get {
-            return self[linearToCartesianIndices(linearIndex)]
-        }
-        set (newValue) {
-            self[linearToCartesianIndices(linearIndex)] = newValue
-        }
+        return self[linearToCartesianIndices(linearIndex)]
     }
     
     private func linearToCartesianIndices(index: Int) -> [Int] {
@@ -123,25 +112,13 @@ extension ArraySlice {
     }
     
     public subscript(indices: [Int]) -> Element {
-        get {
-            let storageIndices = getStorageIndices(indices)
-            return storage[storageIndices]
-        }
-        set (newValue) {
-            let storageIndices = getStorageIndices(indices)
-            storage[storageIndices] = newValue
-        }
+        let storageIndices = getStorageIndices(indices)
+        return storage[storageIndices]
     }
     
     public subscript(indices: Int...) -> Element {
-        get {
-            let storageIndices = getStorageIndices(indices)
-            return storage[storageIndices]
-        }
-        set (newValue) {
-            let storageIndices = getStorageIndices(indices)
-            storage[storageIndices] = newValue
-        }
+        let storageIndices = getStorageIndices(indices)
+        return storage[storageIndices]
     }
     
 }

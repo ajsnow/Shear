@@ -38,10 +38,10 @@ public protocol Array: CustomStringConvertible {
     // MARK: - Methods
     
     /// Returns the element for the given set of indices.
-    subscript(indices: Int...) -> Element { get set }
+    subscript(indices: Int...) -> Element { get }
     
     /// Returns the element for the given set of indices.
-    subscript(indices: [Int]) -> Element { get set }
+    subscript(indices: [Int]) -> Element { get }
     
     /// Returns an `ArraySlice` view into the base `Array` determined by the set of `ArrayIndex`s.
     subscript(indices: ArrayIndex...) -> ArraySlice<Element> { get }
@@ -50,10 +50,23 @@ public protocol Array: CustomStringConvertible {
     subscript(indices: [ArrayIndex]) -> ArraySlice<Element> { get }
     
     /// Returns the element for the given linear index.
-    subscript(linear linear: Int) -> Element { get set }
+    subscript(linear linear: Int) -> Element { get }
     
     /// Returns a sequence containing pairs of cartesian indices and `Element`s.
     func coordinate() -> AnySequence<([Int], Element)>
+    
+}
+
+public protocol MutableArray: Array {
+    
+    /// Returns the element for the given set of indices.
+    subscript(indices: Int...) -> Element { get set }
+    
+    /// Returns the element for the given set of indices.
+    subscript(indices: [Int]) -> Element { get set }
+    
+    /// Returns the element for the given linear index.
+    subscript(linear linear: Int) -> Element { get set }
     
 }
 

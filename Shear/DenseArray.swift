@@ -4,7 +4,7 @@
 
 import Foundation
 
-public struct DenseArray<T>: Array {
+public struct DenseArray<T>: Array, MutableArray {
     
     // MARK: - Associated Types
     
@@ -49,6 +49,11 @@ extension DenseArray {
     /// Reshape any Array `baseArray` into a new DenseArray of `shape`.
     public init<A: Array where A.Element == Element>(shape newShape: [Int], baseArray: A) {
         self.init(shape: newShape, baseArray: baseArray.allElements.map {$0})
+    }
+    
+    /// Convert any Array `baseArray` into a new DenseArray of the same `shape`.
+    public init<A: Array where A.Element == Element>(_ baseArray: A) {
+        self.init(shape: baseArray.shape, baseArray: baseArray.allElements.map {$0})
     }
     
     /// Reshape a DenseArray `baseArray` into a new DenseArray of `shape`.
