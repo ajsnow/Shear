@@ -15,7 +15,7 @@ class ArrayBasicsTests: XCTestCase {
     let FiveFactorial = iota(120).reshape([1, 2, 3, 1, 4, 5, 1, 1])
     let Scalar = iota(1)
     
-    var allArrays: [DenseArray<Int>] = []
+    var allArrays: [ComputedArray<Int>] = []
     
     override func setUp() {
         super.setUp()

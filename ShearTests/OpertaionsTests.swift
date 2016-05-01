@@ -15,7 +15,7 @@ class OpertaionsTests: XCTestCase {
     let FiveFactorial = iota(120).reshape([1, 2, 3, 1, 4, 5, 1, 1])
     let Scalar = iota(1)
 
-    var allArrays: [DenseArray<Int>] = []
+    var allArrays: [ComputedArray<Int>] = []
     
     override func setUp() {
         super.setUp()
@@ -23,7 +23,7 @@ class OpertaionsTests: XCTestCase {
     }
     
     func testSequence() {
-        let correctValues: [(Shear.DenseArray<Int>, Shear.DenseArray<Int>)] = [
+        let correctValues: [(Shear.ComputedArray<Int>, Shear.ComputedArray<Int>)] = [
             ([0].ravel(), [7].ravel()),
             ([0, 1, 2, 3].ravel(), [3, 7, 11, 15].ravel()),
             (iota(9).reshape([3, 3]), [2, 5, 8, 11, 14, 17, 20, 23, 26].reshape([3, 3])),
@@ -43,7 +43,7 @@ class OpertaionsTests: XCTestCase {
     func testReshape() {
         let testVectors: [([Int], Shear.DenseArray<Int>)] = [
             ([2, 4], DenseArray(shape: [2, 4], baseArray: iota(8))),
-            ([16], iota(16)),
+            ([16], DenseArray(iota(16))),
             ([1, 3, 1, 1, 1, 9, 1], DenseArray(shape: [3, 9], baseArray: iota(27))),
             ([2, 2], DenseArray(shape: [2, 2], baseArray: [0, 2, 4, 6])),
             ([1, 4], DenseArray(shape: [4, 1], baseArray: [1, 3, 5, 7])),

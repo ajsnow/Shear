@@ -40,13 +40,13 @@ public extension Array {
 // MARK: - APL-look-alikes
 public extension Array {
     
-    /// Returns a new DenseArray with the contents of `self` with `shape`.
-    public func reshape(shape: [Int]) -> DenseArray<Element> {
-        return DenseArray(shape: shape, baseArray: self)
+    /// Returns a new ComputedArray with the contents of `self` with `shape`.
+    public func reshape(shape: [Int]) -> ComputedArray<Element> {
+        return ComputedArray(shape: shape, baseArray: self)
     }
     
     /// Reshapes a new DenseArray with the contents of `self` as a vector.
-    public func ravel() -> DenseArray<Element> {
+    public func ravel() -> ComputedArray<Element> {
         return allElements.ravel()
     }
     
@@ -57,7 +57,7 @@ public extension Array {
     /// i.e.
     ///     A.enclose(2, 0, 5) == ⊂[0 2 5]A
     ///     A.enclose(2, 0, 5) != ⊂[2 0 5]A
-    public func enclose(axes: Int...) -> DenseArray<ArraySlice<Element>> {
+    public func enclose(axes: Int...) -> ComputedArray<ArraySlice<Element>> {
         return enclose(axes)
     }
     
@@ -68,7 +68,7 @@ public extension Array {
     /// i.e.
     ///     A.enclose([2, 0, 5]) == ⊂[0 2 5]A
     ///     A.enclose([2, 0, 5]) != ⊂[2 0 5]A
-    public func enclose(axes: [Int]) -> DenseArray<ArraySlice<Element>> {
+    public func enclose(axes: [Int]) -> ComputedArray<ArraySlice<Element>> {
         guard !axes.isEmpty else { return ([ArraySlice(baseArray: self)] as [ArraySlice<Element>]).ravel() }
         
         let axes = Set(axes).sort() // Filter out any repeated axes.
@@ -85,21 +85,21 @@ public extension Array {
         }
         
         let subarrays = internalIndicesList.map { self[$0] }
-        return DenseArray(shape: newShape, baseArray: subarrays)
+        return ComputedArray(DenseArray(shape: newShape, baseArray: subarrays))
     }
     
     /// Reverse the order of Elements along the first axis.
-    public func flip() -> DenseArray<Element> {
-        return DenseArray(collection: sequenceFirst.reverse())
+    public func flip() -> ComputedArray<Element> {
+        return ComputedArray(DenseArray(collection: sequenceFirst.reverse()))
     }
     
     /// Reverse the order of Elements along the last axis (columns).
-    public func reverse() -> DenseArray<Element> {
-        return DenseArray(collectionOnLastAxis: sequenceLast.reverse()) // Pretty sure one could do this much more efficiently with linear indexing.
+    public func reverse() -> ComputedArray<Element> {
+        return ComputedArray(DenseArray(collectionOnLastAxis: sequenceLast.reverse())) // Pretty sure one could do this much more efficiently with linear indexing.
     }
     
-    /// Returns a DenseArray whose dimensions are reversed.
-    public func transpose() -> DenseArray<Element> {
+    /// Returns a ComputedArray whose dimensions are reversed.
+    public func transpose() -> ComputedArray<Element> {
         let indexGenerator = makeColumnMajorIndexGenerator(shape)
         let transposedSeq = AnySequence(AnyGenerator { () -> Element? in
             guard let indices = indexGenerator.next() else { return nil }
@@ -113,7 +113,7 @@ public extension Array {
     /// e.g.
     ///    1 2 | 5 6 --> 1 2 5 6
     ///    3 4 | 7 8 --> 3 4 7 8
-    public func append<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
+    public func append<A: Array where A.Element == Element>(additionalItems: A) -> ComputedArray<Element> {
         return zipVectorMap(self, additionalItems, byRows: true, transform: {$0 + $1})
     }
     
@@ -124,17 +124,17 @@ public extension Array {
     ///    3 4 | 7 8 --> 3 4
     ///                  5 6
     ///                  7 8
-    public func concat<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
+    public func concat<A: Array where A.Element == Element>(additionalItems: A) -> ComputedArray<Element> {
         return zipVectorMap(self, additionalItems, byRows: false, transform: {$0 + $1})
     }
     
     /// Returns a DenseArray with a rank - 1 array of additionalitem appended to the last axis of the Array.
-    public func append(additionalItem: Element) -> DenseArray<Element> {
+    public func append(additionalItem: Element) -> ComputedArray<Element> {
         return vectorMap(byRows: true, transform: {$0 + [additionalItem]})
     }
     
     /// Returns a DenseArray with a rank - 1 array of additionalitem concatenated to the first axis of the Array.
-    public func concat(additionalItem: Element) -> DenseArray<Element> {
+    public func concat(additionalItem: Element) -> ComputedArray<Element> {
         return vectorMap(byRows: false, transform: {$0 + [additionalItem]})
         // This could be optimized to the following:
         //     return DenseArray(shape: [shape[0] + 1] + shape.dropFirst(), baseArray: [Element](allElements) + [Element](count: shape.dropFirst().reduce(*), repeatedValue: additionalItem))
@@ -146,7 +146,7 @@ public extension Array {
     /// e.g.
     ///    1 2 3 4 | 5 6 7 8 --> 1 2 3 4
     ///                          5 6 7 8
-    public func laminate<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
+    public func laminate<A: Array where A.Element == Element>(additionalItems: A) -> ComputedArray<Element> {
         guard shape == additionalItems.shape else {
             fatalError("Arrays must have same shape to be laminated")
         }
@@ -154,7 +154,7 @@ public extension Array {
         let newShape = [2] as [Int] + shape
         let items = allElements.map { $0 } + additionalItems.allElements.map { $0 }
     
-        return DenseArray(shape: newShape, baseArray: items)
+        return ComputedArray(DenseArray(shape: newShape, baseArray: items))
     }
     
     /// Returns a DenseArray of a higher order by creating a new last axis. Both input arrays must be the same shape.
@@ -163,7 +163,7 @@ public extension Array {
     ///                          2 6
     ///                          3 7
     ///                          4 8
-    public func interpose<A: Array where A.Element == Element>(additionalItems: A) -> DenseArray<Element> {
+    public func interpose<A: Array where A.Element == Element>(additionalItems: A) -> ComputedArray<Element> {
         guard shape == additionalItems.shape else {
             fatalError("Arrays must have same shape to be interposed")
         }
@@ -171,7 +171,7 @@ public extension Array {
         let newShape = shape + [2] as [Int]
         let items = zip(allElements, additionalItems.allElements).reduce([] as [Element]) { $0 + [$1.0, $1.0] }
         
-        return DenseArray(shape: newShape, baseArray: items)
+        return ComputedArray(DenseArray(shape: newShape, baseArray: items))
     }
     
 }
@@ -180,13 +180,13 @@ public extension Array {
 public extension Array {
     
     /// Maps a `transform` upon each element of the Array returning an Array of the same shape with the results.
-    public func map<A>(transform: (Element) throws -> A) rethrows -> DenseArray<A> {
+    public func map<A>(transform: (Element) throws -> A) rethrows -> ComputedArray<A> {
         let baseArray = try self.allElements.map(transform)
-        return DenseArray(shape: self.shape, baseArray: baseArray)
+        return ComputedArray(DenseArray(shape: self.shape, baseArray: baseArray))
     }
     
     /// Maps a `transform` upon a vector of elements from the Array. Either by rows (that is, row vectors of the column-seperated elements) or vectors of first-deminsion-seperated elements.
-    public func vectorMap<A>(byRows rowVector: Bool = true, transform: ([Element]) throws -> [A]) rethrows -> DenseArray<A> {
+    public func vectorMap<A>(byRows rowVector: Bool = true, transform: ([Element]) throws -> [A]) rethrows -> ComputedArray<A> {
         if let s = scalar {
             return try transform([s]).ravel()
         }
@@ -197,7 +197,7 @@ public extension Array {
         }
         
         let partialResults = try slice.map { try $0.vectorMap(byRows: rowVector, transform: transform) }
-        return rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults)
+        return ComputedArray(rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults))
     }
 
     /// Returns a sequence containing pairs of cartesian indices and `Element`s.
@@ -216,52 +216,52 @@ public extension Array {
 public extension Array {
     
     /// Returns a DenseArray whose columns are shifted `count` times.
-    public func rotate(count: Int) -> DenseArray<Element> {
+    public func rotate(count: Int) -> ComputedArray<Element> {
         return vectorMap(byRows: true, transform: {$0.rotate(count)})
     }
     
     /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
-    public func reduce<A>(initial: A, combine: ((A, Element)-> A)) -> DenseArray<A> {
+    public func reduce<A>(initial: A, combine: ((A, Element)-> A)) -> ComputedArray<A> {
         return vectorMap(byRows: true, transform: {[$0.reduce(initial, combine: combine)]})
     }
     
     /// Applies the `combine` upon the last axis of the Array; returning an Array with the last element of `self`'s shape dropped.
-    public func reduce(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+    public func reduce(combine: (Element, Element) -> Element) -> ComputedArray<Element> {
         return vectorMap(byRows: true, transform: {[$0.reduce(combine)]})
     }
     
     /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
-    public func scan<A>(initial: A, combine: (A, Element) -> A) -> DenseArray<A> {
+    public func scan<A>(initial: A, combine: (A, Element) -> A) -> ComputedArray<A> {
         return vectorMap(byRows: true, transform: {$0.scan(initial, combine: combine)})
     }
     
     /// Applies the `combine` upon the last axis of the Array, returning the partial results of it's appplication.
-    public func scan(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+    public func scan(combine: (Element, Element) -> Element) -> ComputedArray<Element> {
         return vectorMap(byRows: true, transform: {$0.scan(combine)})
     }
     
     /// Returns a DenseArray whose first dimension's elements are shifted `count` times.
-    public func rotateFirst(count: Int) -> DenseArray<Element> {
+    public func rotateFirst(count: Int) -> ComputedArray<Element> {
         return vectorMap(byRows: false, transform: {$0.rotate(count)})
     }
     
     /// Applies the `combine` upon the first axis of the Array; returning an Array with the first element of `self`'s shape dropped.
-    public func reduceFirst<A>(initial: A, combine: ((A, Element)-> A)) -> DenseArray<A> {
+    public func reduceFirst<A>(initial: A, combine: ((A, Element)-> A)) -> ComputedArray<A> {
         return vectorMap(byRows: false, transform: {[$0.reduce(initial, combine: combine)]})
     }
     
     /// Applies the `combine` upon the first axis of the Array; returning an Array with the first element of `self`'s shape dropped.
-    public func reduceFirst(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+    public func reduceFirst(combine: (Element, Element) -> Element) -> ComputedArray<Element> {
         return vectorMap(byRows: false, transform: {[$0.reduce(combine)]})
     }
     
     /// Applies the `combine` upon the first axis of the Array, returning the partial results of it's appplication.
-    public func scanFirst<A>(initial: A, combine: (A, Element) -> A) -> DenseArray<A> {
+    public func scanFirst<A>(initial: A, combine: (A, Element) -> A) -> ComputedArray<A> {
         return vectorMap(byRows: false, transform: {$0.scan(initial, combine: combine)})
     }
     
     /// Applies the `combine` upon the first axis of the Array, returning the partial results of it's appplication.
-    public func scanFirst(combine: (Element, Element) -> Element) -> DenseArray<Element> {
+    public func scanFirst(combine: (Element, Element) -> Element) -> ComputedArray<Element> {
         return vectorMap(byRows: false, transform: {$0.scan(combine)})
     }
     
@@ -272,7 +272,7 @@ public extension Array {
 /// Returns the outer product `transform` of `left` and `right`.
 /// The outer product is the result of  all elements of `left` and `right` being `transform`'d.
 public func outer<X, Y, A: Array, B: Array where A.Element == X, B.Element == X>
-    (left: A, _ right: B, product: ((X, X) -> Y)) -> DenseArray<Y> {
+    (left: A, _ right: B, product: ((X, X) -> Y)) -> ComputedArray<Y> {
         var baseArray = [Y]()
         baseArray.reserveCapacity(Int(left.allElements.count * right.allElements.count))
         
@@ -282,46 +282,46 @@ public func outer<X, Y, A: Array, B: Array where A.Element == X, B.Element == X>
             }
         }
         
-        return DenseArray(shape: left.shape + right.shape, baseArray: baseArray)
+        return ComputedArray(DenseArray(shape: left.shape + right.shape, baseArray: baseArray))
 }
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, +)`.
 public func inner<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
-    (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> DenseArray<Y>, sum: (Y, Y) -> Y) -> DenseArray<Y> {
+    (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> ComputedArray<Y>, sum: (Y, Y) -> Y) -> ComputedArray<Y> {
         let enclosedA = left.enclose(left.rank - 1)
         let enclosedB = right.enclose(0)
         
         let outerProduct = outer(enclosedA, enclosedB, product: product)
         let baseArray = outerProduct.allElements.map{ $0.reduce(sum).allElements.map {$0} }.flatMap {$0}
-        return DenseArray(shape: outerProduct.shape, baseArray: baseArray)
+        return ComputedArray(DenseArray(shape: outerProduct.shape, baseArray: baseArray))
 }
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, 0, +)`.
 public func inner<A: Array, B: Array, X, Y, Z where A.Element == X, B.Element == X>
-    (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> DenseArray<Y>, sum: (Z, Y) -> Z, initialSum: Z) -> DenseArray<Z> {
+    (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> ComputedArray<Y>, sum: (Z, Y) -> Z, initialSum: Z) -> ComputedArray<Z> {
         let enclosedA = left.enclose(left.rank - 1)
         let enclosedB = right.enclose(0)
         
         let outerProduct = outer(enclosedA, enclosedB, product: product)
         let baseArray = outerProduct.allElements.map{ $0.reduce(initialSum, combine: sum).allElements.map {$0} }.flatMap {$0}
-        return DenseArray(shape: outerProduct.shape, baseArray: baseArray)
+        return ComputedArray(DenseArray(shape: outerProduct.shape, baseArray: baseArray))
 }
 
 // MARK: - Multi-Map
 
 /// Returns an Array with the same shape of the inputs, whose elements are the output of the transform applied to pairs of left's & right's elements.
 public func zipMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
-    (left: A, _ right: B, transform: (X, X) throws -> Y) rethrows -> DenseArray<Y> {
+    (left: A, _ right: B, transform: (X, X) throws -> Y) rethrows -> ComputedArray<Y> {
         precondition(left.shape == right.shape, "Arrays must have the same shape to map a function element-wise")
     
-        return try DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(transform))
+        return try ComputedArray(DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(transform)))
 }
 
 // Currently not exposed as part of the public API. Not sure it's useful for much else.
 /// Returns an Array with a rank equal to left's and a shape equal to the sums of the shapes (offset by one if byRows = false), whose (row or highest-dimensional) vectors are the output of the transform applied to pairs of left's & right's (row or highest-dimensional) vectors.
-func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> DenseArray<Y> {
+func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> ComputedArray<Y> {
     if rowVector {
         guard (left.rank == right.rank || left.rank == right.rank + 1) &&
             !zip(left.shape.dropLast(), right.shape).contains(!=) else {
@@ -334,7 +334,7 @@ func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
         }
     }
     
-    func internalZipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> DenseArray<Y> {
+    func internalZipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> ComputedArray<Y> {
         if let s = left.scalar, r = right.scalar {
             return try transform([s], [r]).ravel()
         }
@@ -351,10 +351,10 @@ func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
         
         let rslice = rowVector ? right.sequenceFirst : right.sequenceLast
         let partialResults = try zip(slice, rslice).map { try zipVectorMap($0.0, $0.1, byRows: rowVector, transform: transform) }
-        return rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults)
+        return ComputedArray(rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults))
     }
     
-    return try internalZipVectorMap(left, right, byRows: rowVector, transform: transform)
+    return try ComputedArray(internalZipVectorMap(left, right, byRows: rowVector, transform: transform))
 }
 
 

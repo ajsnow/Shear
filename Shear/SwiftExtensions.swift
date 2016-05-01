@@ -56,8 +56,8 @@ extension CollectionType where Generator.Element: Comparable {
 
 public extension Swift.Array {
     
-    public func ravel() -> DenseArray<Generator.Element> {
-        return DenseArray(shape: [Int(count)], baseArray: self)
+    public func ravel() -> ComputedArray<Generator.Element> {
+        return ComputedArray(DenseArray(shape: [Int(count)], baseArray: self))
     }
     
     public func reshape(shape: [Int]) -> DenseArray<Generator.Element> {
@@ -75,13 +75,13 @@ public extension Swift.Array {
 
 extension CollectionType where Index.Distance: NumericType {
     
-    func ravel() -> DenseArray<Generator.Element> {
+    func ravel() -> ComputedArray<Generator.Element> {
         let array = self.map { $0 }
         return array.ravel()
     }
     
-    func reshape(shape: [Int]) -> DenseArray<Generator.Element> {
-        return DenseArray(shape: shape, baseArray: self.map { $0 } )
+    func reshape(shape: [Int]) -> ComputedArray<Generator.Element> {
+        return ComputedArray(DenseArray(shape: shape, baseArray: self.map { $0 } ))
     }
     
 }

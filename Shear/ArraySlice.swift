@@ -205,7 +205,7 @@ private func transformToAbsoluteViewIndices<T>(baseSlice: ArraySlice<T>, view: [
         case .All:
             return g.next()! // If the parent slice is .All in a dimension, than the child's ArrayIndex in that dimension is the only constraint
         case .SingleValue:
-            return $0.1 // On the other hand, if the parent slice is a .SingleValue, it fully determines the relationship to the base DenseArray
+            return $0.1 // On the other hand, if the parent slice is a .SingleValue, it fully determines the relationship to the base Array
                         // However, this code is actually unreachable because singular dimensions are compressed.
         case .List(let list):
             switch g.next()! {

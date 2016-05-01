@@ -20,7 +20,7 @@ class ArraySliceTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        denseArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
+        denseArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar].map { DenseArray($0) }
         allArrays = denseArrays.map { ArraySlice(baseArray: $0) }
     }
     
@@ -76,13 +76,6 @@ class ArraySliceTests: XCTestCase {
         }
     }
     
-    func testLinearIndexAssignment() {
-        var eight = DenseArray(shape: [1, 2, 4, 11], repeatedValue: "8")[$, $, $]
-        XCTAssert(eight[linear: 55] == "8")
-        eight[linear: 55] = "55"
-        XCTAssert(eight[linear: 55] == "55")
-    }
-    
     func testScalarIndexing() {
         let spotChecks = [
             [([0], 0), ([4], 4)],
@@ -99,13 +92,6 @@ class ArraySliceTests: XCTestCase {
                 XCTAssertEqual(array[indices], value)
             }
         }
-    }
-    
-    func testScalarIndexAssignment() {
-        var eight = DenseArray(shape: [1, 2, 4, 11], repeatedValue: "8")[$, $, $]
-        XCTAssert(eight[0, 2, 5] == "8")
-        eight[0, 2, 5] = "025"
-        XCTAssert(eight[0, 2, 5] == "025")
     }
     
     // MARK: - Slicing

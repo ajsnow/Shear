@@ -19,7 +19,7 @@ class DenseArrayTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        allArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
+        allArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar].map { DenseArray($0) }
     }
     
     func testInits() {
