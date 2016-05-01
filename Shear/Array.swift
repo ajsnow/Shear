@@ -112,6 +112,14 @@ public extension Array {
     
 }
 
+public extension Array {
+    
+    func unify() -> ComputedArray<Element> {
+        return ComputedArray(DenseArray(self))
+    }
+    
+}
+
 // MARK: - Not-Really-Equatable-For-Reasons-Beyond-Our-Control
 // We could make an optimized version for DenseArrays that compares shape && storage
 // (which can be faster since native arrays can test if they point to the same underlying buffer).
