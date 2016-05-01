@@ -13,8 +13,8 @@ public struct ComputedArray<T>: Array {
     // MARK: - Underlying Storage
     
     /// The functions called for a given index. One should be defined in terms of the other.
-    private var cartesianFn: [Int] -> Element
-    private var linearFn: Int -> Element
+    private let cartesianFn: [Int] -> Element
+    private let linearFn: Int -> Element
     // These functions perform range checking themselves.
     //
     // The reason we maintain two functions is that some ComputedArrays will be most naturally defined one way or the other so we need both inits.
@@ -23,6 +23,8 @@ public struct ComputedArray<T>: Array {
     // MARK: - Stored Properties
     
     public let shape: [Int]
+    
+    public let unified: Bool
     
     /// The stride needed to index into storage.
     private let stride: [Int]
@@ -44,6 +46,7 @@ extension ComputedArray {
         
         cartesianFn = checkFn(definition, shape: shape)
         linearFn = checkFn(transformFn(definition, stride: stride), count: count)
+        unified = false
     }
     
     public init(shape newShape: [Int], linear definition: Int -> Element) {
@@ -55,6 +58,7 @@ extension ComputedArray {
         
         cartesianFn = checkFn(transformFn(definition, stride: stride), shape: shape)
         linearFn = checkFn(definition, count: count)
+        unified = false
     }
     
     /// Construct a ComputedArray with a `shape` of elements, each initialized to `repeatedValue`.
@@ -67,6 +71,7 @@ extension ComputedArray {
         
         cartesianFn = checkFn({ _ in repeatedValue }, shape: shape)
         linearFn = checkFn({ _ in repeatedValue }, count: count)
+        unified = true
     }
     
     /// Type-erase any Array into a ComputedArray.
@@ -79,6 +84,7 @@ extension ComputedArray {
         
         cartesianFn = { indices in baseArray[indices] }
         linearFn = { index in baseArray[linear: index] }
+        unified = baseArray.unified
     }
     
     /// Type-erase and reshape any Array into a ComputedArray.
@@ -96,6 +102,7 @@ extension ComputedArray {
         let definition = { index in baseArray[linear: index] }
         cartesianFn = checkFn(transformFn(definition, stride: stride), shape: shape)
         linearFn = definition
+        unified = baseArray.unified
     }
 }
 
@@ -107,7 +114,7 @@ extension ComputedArray {
     }
     
     public subscript(linear linearIndex: Int) -> Element {
-        guard indexInBounds(linearIndex, forCount: count) else { fatalError("Array index out of range") }
+        guard checkBounds(linearIndex, forCount: count) else { fatalError("Array index out of range") }
         return linearFn(linearIndex)
     }
     
@@ -117,12 +124,12 @@ extension ComputedArray {
 extension ComputedArray {
     
     public subscript(indices: [Int]) -> Element {
-        guard indicesInBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
+        guard checkBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
         return cartesianFn(indices)
     }
     
     public subscript(indices: Int...) -> Element {
-        guard indicesInBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
+        guard checkBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
         return cartesianFn(indices)
     }
     
@@ -143,14 +150,14 @@ extension ComputedArray {
 
 private func checkFn<A>(cartesianFn: [Int] -> A, shape: [Int]) -> [Int] -> A {
     return { indices in
-        guard indicesInBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
+        guard checkBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
         return cartesianFn(indices)
     }
 }
 
 private func checkFn<A>(linearFn: Int -> A, count: Int) -> Int -> A {
     return { index in
-        guard indexInBounds(index, forCount: count) else { fatalError("Array index out of range") }
+        guard checkBounds(index, forCount: count) else { fatalError("Array index out of range") }
         return linearFn(index)
     }
 }

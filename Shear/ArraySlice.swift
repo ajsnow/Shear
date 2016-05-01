@@ -25,6 +25,8 @@ public struct ArraySlice<T>: Array {
     
     public let shape: [Int]
     
+    public let unified: Bool
+    
     /// The stride needed to index into storage.
     private let stride: [Int]
     
@@ -49,6 +51,13 @@ extension ArraySlice {
         self.compactedView = shapeAndCompactedView.compactedView
         self.viewIndices = viewIndices
         self.stride = calculateStride(shape)
+        self.unified = self.shape == baseArray.shape && !viewIndices.contains {
+            if case .List(_) = $0 { // This is conservative, as the list could be 0..<count or the like.
+                return false
+            } else {
+                return baseArray.unified
+            }
+        }
     }
     
     /// Construct a ArraySlice from a complete view into `baseArray`.

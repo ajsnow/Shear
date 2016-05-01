@@ -37,14 +37,12 @@ func convertIndices(cartesian indices: [Int], stride: [Int]) -> Int {
 }
 
 /// Returns true iff the indicies are within bounds of the given shape.
-func indicesInBounds(indices: [Int], forShape shape: [Int]) -> Bool {
+func checkBounds(indices: [Int], forShape shape: [Int]) -> Bool {
     return indices.count == shape.count &&
-        !zip(indices, shape).contains { index, count in
-        index < 0 || index >= count
-    }
+        !zip(indices, shape).contains { !checkBounds($0, forCount: $1) }
 }
 
 /// Returns true iff the index is within the bounds of a given count.
-func indexInBounds(index: Int, forCount count: Int) -> Bool {
-    return index >= 0 && index < count
+func checkBounds(index: Int, forCount count: Int) -> Bool {
+    return 0 ..< count ~= index
 }

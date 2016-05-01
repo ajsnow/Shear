@@ -35,6 +35,10 @@ public protocol Array: CustomStringConvertible {
     var allElements: AnyRandomAccessCollection<Element> { get }
     // TODO: Consider renaming "elementsView" "flatView" "linearView", something else that makes it clear you lose the position information
     
+    /// Returns true iff Array refers to parts of another array or the wholes of multiple other array.
+    /// I.e. if there's any reason (decreasing memory usage, improving locality) to realloc the array.
+    var unified: Bool { get }
+    
     // MARK: - Methods
     
     /// Returns the element for the given set of indices.

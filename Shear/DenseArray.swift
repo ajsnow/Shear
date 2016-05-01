@@ -19,6 +19,8 @@ public struct DenseArray<T>: Array, MutableArray {
     
     public let shape: [Int]
     
+    public let unified = true
+    
     /// The stride needed to index into storage.
     private let stride: [Int]
 
