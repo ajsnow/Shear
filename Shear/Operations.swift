@@ -45,9 +45,9 @@ public extension Array {
         return ComputedArray(shape: shape, baseArray: self)
     }
     
-    /// Reshapes a new DenseArray with the contents of `self` as a vector.
+    /// Returns a new ComputedArray with the contents of `self` as a vector.
     public func ravel() -> ComputedArray<Element> {
-        return allElements.ravel()
+        return ComputedArray(shape: [Int(allElements.count)], baseArray: self)
     }
     
     // TODO: Supporting the full APL-style axes enclose requires support for general dimensional reodering.
@@ -57,7 +57,7 @@ public extension Array {
     /// i.e.
     ///     A.enclose(2, 0, 5) == ⊂[0 2 5]A
     ///     A.enclose(2, 0, 5) != ⊂[2 0 5]A
-    public func enclose(axes: Int...) -> ComputedArray<ArraySlice<Element>> {
+    public func enclose(axes: Int...) -> ComputedArray<ComputedArray<Element>> {
         return enclose(axes)
     }
     
@@ -68,11 +68,11 @@ public extension Array {
     /// i.e.
     ///     A.enclose([2, 0, 5]) == ⊂[0 2 5]A
     ///     A.enclose([2, 0, 5]) != ⊂[2 0 5]A
-    public func enclose(axes: [Int]) -> ComputedArray<ArraySlice<Element>> {
-        guard !axes.isEmpty else { return ([ArraySlice(baseArray: self)] as [ArraySlice<Element>]).ravel() }
+    public func enclose(axes: [Int]) -> ComputedArray<ComputedArray<Element>> {
+        guard !axes.isEmpty else { return ([ComputedArray(self)] as [ComputedArray<Element>]).ravel() }
         
         let axes = Set(axes).sort() // Filter out any repeated axes.
-        guard !axes.contains({ $0 >= rank }) else { fatalError("No axis can be greater or equal to the rank of the array") }
+        guard !axes.contains({ !checkBounds($0, forCount: rank) }) else { fatalError("All axes must be between 0..<rank") }
         
         let newShape = [Int](shape.enumerate().lazy.filter { !axes.contains($0.index) }.map { $0.element })
         
@@ -84,28 +84,24 @@ public extension Array {
             return internalIndices
         }
         
-        let subarrays = internalIndicesList.map { self[$0] }
-        return ComputedArray(DenseArray(shape: newShape, baseArray: subarrays))
-    }
-    
-    /// Reverse the order of Elements along the first axis.
-    public func flip() -> ComputedArray<Element> {
-        return ComputedArray(DenseArray(collection: sequenceFirst.reverse()))
+        return ComputedArray(shape: newShape, linear: { ComputedArray(self[internalIndicesList[$0]]) })
     }
     
     /// Reverse the order of Elements along the last axis (columns).
     public func reverse() -> ComputedArray<Element> {
-        return ComputedArray(DenseArray(collectionOnLastAxis: sequenceLast.reverse())) // Pretty sure one could do this much more efficiently with linear indexing.
+        return self.vectorMap(byRows: true, transform: { $0.reverse() } )
+    }
+    
+    /// Reverse the order of Elements along the first axis.
+    public func flip() -> ComputedArray<Element> {
+        return self.vectorMap(byRows: false, transform: { $0.reverse() } )
     }
     
     /// Returns a ComputedArray whose dimensions are reversed.
     public func transpose() -> ComputedArray<Element> {
-        let indexGenerator = makeColumnMajorIndexGenerator(shape)
-        let transposedSeq = AnySequence(AnyGenerator { () -> Element? in
-            guard let indices = indexGenerator.next() else { return nil }
-            return self[indices]
-            })
-        return transposedSeq.map { $0 } .reshape(shape.reverse())
+        return ComputedArray(shape: shape.reverse(), cartesian: {indices in
+            self[indices.reverse()]
+        })
     }
     
     /// Returns a DenseArray with the contents of additionalItems appended to the last axis of the Array.
@@ -114,7 +110,24 @@ public extension Array {
     ///    1 2 | 5 6 --> 1 2 5 6
     ///    3 4 | 7 8 --> 3 4 7 8
     public func append<A: Array where A.Element == Element>(additionalItems: A) -> ComputedArray<Element> {
-        return zipVectorMap(self, additionalItems, byRows: true, transform: {$0 + $1})
+        return zipVectorMap(self, additionalItems, byRows: true, transform: { $0 + $1 } )
+        //        guard rank == additionalItems.rank && shape.dropLast().elementsEqual(additionalItems.shape.dropLast()) ||
+        //            rank == additionalItems.rank + 1 && shape.dropLast().elementsEqual(additionalItems.shape) else {
+        //               fatalError("Shape of additionalItems must match the base array in all but the last dimension")
+        //        }
+        //
+        //        var newShape = shape
+        //        newShape[newShape.count - 1] += rank == additionalItems.rank ? additionalItems.shape.last! : 1
+        //        return ComputedArray(shape: newShape, cartesian: { indices in
+        //            if indices.last! < self.shape.last! {
+        //                return self[indices]
+        //            }
+        //            var viewIndices = [Int](indices.dropLast()) + [indices.last! - self.shape.last!] as [Int]
+        //            if self.rank != additionalItems.rank {
+        //                viewIndices = [Int](viewIndices.dropLast())
+        //            }
+        //            return additionalItems[viewIndices]
+        //        })
     }
     
     /// Returns a DenseArray with the contents of additionalItems concatenated to the first axis of the Array.
@@ -150,11 +163,9 @@ public extension Array {
         guard shape == additionalItems.shape else {
             fatalError("Arrays must have same shape to be laminated")
         }
-        
-        let newShape = [2] as [Int] + shape
-        let items = allElements.map { $0 } + additionalItems.allElements.map { $0 }
-    
-        return ComputedArray(DenseArray(shape: newShape, baseArray: items))
+        let left = ComputedArray(self)
+        let right = ComputedArray(additionalItems) // type erase both so we can put them in an array.
+        return ([left, right] as [ComputedArray<Element>]).ravel().disclose()
     }
     
     /// Returns a DenseArray of a higher order by creating a new last axis. Both input arrays must be the same shape.
@@ -167,11 +178,35 @@ public extension Array {
         guard shape == additionalItems.shape else {
             fatalError("Arrays must have same shape to be interposed")
         }
-        
-        let newShape = shape + [2] as [Int]
-        let items = zip(allElements, additionalItems.allElements).reduce([] as [Element]) { $0 + [$1.0, $1.1] }
-        
-        return ComputedArray(DenseArray(shape: newShape, baseArray: items))
+        let left = ComputedArray(self)
+        let right = ComputedArray(additionalItems) // type erase both so we can put them in an array.
+        return ([left, right] as [ComputedArray<Element>]).ravel().discloseFirst()
+    }
+    
+}
+
+public extension Array where Element: Array {
+    
+    func discloseEager() -> ComputedArray<Element.Element> {
+        let newShape = shape + self.allElements.first!.shape
+        let baseArray = self.allElements.flatMap { $0.allElements }
+        return ComputedArray(DenseArray(shape: newShape, baseArray: baseArray))
+    }
+    
+    func disclose() -> ComputedArray<Element.Element> {
+        let newShape = shape + self.allElements.first!.shape
+        return ComputedArray(shape: newShape, cartesian: { indices in
+            let subArray = self[[Int](indices[0..<self.rank])]
+            return subArray[[Int](indices[self.rank..<indices.count])]
+        })
+    }
+    
+    func discloseFirst() -> ComputedArray<Element.Element> {
+        let newShape = self.allElements.first!.shape + shape
+        return ComputedArray(shape: newShape, cartesian: { indices in
+            let subArray = self[[Int](indices[indices.count - self.rank..<indices.count])]
+            return subArray[[Int](indices[0..<indices.count - self.rank])]
+        })
     }
     
 }
@@ -180,17 +215,22 @@ public extension Array {
 public extension Array {
     
     /// Maps a `transform` upon each element of the Array returning an Array of the same shape with the results.
+    ///
+    /// If transform is a throwing function, we compute the result eagerly.
     public func map<A>(transform: (Element) throws -> A) rethrows -> ComputedArray<A> {
         let baseArray = try self.allElements.map(transform)
         return ComputedArray(DenseArray(shape: self.shape, baseArray: baseArray))
     }
     
+    /// Maps a `transform` upon each element of the Array returning an Array of the same shape with the results.
+    public func map<A>(transform: (Element) -> A) -> ComputedArray<A> {
+        return ComputedArray(shape: self.shape, linear: { transform(self[linear: $0]) } )
+    }
+    
     /// Maps a `transform` upon a vector of elements from the Array. Either by rows (that is, row vectors of the column-seperated elements) or vectors of first-deminsion-seperated elements.
+    ///
+    /// If transform is a throwing function, we compute the result eagerly.
     public func vectorMap<A>(byRows rowVector: Bool = true, transform: ([Element]) throws -> [A]) rethrows -> ComputedArray<A> {
-        if let s = scalar {
-            return try transform([s]).ravel()
-        }
-        
         let slice = rowVector ? sequenceFirst : sequenceLast
         if let first = slice.first where first.isScalar { // Slice is a [ArraySlice<Element>], we need to know if its constituent Arrays are themselves scalar.
             return try transform(slice.map { $0.scalar! }).ravel()
@@ -199,7 +239,13 @@ public extension Array {
         let partialResults = try slice.map { try $0.vectorMap(byRows: rowVector, transform: transform) }
         return ComputedArray(rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults))
     }
-
+    
+    /// Maps a `transform` upon a vector of elements from the Array. Either by rows (that is, row vectors of the column-seperated elements) or vectors of first-deminsion-seperated elements.
+    public func vectorMap<A>(byRows rowVector: Bool = true, transform: ([Element]) -> [A]) -> ComputedArray<A> {
+        let enclosed = enclose(rowVector ? [rank-1] : [0]).map { transform([Element]($0.allElements)).ravel() }
+        return rowVector ? enclosed.disclose() : enclosed.discloseFirst()
+    }
+    
     /// Returns a sequence containing pairs of cartesian indices and `Element`s.
     public func coordinate() -> AnySequence<([Int], Element)> {
         let indexGenerator = makeRowMajorIndexGenerator(shape)
@@ -273,71 +319,65 @@ public extension Array {
 /// The outer product is the result of  all elements of `left` and `right` being `transform`'d.
 public func outer<X, Y, A: Array, B: Array where A.Element == X, B.Element == X>
     (left: A, _ right: B, product: ((X, X) -> Y)) -> ComputedArray<Y> {
-        var baseArray = [Y]()
-        baseArray.reserveCapacity(Int(left.allElements.count * right.allElements.count))
-        
-        for l in left.allElements {
-            for r in right.allElements {
-                baseArray.append(product(l, r))
-            }
-        }
-        
-        return ComputedArray(DenseArray(shape: left.shape + right.shape, baseArray: baseArray))
+    return ComputedArray(shape: left.shape + right.shape, cartesian: { indices in
+        let l = left[[Int](indices[0..<left.rank])]
+        let r = right[[Int](indices[left.rank..<indices.count])]
+        return product(l, r) // This one looks a lot slower than the eager version...
+    })
 }
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, +)`.
 public func inner<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
-    (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> ComputedArray<Y>, sum: (Y, Y) -> Y) -> ComputedArray<Y> {
-        let enclosedA = left.enclose(left.rank - 1)
-        let enclosedB = right.enclose(0)
-        
-        let outerProduct = outer(enclosedA, enclosedB, product: product)
-        let baseArray = outerProduct.allElements.map{ $0.reduce(sum).allElements.map {$0} }.flatMap {$0}
-        return ComputedArray(DenseArray(shape: outerProduct.shape, baseArray: baseArray))
+    (left: A, _ right: B, product: (ComputedArray<X>, ComputedArray<X>) -> ComputedArray<Y>, sum: (Y, Y) -> Y) -> ComputedArray<Y> {
+    return outer(left.enclose(left.rank - 1), right.enclose(0), product: product).map { $0.reduce(sum).scalar! }
 }
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, 0, +)`.
 public func inner<A: Array, B: Array, X, Y, Z where A.Element == X, B.Element == X>
-    (left: A, _ right: B, product: (ArraySlice<X>, ArraySlice<X>) -> ComputedArray<Y>, sum: (Z, Y) -> Z, initialSum: Z) -> ComputedArray<Z> {
-        let enclosedA = left.enclose(left.rank - 1)
-        let enclosedB = right.enclose(0)
-        
-        let outerProduct = outer(enclosedA, enclosedB, product: product)
-        let baseArray = outerProduct.allElements.map{ $0.reduce(initialSum, combine: sum).allElements.map {$0} }.flatMap {$0}
-        return ComputedArray(DenseArray(shape: outerProduct.shape, baseArray: baseArray))
+    (left: A, _ right: B, product: (ComputedArray<X>, ComputedArray<X>) -> ComputedArray<Y>, sum: (Z, Y) -> Z, initialSum: Z) -> ComputedArray<Z> {
+    return outer(left.enclose(left.rank - 1), right.enclose(0), product: product).map { $0.reduce(initialSum, combine: sum).scalar! }
 }
 
 // MARK: - Multi-Map
 
 /// Returns an Array with the same shape of the inputs, whose elements are the output of the transform applied to pairs of left's & right's elements.
+///
+/// If the transform can throw, we must evaluate it eagerly.
 public func zipMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
     (left: A, _ right: B, transform: (X, X) throws -> Y) rethrows -> ComputedArray<Y> {
-        precondition(left.shape == right.shape, "Arrays must have the same shape to map a function element-wise")
+    precondition(left.shape == right.shape, "Arrays must have the same shape to map a function element-wise")
     
-        return try ComputedArray(DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(transform)))
+    return try ComputedArray(DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(transform)))
+}
+
+/// Returns an Array with the same shape of the inputs, whose elements are the output of the transform applied to pairs of left's & right's elements.
+public func zipMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
+    (left: A, _ right: B, transform: (X, X) -> Y) -> ComputedArray<Y> {
+    precondition(left.shape == right.shape, "Arrays must have the same shape to map a function element-wise")
+    
+    return ComputedArray(shape: left.shape, linear: { transform(left[linear: $0], right[linear: $0]) })
 }
 
 // Currently not exposed as part of the public API. Not sure it's useful for much else.
-/// Returns an Array with a rank equal to left's and a shape equal to the sums of the shapes (offset by one if byRows = false), whose (row or highest-dimensional) vectors are the output of the transform applied to pairs of left's & right's (row or highest-dimensional) vectors.
+// Returns an Array with a rank equal to left's and a shape equal to the sums of the shapes (offset by one if byRows = false), whose (row or highest-dimensional) vectors are the output of the transform applied to pairs of left's & right's (row or highest-dimensional) vectors.
+//
+// Throwing transforms require eagar-ish computation.
 func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> ComputedArray<Y> {
     if rowVector {
-        guard (left.rank == right.rank || left.rank == right.rank + 1) &&
-            !zip(left.shape.dropLast(), right.shape).contains(!=) else {
-                fatalError("Shape of additionalItems must match the base array in all but the last dimension")
+        guard left.rank == right.rank     && left.shape.dropLast().elementsEqual(right.shape.dropLast()) ||
+            left.rank == right.rank + 1 && left.shape.dropLast().elementsEqual(right.shape) else {
+                fatalError("Shape of the right array must match the left array in all but the last dimension")
         }
     } else {
-        guard (left.rank == right.rank && !zip(left.shape.dropFirst(), right.shape.dropFirst()).contains(!=)) ||
-            (left.rank == right.rank + 1 && !zip(left.shape.dropFirst(), right.shape).contains(!=)) else {
-                fatalError("Shape of additionalItems must match the base array in all but the first dimension")
+        guard left.rank == right.rank     && left.shape.dropFirst().elementsEqual(right.shape.dropFirst()) ||
+            left.rank == right.rank + 1 && left.shape.dropFirst().elementsEqual(right.shape) else {
+                fatalError("Shape of the right array must match the left array in all but the first dimension")
         }
     }
     
     func internalZipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> ComputedArray<Y> {
-        if let s = left.scalar, r = right.scalar {
-            return try transform([s], [r]).ravel()
-        }
         
         let slice = rowVector ? left.sequenceFirst : left.sequenceLast
         if let first = slice.first where first.isScalar { // Slice is a [ArraySlice<Element>], we need to know if it's constituent Arrays are themselves scalar.
@@ -350,13 +390,38 @@ func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
         }
         
         let rslice = rowVector ? right.sequenceFirst : right.sequenceLast
-        let partialResults = try zip(slice, rslice).map { try zipVectorMap($0.0, $0.1, byRows: rowVector, transform: transform) }
-        return ComputedArray(rowVector ? DenseArray(collection: partialResults) : DenseArray(collectionOnLastAxis: partialResults))
+        let partialResults = try zip(slice, rslice).map { try internalZipVectorMap($0.0, $0.1, byRows: rowVector, transform: transform) }.ravel()
+        return rowVector ? partialResults.disclose() : partialResults.discloseFirst()
     }
     
     return try ComputedArray(internalZipVectorMap(left, right, byRows: rowVector, transform: transform))
 }
 
+// Currently not exposed as part of the public API. Not sure it's useful for much else.
+// Returns an Array with a rank equal to left's and a shape equal to the sums of the shapes (offset by one if byRows = false), whose (row or highest-dimensional) vectors are the output of the transform applied to pairs of left's & right's (row or highest-dimensional) vectors.
+func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) -> [Y]) -> ComputedArray<Y> {
+    if rowVector {
+        guard left.rank == right.rank     && left.shape.dropLast().elementsEqual(right.shape.dropLast()) ||
+            left.rank == right.rank + 1 && left.shape.dropLast().elementsEqual(right.shape) else {
+                fatalError("Shape of the right array must match the left array in all but the last dimension")
+        }
+    } else {
+        guard left.rank == right.rank     && left.shape.dropFirst().elementsEqual(right.shape.dropFirst()) ||
+            left.rank == right.rank + 1 && left.shape.dropFirst().elementsEqual(right.shape) else {
+                fatalError("Shape of the right array must match the left array in all but the first dimension")
+        }
+    }
+    let sameShape = left.shape == right.shape
+    
+    let enclosedLeft = left.enclose(rowVector ? [left.rank-1] : [0])
+    let enclosedRight = sameShape ?
+        right.enclose(rowVector ? [right.rank-1] : [0]) :
+        right.map { ([$0] as [B.Element]).ravel() }
+    let enclosed = zipMap(enclosedLeft, enclosedRight) { l, r in
+        transform([X](l.allElements), [X](r.allElements)).ravel()
+    }
+    return rowVector ? enclosed.disclose() : enclosed.discloseFirst()
+}
 
 
 extension Array {
