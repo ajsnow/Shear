@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		EB03C3FE1BD43A40001A40C8 /* Operations.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB03C3FD1BD43A40001A40C8 /* Operations.swift */; };
+		EB03C3FE1BD43A40001A40C8 /* Pair.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB03C3FD1BD43A40001A40C8 /* Pair.swift */; };
 		EB1C613F1B5327380092817E /* Shear.h in Headers */ = {isa = PBXBuildFile; fileRef = EB1C613E1B5327380092817E /* Shear.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB1C61461B5327380092817E /* Shear.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB1C613B1B5327380092817E /* Shear.framework */; };
 		EB1C614B1B5327380092817E /* DenseArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C614A1B5327380092817E /* DenseArrayTests.swift */; };
@@ -17,6 +17,11 @@
 		EB1C615C1B5327BC0092817E /* NumericMisc.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C615B1B5327BC0092817E /* NumericMisc.swift */; };
 		EB3ED7CD1B78811C0092817E /* ArrayIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */; };
 		EB77109E1BA8B0D4006FE242 /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77109D1BA8B0D4006FE242 /* SwiftExtensions.swift */; };
+		EB77C9D61CD81514006FE242 /* EncloseDisclose.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77C9D51CD81514006FE242 /* EncloseDisclose.swift */; };
+		EB77C9D81CD8158D006FE242 /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77C9D71CD8158D006FE242 /* Sequence.swift */; };
+		EB77C9DA1CD815F8006FE242 /* Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77C9D91CD815F8006FE242 /* Transform.swift */; };
+		EB77C9DC1CD81646006FE242 /* Merge.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77C9DB1CD81646006FE242 /* Merge.swift */; };
+		EB77C9DF1CD816F2006FE242 /* MapReduceScan.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77C9DE1CD816F2006FE242 /* MapReduceScan.swift */; };
 		EB8602281BFE8E87001A40C8 /* OpertaionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB8602271BFE8E87001A40C8 /* OpertaionsTests.swift */; };
 		EBA365331BAFC2BE0092817E /* AllElementsCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA365321BAFC2BE0092817E /* AllElementsCollection.swift */; };
 		EBC220E81CD5B03F006FE242 /* ComputedArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC220E71CD5B03F006FE242 /* ComputedArray.swift */; };
@@ -39,7 +44,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		EB03C3FD1BD43A40001A40C8 /* Operations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Operations.swift; sourceTree = "<group>"; };
+		EB03C3FD1BD43A40001A40C8 /* Pair.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pair.swift; sourceTree = "<group>"; };
 		EB1C613B1B5327380092817E /* Shear.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Shear.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB1C613E1B5327380092817E /* Shear.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Shear.h; sourceTree = "<group>"; };
 		EB1C61401B5327380092817E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -52,6 +57,11 @@
 		EB1C615B1B5327BC0092817E /* NumericMisc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumericMisc.swift; sourceTree = "<group>"; };
 		EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayIndex.swift; sourceTree = "<group>"; };
 		EB77109D1BA8B0D4006FE242 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
+		EB77C9D51CD81514006FE242 /* EncloseDisclose.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncloseDisclose.swift; sourceTree = "<group>"; };
+		EB77C9D71CD8158D006FE242 /* Sequence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sequence.swift; sourceTree = "<group>"; };
+		EB77C9D91CD815F8006FE242 /* Transform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transform.swift; sourceTree = "<group>"; };
+		EB77C9DB1CD81646006FE242 /* Merge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Merge.swift; sourceTree = "<group>"; };
+		EB77C9DE1CD816F2006FE242 /* MapReduceScan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapReduceScan.swift; sourceTree = "<group>"; };
 		EB8602271BFE8E87001A40C8 /* OpertaionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpertaionsTests.swift; sourceTree = "<group>"; };
 		EBA365321BAFC2BE0092817E /* AllElementsCollection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllElementsCollection.swift; sourceTree = "<group>"; };
 		EBC220E71CD5B03F006FE242 /* ComputedArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComputedArray.swift; sourceTree = "<group>"; };
@@ -124,6 +134,19 @@
 			path = ShearTests;
 			sourceTree = "<group>";
 		};
+		EB77C9DD1CD816AA006FE242 /* Operations */ = {
+			isa = PBXGroup;
+			children = (
+				EB77C9D51CD81514006FE242 /* EncloseDisclose.swift */,
+				EB77C9DE1CD816F2006FE242 /* MapReduceScan.swift */,
+				EB77C9DB1CD81646006FE242 /* Merge.swift */,
+				EB03C3FD1BD43A40001A40C8 /* Pair.swift */,
+				EB77C9D71CD8158D006FE242 /* Sequence.swift */,
+				EB77C9D91CD815F8006FE242 /* Transform.swift */,
+			);
+			name = Operations;
+			sourceTree = "<group>";
+		};
 		EBA365301BAFC0D80092817E /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -131,7 +154,7 @@
 				EBEB92C11B77FC660092817E /* ArraySlice.swift */,
 				EBC220E71CD5B03F006FE242 /* ComputedArray.swift */,
 				EB1C61571B53275E0092817E /* DenseArray.swift */,
-				EB03C3FD1BD43A40001A40C8 /* Operations.swift */,
+				EB77C9DD1CD816AA006FE242 /* Operations */,
 			);
 			name = Core;
 			sourceTree = "<group>";
@@ -269,15 +292,20 @@
 				EB1C61561B5327500092817E /* Array.swift in Sources */,
 				EBE0D99A1B5368BE0092817E /* AddSubtract.swift in Sources */,
 				EBE948C01BD44DBB001A40C8 /* Util.swift in Sources */,
+				EB77C9DC1CD81646006FE242 /* Merge.swift in Sources */,
+				EB77C9D61CD81514006FE242 /* EncloseDisclose.swift in Sources */,
 				EB3ED7CD1B78811C0092817E /* ArrayIndex.swift in Sources */,
-				EB03C3FE1BD43A40001A40C8 /* Operations.swift in Sources */,
+				EB03C3FE1BD43A40001A40C8 /* Pair.swift in Sources */,
 				EBC220E81CD5B03F006FE242 /* ComputedArray.swift in Sources */,
 				EBEB92C21B77FC660092817E /* ArraySlice.swift in Sources */,
+				EB77C9D81CD8158D006FE242 /* Sequence.swift in Sources */,
 				EBA365331BAFC2BE0092817E /* AllElementsCollection.swift in Sources */,
 				EB1C615A1B5327B20092817E /* NumericType.swift in Sources */,
 				EBE0D99C1B536BDB0092817E /* MultiplyDivide.swift in Sources */,
+				EB77C9DA1CD815F8006FE242 /* Transform.swift in Sources */,
 				EB1C61581B53275E0092817E /* DenseArray.swift in Sources */,
 				EB1C615C1B5327BC0092817E /* NumericMisc.swift in Sources */,
+				EB77C9DF1CD816F2006FE242 /* MapReduceScan.swift in Sources */,
 				EB77109E1BA8B0D4006FE242 /* SwiftExtensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

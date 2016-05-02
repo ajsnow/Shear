@@ -110,6 +110,18 @@ public extension Array {
         return rank == 1
     }
     
+    /// The length of the Array in a particular dimension.
+    /// Safe to call without checking the Array's rank (unlike .shape[d])
+    func size(d: Int) -> Int {
+        return d < rank ? shape[d] : 1
+    }
+    
+    /// The length of the Array in several dimensions.
+    /// Safe to call without checking the Array's rank (unlike .shape[d])
+    func size(ds: [Int]) -> [Int] {
+        return ds.map(size)
+    }
+    
 }
 
 public extension Array {
