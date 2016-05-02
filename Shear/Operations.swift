@@ -169,7 +169,7 @@ public extension Array {
         }
         
         let newShape = shape + [2] as [Int]
-        let items = zip(allElements, additionalItems.allElements).reduce([] as [Element]) { $0 + [$1.0, $1.0] }
+        let items = zip(allElements, additionalItems.allElements).reduce([] as [Element]) { $0 + [$1.0, $1.1] }
         
         return ComputedArray(DenseArray(shape: newShape, baseArray: items))
     }
