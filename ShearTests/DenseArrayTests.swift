@@ -24,7 +24,7 @@ class DenseArrayTests: XCTestCase {
     
     func testInits() {
         let aLonelyNumber = DenseArray(shape: [], repeatedValue: 1)
-        XCTAssert(aLonelyNumber.shape == [])
+        XCTAssert(aLonelyNumber.shape.isEmpty)
         XCTAssert(aLonelyNumber[[] as [Int]] == 1)
         XCTAssert(aLonelyNumber.isScalar)
         XCTAssert(aLonelyNumber.scalar! == 1)

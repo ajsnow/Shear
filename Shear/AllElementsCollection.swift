@@ -9,10 +9,12 @@ struct AllElementsCollection<A: Array>: CollectionType {
     
     let array: A
     let stride: [Int]
+    let count: Int
     
     init(array: A) {
         self.array = array
         stride = calculateStride(array.shape)
+        count = array.shape.isEmpty ? 1 : array.shape.reduce(*)
     }
     
     func generate() -> AnyGenerator<A.Element> {
@@ -23,10 +25,6 @@ struct AllElementsCollection<A: Array>: CollectionType {
             guard let indices = indexGenerator.next() else { return nil }
             return self.array[indices]
         }
-    }
-    
-    var count: Int {
-        return array.shape.isEmpty ? 1 : array.shape.reduce(*)
     }
     
     var startIndex: Int {
