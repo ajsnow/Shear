@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 import XCTest
-@testable import Shear
+import Shear
 
 class DenseArrayTests: XCTestCase {
     
@@ -41,7 +41,7 @@ class DenseArrayTests: XCTestCase {
             XCTAssert($0 == "8")
         }
         
-        let slice = Shear.ArraySlice(baseArray: eight)
+        let slice = Shear.ComputedArray(eight)
         let rereshape = DenseArray(shape: [1, 11, 1, 8, 1], baseArray: slice)
         XCTAssert(rereshape.shape == [11, 8])
         rereshape.allElements.forEach {

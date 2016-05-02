@@ -4,7 +4,7 @@
 
 import Foundation
 
-extension SequenceType {
+public extension SequenceType {
     
     /// Return the array of partial results of repeatedly calling `combine` with an
     /// accumulated value initialized to `initial` and each element of
@@ -21,7 +21,7 @@ extension SequenceType {
 }
 
 // We could have defined these on sequence types, but this definition is much nicer
-extension CollectionType where SubSequence.Generator.Element == Generator.Element {
+public extension CollectionType where SubSequence.Generator.Element == Generator.Element {
     
     func reduce(@noescape combine: (Generator.Element, Generator.Element) -> Generator.Element) -> Generator.Element {
         guard !isEmpty else { fatalError("CollectionType must have at least one element to be self-reduced") }
@@ -60,8 +60,8 @@ public extension Swift.Array {
         return ComputedArray(DenseArray(shape: [Int(count)], baseArray: self))
     }
     
-    public func reshape(shape: [Int]) -> DenseArray<Generator.Element> {
-        return DenseArray(shape: shape, baseArray: self)
+    public func reshape(shape: [Int]) -> ComputedArray<Generator.Element> {
+        return ComputedArray(DenseArray(shape: shape, baseArray: self))
     }
     
     public func rotate(s: Int) -> [Generator.Element] {
