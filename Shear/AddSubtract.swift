@@ -7,7 +7,7 @@ import Foundation
 /// Element-wise Addition
 public func +<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> ComputedArray<A.Element> {
-        return zipMap(left, right, transform: +)
+        return zip(left, right).map(+)
 }
 
 /// Scalar Addition
@@ -25,7 +25,7 @@ public func +<A: Array, X: NumericType where A.Element == X>
 /// Element-wise Subtraction
 public func -<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> ComputedArray<A.Element> {
-        return zipMap(left, right, transform: -)
+        return zip(left, right).map(-)
 }
 
 /// Scalar Substraction

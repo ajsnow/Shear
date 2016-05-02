@@ -125,7 +125,7 @@ public extension Array {
 // (which can be faster since native arrays can test if they point to the same underlying buffer).
 // Likewise, ArraySlices equality could check their masks & underlying DenseArrays for equality which could sometimes get the same optimization.
 public func ==<A: Array, B: Array where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
-    return left.shape == right.shape && zipMap(left, right, transform: ==).allElements.filter { $0 == false }.isEmpty
+    return left.shape == right.shape && zip(left, right).map(==).allElements.filter { $0 == false }.isEmpty
 }
 
 public func !=<A: Array, B: Array where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {

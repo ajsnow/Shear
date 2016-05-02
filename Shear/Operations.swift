@@ -317,8 +317,8 @@ public extension Array {
 
 /// Returns the outer product `transform` of `left` and `right`.
 /// The outer product is the result of  all elements of `left` and `right` being `transform`'d.
-public func outer<X, Y, A: Array, B: Array where A.Element == X, B.Element == X>
-    (left: A, _ right: B, product: ((X, X) -> Y)) -> ComputedArray<Y> {
+public func outer<A: Array, B: Array, C>
+    (left: A, _ right: B, product: (A.Element, B.Element) -> C) -> ComputedArray<C> {
     return ComputedArray(shape: left.shape + right.shape, cartesian: { indices in
         let l = left[[Int](indices[0..<left.rank])]
         let r = right[[Int](indices[left.rank..<indices.count])]
@@ -328,43 +328,30 @@ public func outer<X, Y, A: Array, B: Array where A.Element == X, B.Element == X>
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, +)`.
-public func inner<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
-    (left: A, _ right: B, product: (ComputedArray<X>, ComputedArray<X>) -> ComputedArray<Y>, sum: (Y, Y) -> Y) -> ComputedArray<Y> {
+public func inner<A: Array, B: Array, C>(left: A, _ right: B, product: (ComputedArray<A.Element>, ComputedArray<B.Element>) -> ComputedArray<C>, sum: (C, C) -> C) -> ComputedArray<C> {
     return outer(left.enclose(left.rank - 1), right.enclose(0), product: product).map { $0.reduce(sum).scalar! }
 }
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, 0, +)`.
-public func inner<A: Array, B: Array, X, Y, Z where A.Element == X, B.Element == X>
-    (left: A, _ right: B, product: (ComputedArray<X>, ComputedArray<X>) -> ComputedArray<Y>, sum: (Z, Y) -> Z, initialSum: Z) -> ComputedArray<Z> {
+public func inner<A: Array, B: Array, C, D>(left: A, _ right: B, product: (ComputedArray<A.Element>, ComputedArray<B.Element>) -> ComputedArray<C>, sum: (D, C) -> D, initialSum: D) -> ComputedArray<D> {
     return outer(left.enclose(left.rank - 1), right.enclose(0), product: product).map { $0.reduce(initialSum, combine: sum).scalar! }
 }
 
 // MARK: - Multi-Map
 
-/// Returns an Array with the same shape of the inputs, whose elements are the output of the transform applied to pairs of left's & right's elements.
-///
-/// If the transform can throw, we must evaluate it eagerly.
-public func zipMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
-    (left: A, _ right: B, transform: (X, X) throws -> Y) rethrows -> ComputedArray<Y> {
-    precondition(left.shape == right.shape, "Arrays must have the same shape to map a function element-wise")
+/// Returns a ComputedArray with pairs of left's and right's elements at each index.
+public func zip<A: Array, B: Array>(left: A, _ right: B) -> ComputedArray<(A.Element, B.Element)> {
+    precondition(left.shape == right.shape, "Arrays must have the same shape to zip")
     
-    return try ComputedArray(DenseArray(shape: left.shape, baseArray: zip(left.allElements, right.allElements).map(transform)))
-}
-
-/// Returns an Array with the same shape of the inputs, whose elements are the output of the transform applied to pairs of left's & right's elements.
-public func zipMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
-    (left: A, _ right: B, transform: (X, X) -> Y) -> ComputedArray<Y> {
-    precondition(left.shape == right.shape, "Arrays must have the same shape to map a function element-wise")
-    
-    return ComputedArray(shape: left.shape, linear: { transform(left[linear: $0], right[linear: $0]) })
+    return ComputedArray(shape: left.shape, linear: { (left[linear: $0], right[linear: $0]) })
 }
 
 // Currently not exposed as part of the public API. Not sure it's useful for much else.
 // Returns an Array with a rank equal to left's and a shape equal to the sums of the shapes (offset by one if byRows = false), whose (row or highest-dimensional) vectors are the output of the transform applied to pairs of left's & right's (row or highest-dimensional) vectors.
 //
 // Throwing transforms require eagar-ish computation.
-func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> ComputedArray<Y> {
+func zipVectorMap<A: Array, B: Array, C>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([A.Element], [B.Element]) throws -> [C]) rethrows -> ComputedArray<C> {
     if rowVector {
         guard left.rank == right.rank     && left.shape.dropLast().elementsEqual(right.shape.dropLast()) ||
             left.rank == right.rank + 1 && left.shape.dropLast().elementsEqual(right.shape) else {
@@ -377,7 +364,7 @@ func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
         }
     }
     
-    func internalZipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) throws -> [Y]) rethrows -> ComputedArray<Y> {
+    func internalZipVectorMap<A: Array, B: Array, C>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([A.Element], [B.Element]) throws -> [C]) rethrows -> ComputedArray<C> {
         
         let slice = rowVector ? left.sequenceFirst : left.sequenceLast
         if let first = slice.first where first.isScalar { // Slice is a [ArraySlice<Element>], we need to know if it's constituent Arrays are themselves scalar.
@@ -399,7 +386,7 @@ func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
 
 // Currently not exposed as part of the public API. Not sure it's useful for much else.
 // Returns an Array with a rank equal to left's and a shape equal to the sums of the shapes (offset by one if byRows = false), whose (row or highest-dimensional) vectors are the output of the transform applied to pairs of left's & right's (row or highest-dimensional) vectors.
-func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([X], [X]) -> [Y]) -> ComputedArray<Y> {
+func zipVectorMap<A: Array, B: Array, C, AA, BB where A.Element == AA, B.Element == BB>(left: A, _ right: B, byRows rowVector: Bool = true, transform: ([AA], [BB]) -> [C]) -> ComputedArray<C> {
     if rowVector {
         guard left.rank == right.rank     && left.shape.dropLast().elementsEqual(right.shape.dropLast()) ||
             left.rank == right.rank + 1 && left.shape.dropLast().elementsEqual(right.shape) else {
@@ -417,8 +404,10 @@ func zipVectorMap<A: Array, B: Array, X, Y where A.Element == X, B.Element == X>
     let enclosedRight = sameShape ?
         right.enclose(rowVector ? [right.rank-1] : [0]) :
         right.map { ([$0] as [B.Element]).ravel() }
-    let enclosed = zipMap(enclosedLeft, enclosedRight) { l, r in
-        transform([X](l.allElements), [X](r.allElements)).ravel()
+    let enclosed = zip(enclosedLeft, enclosedRight).map { (l, r) -> ComputedArray<C> in
+        let ll = [AA](l.allElements)
+        let rr = [BB](r.allElements)
+        return transform(ll, rr).ravel()
     }
     return rowVector ? enclosed.disclose() : enclosed.discloseFirst()
 }

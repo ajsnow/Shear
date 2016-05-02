@@ -17,7 +17,7 @@ infix operator ∙ {} /// Matrix / Dot / Inner Product Operator
 /// Element-wise Multiplication
 public func *<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> ComputedArray<A.Element> {
-        return zipMap(left, right, transform: *)
+        return zip(left, right).map(*)
 }
 
 /// Scalar Multiplication
@@ -67,7 +67,7 @@ public func ∙<A: Array, B: Array where A.Element == B.Element, A.Element: Nume
 /// Element-wise Division
 public func /<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> ComputedArray<A.Element> {
-        return zipMap(left, right, transform: /)
+        return zip(left, right).map(/)
 }
 
 /// Scalar Division
