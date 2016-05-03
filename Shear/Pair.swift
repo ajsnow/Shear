@@ -74,7 +74,7 @@ func zipVectorMap<A: TensorProtocol, B: TensorProtocol, C>(left: A, _ right: B, 
         return rowVector ? partialResults.disclose() : partialResults.discloseFirst()
     }
     
-    return try Tensor(internalZipVectorMap(left, right, byRows: rowVector, transform: transform))
+    return try internalZipVectorMap(left, right, byRows: rowVector, transform: transform)
 }
 
 // Currently not exposed as part of the public API. Not sure it's useful for much else.
