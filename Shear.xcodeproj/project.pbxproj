@@ -10,9 +10,8 @@
 		EB03C3FE1BD43A40001A40C8 /* Pair.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB03C3FD1BD43A40001A40C8 /* Pair.swift */; };
 		EB1C613F1B5327380092817E /* Shear.h in Headers */ = {isa = PBXBuildFile; fileRef = EB1C613E1B5327380092817E /* Shear.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB1C61461B5327380092817E /* Shear.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB1C613B1B5327380092817E /* Shear.framework */; };
-		EB1C614B1B5327380092817E /* DenseTensorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C614A1B5327380092817E /* DenseTensorTests.swift */; };
+		EB1C614B1B5327380092817E /* TensorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C614A1B5327380092817E /* TensorTests.swift */; };
 		EB1C61561B5327500092817E /* TensorProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C61551B5327500092817E /* TensorProtocol.swift */; };
-		EB1C61581B53275E0092817E /* DenseTensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C61571B53275E0092817E /* DenseTensor.swift */; };
 		EB1C615A1B5327B20092817E /* NumericType.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C61591B5327B20092817E /* NumericType.swift */; };
 		EB1C615C1B5327BC0092817E /* NumericMisc.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C615B1B5327BC0092817E /* NumericMisc.swift */; };
 		EB3ED7CD1B78811C0092817E /* ArrayIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */; };
@@ -49,10 +48,9 @@
 		EB1C613E1B5327380092817E /* Shear.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Shear.h; sourceTree = "<group>"; };
 		EB1C61401B5327380092817E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EB1C61451B5327380092817E /* ShearTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShearTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		EB1C614A1B5327380092817E /* DenseTensorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = DenseTensorTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		EB1C614A1B5327380092817E /* TensorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = TensorTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		EB1C614C1B5327380092817E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EB1C61551B5327500092817E /* TensorProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = TensorProtocol.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		EB1C61571B53275E0092817E /* DenseTensor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DenseTensor.swift; sourceTree = "<group>"; };
 		EB1C61591B5327B20092817E /* NumericType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumericType.swift; sourceTree = "<group>"; };
 		EB1C615B1B5327BC0092817E /* NumericMisc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumericMisc.swift; sourceTree = "<group>"; };
 		EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayIndex.swift; sourceTree = "<group>"; };
@@ -64,7 +62,7 @@
 		EB77C9D91CD815F8006FE242 /* Transform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transform.swift; sourceTree = "<group>"; };
 		EB77C9DB1CD81646006FE242 /* Merge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Merge.swift; sourceTree = "<group>"; };
 		EB77C9DE1CD816F2006FE242 /* MapReduceScan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapReduceScan.swift; sourceTree = "<group>"; };
-		EB8602271BFE8E87001A40C8 /* OpertaionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpertaionsTests.swift; sourceTree = "<group>"; };
+		EB8602271BFE8E87001A40C8 /* OpertaionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = OpertaionsTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		EBA365321BAFC2BE0092817E /* AllElementsCollection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllElementsCollection.swift; sourceTree = "<group>"; };
 		EBC220E71CD5B03F006FE242 /* Tensor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Tensor.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		EBD9F4E31BFD1B09001A40C8 /* TensorBasicsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = TensorBasicsTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -129,7 +127,7 @@
 		EB1C61491B5327380092817E /* ShearTests */ = {
 			isa = PBXGroup;
 			children = (
-				EB1C614A1B5327380092817E /* DenseTensorTests.swift */,
+				EB1C614A1B5327380092817E /* TensorTests.swift */,
 				EBF74CA31CCABB86006FE242 /* TensorSliceTests.swift */,
 				EBD9F4E31BFD1B09001A40C8 /* TensorBasicsTests.swift */,
 				EB8602271BFE8E87001A40C8 /* OpertaionsTests.swift */,
@@ -154,10 +152,9 @@
 		EBA365301BAFC0D80092817E /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				EB1C61551B5327500092817E /* TensorProtocol.swift */,
-				EBEB92C11B77FC660092817E /* TensorSlice.swift */,
 				EBC220E71CD5B03F006FE242 /* Tensor.swift */,
-				EB1C61571B53275E0092817E /* DenseTensor.swift */,
+				EBEB92C11B77FC660092817E /* TensorSlice.swift */,
+				EB1C61551B5327500092817E /* TensorProtocol.swift */,
 				EB77C9DD1CD816AA006FE242 /* Operations */,
 			);
 			name = Core;
@@ -307,7 +304,6 @@
 				EB1C615A1B5327B20092817E /* NumericType.swift in Sources */,
 				EBE0D99C1B536BDB0092817E /* MultiplyDivide.swift in Sources */,
 				EB77C9DA1CD815F8006FE242 /* Transform.swift in Sources */,
-				EB1C61581B53275E0092817E /* DenseTensor.swift in Sources */,
 				EB1C615C1B5327BC0092817E /* NumericMisc.swift in Sources */,
 				EB77C9DF1CD816F2006FE242 /* MapReduceScan.swift in Sources */,
 				EB77109E1BA8B0D4006FE242 /* SwiftExtensions.swift in Sources */,
@@ -318,7 +314,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EB1C614B1B5327380092817E /* DenseTensorTests.swift in Sources */,
+				EB1C614B1B5327380092817E /* TensorTests.swift in Sources */,
 				EBD9F4E41BFD1B09001A40C8 /* TensorBasicsTests.swift in Sources */,
 				EBF74CA41CCABB86006FE242 /* TensorSliceTests.swift in Sources */,
 				EB8602281BFE8E87001A40C8 /* OpertaionsTests.swift in Sources */,

@@ -15,13 +15,13 @@ class TensorSliceTests: XCTestCase {
     let FiveFactorial = iota(120).reshape([1, 2, 3, 1, 4, 5, 1, 1])
     let Scalar = iota(1)
     
-    var denseTensors: [DenseTensor<Int>] = []
+    var computedTensors: [Tensor<Int>] = []
     var allTensors: [Shear.TensorSlice<Int>] = []
     
     override func setUp() {
         super.setUp()
-        denseTensors = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar].map { DenseTensor($0) }
-        allTensors = denseTensors.map { TensorSlice(baseTensor: $0) }
+        computedTensors = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
+        allTensors = computedTensors.map { TensorSlice(baseTensor: $0) }
     }
     
     func testInits() {

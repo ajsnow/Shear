@@ -127,7 +127,7 @@ public extension TensorProtocol {
 public extension TensorProtocol {
     
     func unify() -> Tensor<Element> {
-        return Tensor(DenseTensor(self))
+        return Tensor(shape: shape, values: [Element](allElements))
     }
     
 }

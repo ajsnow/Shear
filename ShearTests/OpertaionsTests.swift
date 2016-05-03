@@ -41,12 +41,12 @@ class OpertaionsTests: XCTestCase {
     }
     
     func testReshape() {
-        let testVectors: [([Int], Shear.DenseTensor<Int>)] = [
-            ([2, 4], DenseTensor(shape: [2, 4], baseTensor: iota(8))),
-            ([16], DenseTensor(iota(16))),
-            ([1, 3, 1, 1, 1, 9, 1], DenseTensor(shape: [3, 9], baseTensor: iota(27))),
-            ([2, 2], DenseTensor(shape: [2, 2], baseTensor: [0, 2, 4, 6])),
-            ([1, 4], DenseTensor(shape: [4, 1], baseTensor: [1, 3, 5, 7])),
+        let testVectors: [([Int], Shear.Tensor<Int>)] = [
+            ([2, 4], Tensor(shape: [2, 4], tensor: iota(8))),
+            ([16], iota(16)),
+            ([1, 3, 1, 1, 1, 9, 1], Tensor(shape: [3, 9], tensor: iota(27))),
+            ([2, 2], Tensor(shape: [2, 2], values: [0, 2, 4, 6])),
+            ([1, 4], Tensor(shape: [4, 1], values: [1, 3, 5, 7])),
         ]
         
         zip(allTensors, testVectors).forEach {

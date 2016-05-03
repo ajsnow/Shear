@@ -5,7 +5,7 @@
 import XCTest
 import Shear
 
-class DenseTensorTests: XCTestCase {
+class TensorTests: XCTestCase {
     
     let iotaVec = iota(8)
     let iotaSq = iota(16).reshape([4, 4])
@@ -15,50 +15,54 @@ class DenseTensorTests: XCTestCase {
     let FiveFactorial = iota(120).reshape([1, 2, 3, 1, 4, 5, 1, 1])
     let Scalar = iota(1)
     
-    var allTensors: [DenseTensor<Int>] = []
+    var allTensors: [Tensor<Int>] = []
     
     override func setUp() {
         super.setUp()
-        allTensors = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar].map { DenseTensor($0) }
+        allTensors = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
     }
     
     func testInits() {
-        let aLonelyNumber = DenseTensor(shape: [], repeatedValue: 1)
-        XCTAssert(aLonelyNumber.shape.isEmpty)
-        XCTAssert(aLonelyNumber[[] as [Int]] == 1)
-        XCTAssert(aLonelyNumber.isScalar)
-        XCTAssert(aLonelyNumber.scalar! == 1)
-        
-        let eight = DenseTensor(shape: [1, 2, 4, 11], repeatedValue: "8")
-        XCTAssert(eight.shape == [2, 4, 11])
-        eight.allElements.forEach {
-            XCTAssert($0 == "8")
+        let six = Tensor(shape: [1, 1, 2, 1, 3, 1], repeatedValue: "Six")
+        XCTAssert(six.shape == [2, 3])
+        XCTAssert(six.allElements.count == 6)
+        for str in six.allElements {
+            XCTAssert(str == "Six")
         }
         
-        let reshape = DenseTensor(shape: [1, 11, 1, 8, 1], baseTensor: eight)
-        XCTAssert(reshape.shape == [11, 8])
-        reshape.allElements.forEach {
-            XCTAssert($0 == "8")
+        let one = Tensor(shape: [], repeatedValue: "One")
+        XCTAssert(one.shape == [])
+        XCTAssert(one.allElements.count == 1)
+        for str in one.allElements {
+            XCTAssert(str == "One")
         }
         
-        let slice = Shear.Tensor(eight)
-        let rereshape = DenseTensor(shape: [1, 11, 1, 8, 1], baseTensor: slice)
-        XCTAssert(rereshape.shape == [11, 8])
-        rereshape.allElements.forEach {
-            XCTAssert($0 == "8")
-        }
+        let iota2x3 = Tensor(shape: [2, 1, 3], values: [0, 1, 2, 3, 4, 5, 6])
+        XCTAssert(iota2x3 == iota(6).reshape([2, 3]))
+
+        let iota1 = Tensor(shape: [], values: [0])
+        XCTAssert(iota1 == iota(1))
+
+        let iota3x2 = Tensor(shape: [3, 2, 1, 1, 1], tensor: iota2x3)
+        XCTAssert(iota3x2 == iota(6).reshape([3, 2]))
         
-        let collated = DenseTensor(collection: slice.sequenceFirst)
-        XCTAssert(collated.shape == [2, 4, 11])
-        collated.allElements.forEach {
-            XCTAssert($0 == "8")
-        }
+        let iota1b = Tensor(shape: [], tensor: iota1)
+        XCTAssert(iota1b == iota1)
         
-        let recollated = DenseTensor(collectionOnLastAxis: slice.sequence(1))
-        XCTAssert(recollated.shape == [2, 11, 4])
-        recollated.allElements.forEach {
-            XCTAssert($0 == "8")
-        }
+        let tensorify = Tensor(iota2x3[$, $])
+        XCTAssert(tensorify == iota2x3)
+        
+        let iota1c = Tensor(iota1[[] as [TensorIndex]])
+        XCTAssert(iota1c == iota1)
+        
+        let cordString = Tensor(shape: [2, 3], cartesian: { indices in indices.reduce("", combine: {$0 + String($1) }) })
+        let cordString2 = Tensor(shape: [2, 3], values: ["00", "01", "02", "10", "11", "12"])
+        XCTAssert(cordString == cordString2)
+        
+        let index = Tensor(shape: [2, 3], linear: { $0 })
+        let index2 = Tensor(shape: [2, 3], values: [0, 1, 2, 3, 4, 5])
+        XCTAssert(index == index2)
+        
     }
     
     func testShape() {
@@ -100,13 +104,6 @@ class DenseTensorTests: XCTestCase {
         }
     }
     
-    func testLinearIndexAssignment() {
-        var eight = DenseTensor(shape: [1, 2, 4, 11], repeatedValue: "8")
-        XCTAssert(eight[linear: 55] == "8")
-        eight[linear: 55] = "55"
-        XCTAssert(eight[linear: 55] == "55")
-    }
-    
     func testScalarIndexing() {
         let spotChecks = [
             [([0], 0), ([4], 4)],
@@ -123,13 +120,6 @@ class DenseTensorTests: XCTestCase {
                 XCTAssertEqual(array[indices], value)
             }
         }
-    }
-    
-    func testScalarIndexAssignment() {
-        var eight = DenseTensor(shape: [1, 2, 4, 11], repeatedValue: "8")
-        XCTAssert(eight[0, 2, 5] == "8")
-        eight[0, 2, 5] = "025"
-        XCTAssert(eight[0, 2, 5] == "025")
     }
     
     // MARK: - Slicing

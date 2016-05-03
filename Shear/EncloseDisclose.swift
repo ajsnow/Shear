@@ -51,8 +51,8 @@ public extension TensorProtocol where Element: TensorProtocol {
     
     func discloseEager() -> Tensor<Element.Element> {
         let newShape = shape + self.allElements.first!.shape
-        let baseTensor = self.allElements.flatMap { $0.allElements }
-        return Tensor(DenseTensor(shape: newShape, baseTensor: baseTensor))
+        let buffer = self.allElements.flatMap { $0.allElements }
+        return Tensor(shape: newShape, values: buffer)
     }
     
     func disclose() -> Tensor<Element.Element> {

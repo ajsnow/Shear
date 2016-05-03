@@ -67,11 +67,11 @@ extension CollectionType {
 public extension Swift.Array {
     
     public func ravel() -> Tensor<Generator.Element> {
-        return Tensor(DenseTensor(shape: [Int(count)], baseTensor: self))
+        return Tensor(shape: [Int(count)], values: self)
     }
     
     public func reshape(shape: [Int]) -> Tensor<Generator.Element> {
-        return Tensor(DenseTensor(shape: shape, baseTensor: self))
+        return Tensor(shape: shape, values: self)
     }
     
     public func rotate(s: Int) -> [Generator.Element] {
@@ -91,7 +91,7 @@ extension CollectionType where Index.Distance: NumericType {
     }
     
     func reshape(shape: [Int]) -> Tensor<Generator.Element> {
-        return Tensor(DenseTensor(shape: shape, baseTensor: self.map { $0 } ))
+        return Tensor(shape: shape, values: Array(self))
     }
     
 }

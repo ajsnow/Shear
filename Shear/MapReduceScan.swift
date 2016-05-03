@@ -12,8 +12,8 @@ public extension TensorProtocol {
     ///
     /// If transform is a throwing function, we compute the result eagerly.
     public func map<A>(transform: (Element) throws -> A) rethrows -> Tensor<A> {
-        let baseTensor = try self.allElements.map(transform)
-        return Tensor(DenseTensor(shape: self.shape, baseTensor: baseTensor))
+        let buffer = try self.allElements.map(transform)
+        return Tensor(shape: shape, values: buffer)
     }
     
     /// Maps a `transform` upon each element of the TensorProtocol returning an TensorProtocol of the same shape with the results.
@@ -23,15 +23,15 @@ public extension TensorProtocol {
     
     /// Maps a `transform` upon a vector of elements from the TensorProtocol. Either by rows (that is, row vectors of the column-seperated elements) or vectors of first-deminsion-seperated elements.
     ///
-    /// If transform is a throwing function, we compute the result eagerly.
+    /// If transform is a throwing function, we compute the result eagerly-ish.
     public func vectorMap<A>(byRows rowVector: Bool = true, transform: ([Element]) throws -> [A]) rethrows -> Tensor<A> {
         let slice = rowVector ? sequenceFirst : sequenceLast
         if let first = slice.first where first.isScalar { // Slice is a [TensorSlice<Element>], we need to know if its constituent Tensors are themselves scalar.
             return try transform(slice.map { $0.scalar! }).ravel()
         }
         
-        let partialResults = try slice.map { try $0.vectorMap(byRows: rowVector, transform: transform) }
-        return Tensor(rowVector ? DenseTensor(collection: partialResults) : DenseTensor(collectionOnLastAxis: partialResults))
+        let partialResults = try slice.map { try $0.vectorMap(byRows: rowVector, transform: transform) }.ravel()
+        return rowVector ? partialResults.disclose() : partialResults.discloseFirst()
     }
     
     /// Maps a `transform` upon a vector of elements from the TensorProtocol. Either by rows (that is, row vectors of the column-seperated elements) or vectors of first-deminsion-seperated elements.
