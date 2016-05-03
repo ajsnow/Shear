@@ -33,6 +33,8 @@ Now, of course, any self-respecting n-array lib will have matrix multiplication.
 
 * Arbitrary dimensional dense arrays with copy-on-write semantics
 
+* Arbitrary dimensional computed arrays for lazy evaluation
+
 * Very flexible array slicing: slice whole dimensions, single columns, ranges, or arbitrarily reordered lists on a per-dimension basis
 
 * A featureful (totally a word) suite of operations for sequencing, mapping, reducing, scanning, transforming, and combining arrays 
@@ -42,8 +44,6 @@ Now, of course, any self-respecting n-array lib will have matrix multiplication.
 ## Not Current Features
 
 * SIMD for said math-y functions
-
-* Non-Dense/non-Slice arrays
 
 * Optimization
 
@@ -100,7 +100,7 @@ One also has the ability to `.flip()` (along the first axis) `.reverse()` (along
 
 ### Between arrays
 
-`zipMap()` maps a function that takes a left and right element from two equally shaped arrays and produces a same-shaped array of results.
+`zip` takes two arrays and returns a lazily computed array of matched element pairs. (Which you can then `.map()` etc. to your heart's desire.)
 
 `outer()` computes the outer product of two arrays for a given transform (which is all combinations of one set of elements with the other).
 
