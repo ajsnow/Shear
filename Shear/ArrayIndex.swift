@@ -4,7 +4,7 @@
 
 import Foundation
 
-public enum ArrayIndex: IntegerLiteralConvertible, ArrayLiteralConvertible {
+public enum TensorIndex: IntegerLiteralConvertible, ArrayLiteralConvertible {
     
     case All
     case SingleValue(Int)
@@ -35,13 +35,13 @@ public enum ArrayIndex: IntegerLiteralConvertible, ArrayLiteralConvertible {
 }
 
 // "RangeLiteralConvertibles" of a sort.
-public func ..<(start: Int, end: Int) -> ArrayIndex {
-    precondition(start <= end, "ArrayIndex.Range: start must be less than or equal to end")
+public func ..<(start: Int, end: Int) -> TensorIndex {
+    precondition(start <= end, "TensorIndex.Range: start must be less than or equal to end")
     return .Range(start, end)
 }
 
-public func ...(start: Int, end: Int) -> ArrayIndex {
+public func ...(start: Int, end: Int) -> TensorIndex {
     return start ..< (end + 1)
 }
 
-public let $ = ArrayIndex.All // TODO: decide if this or nil or some other symbol is best to express grabbing all of a dim
+public let $ = TensorIndex.All // TODO: decide if this or nil or some other symbol is best to express grabbing all of a dim

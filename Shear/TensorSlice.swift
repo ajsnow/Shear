@@ -4,7 +4,7 @@
 
 import Foundation
 
-public struct ArraySlice<T>: Array {
+public struct TensorSlice<T>: TensorProtocol {
     
     // MARK: - Associated Types
     
@@ -12,13 +12,13 @@ public struct ArraySlice<T>: Array {
     
     // MARK: - Underlying Storage
     
-    /// A type-erased array that serves as the underlying backing storage for this `ArraySlice`.
-    private var storage: ComputedArray<Element>
+    /// A type-erased array that serves as the underlying backing storage for this `TensorSlice`.
+    private var storage: Tensor<Element>
     
-    /// The Swift.Array of `ArrayIndex` that define the view into `storage`.
-    private let viewIndices: [ArrayIndex]
+    /// The Swift.TensorProtocol of `TensorIndex` that define the view into `storage`.
+    private let viewIndices: [TensorIndex]
     
-    /// If an ArraySlice's view is single-valued in one dimension, this array holds that value.
+    /// If an TensorSlice's view is single-valued in one dimension, this array holds that value.
     private let compactedView: [Int?]
     
     // MARK: - Stored Properties
@@ -33,48 +33,48 @@ public struct ArraySlice<T>: Array {
 }
 
 // MARK: - Initializers
-extension ArraySlice {
+extension TensorSlice {
     
-    /// Construct a ArraySlice from a complete view into `baseArray`.
-    init<A: Array where A.Element == Element>(baseArray: A) {
-        self.init(baseArray: baseArray, viewIndices: [ArrayIndex](count: baseArray.rank, repeatedValue: ArrayIndex.All))
+    /// Construct a TensorSlice from a complete view into `baseTensor`.
+    init<A: TensorProtocol where A.Element == Element>(baseTensor: A) {
+        self.init(baseTensor: baseTensor, viewIndices: [TensorIndex](count: baseTensor.rank, repeatedValue: TensorIndex.All))
     }
     
-    /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
-    init<A: Array where A.Element == Element>(baseArray: A, viewIndices: [ArrayIndex]) {
-        guard let shapeAndCompactedView = makeShape(baseArray.shape, view: viewIndices) else {
-            fatalError("Invalid bounds for an ArraySlice")
+    /// Construct a TensorSlice from a partial view into `baseTensor` as mediated by the `viewIndices`.
+    init<A: TensorProtocol where A.Element == Element>(baseTensor: A, viewIndices: [TensorIndex]) {
+        guard let shapeAndCompactedView = makeShape(baseTensor.shape, view: viewIndices) else {
+            fatalError("Invalid bounds for an TensorSlice")
         }
         
-        self.storage = ComputedArray(baseArray)
+        self.storage = Tensor(baseTensor)
         self.shape = shapeAndCompactedView.shape
         self.compactedView = shapeAndCompactedView.compactedView
         self.viewIndices = viewIndices
         self.stride = calculateStride(shape)
-        self.unified = self.shape == baseArray.shape && !viewIndices.contains {
+        self.unified = self.shape == baseTensor.shape && !viewIndices.contains {
             if case .List(_) = $0 { // This is conservative, as the list could be 0..<count or the like.
                 return false
             } else {
-                return baseArray.unified
+                return baseTensor.unified
             }
         }
     }
     
-    /// Construct a ArraySlice from a complete view into `baseArray`.
-    init(baseArray: ArraySlice<Element>) {
-        self.init(baseArray: baseArray, viewIndices: [ArrayIndex](count: baseArray.rank, repeatedValue: ArrayIndex.All))
+    /// Construct a TensorSlice from a complete view into `baseTensor`.
+    init(baseTensor: TensorSlice<Element>) {
+        self.init(baseTensor: baseTensor, viewIndices: [TensorIndex](count: baseTensor.rank, repeatedValue: TensorIndex.All))
     }
     
-    /// Construct a ArraySlice from a partial view into `baseArray` as mediated by the `viewIndices`.
-    init(baseArray: ArraySlice<Element>, viewIndices: [ArrayIndex]) {
-        let absoluteViewIndices = transformToAbsoluteViewIndices(baseArray, view: viewIndices)
-        self.init(baseArray: baseArray.storage, viewIndices: absoluteViewIndices)
+    /// Construct a TensorSlice from a partial view into `baseTensor` as mediated by the `viewIndices`.
+    init(baseTensor: TensorSlice<Element>, viewIndices: [TensorIndex]) {
+        let absoluteViewIndices = transformToAbsoluteViewIndices(baseTensor, view: viewIndices)
+        self.init(baseTensor: baseTensor.storage, viewIndices: absoluteViewIndices)
     }
     
 }
 
 // MARK: - All Elements Views
-extension ArraySlice {
+extension TensorSlice {
     
     public var allElements: AnyRandomAccessCollection<Element> {
         return AnyRandomAccessCollection(AllElementsCollection(array: self))
@@ -88,10 +88,10 @@ extension ArraySlice {
 
 
 // MARK: - Scalar Indexing
-extension ArraySlice {
+extension TensorSlice {
     
     private func getStorageIndices(indices: [Int]) -> [Int] {
-        guard checkBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
+        guard checkBounds(indices, forShape: shape) else { fatalError("TensorProtocol index out of range") }
         
         // Now that we're bounds checked, we can do this knowing we have enough g.next()s & without checking if we'll be within the various arrays
         var g = indices.generate()
@@ -114,14 +114,14 @@ extension ArraySlice {
 }
 
 // MARK: - Slice Indexing
-extension ArraySlice {
+extension TensorSlice {
     
-    public subscript(indices: [ArrayIndex]) -> ArraySlice<Element> {
-        return ArraySlice(baseArray: self, viewIndices: indices)
+    public subscript(indices: [TensorIndex]) -> TensorSlice<Element> {
+        return TensorSlice(baseTensor: self, viewIndices: indices)
     }
     
-    public subscript(indices: ArrayIndex...) -> ArraySlice<Element> {
-        return ArraySlice(baseArray: self, viewIndices: indices)
+    public subscript(indices: TensorIndex...) -> TensorSlice<Element> {
+        return TensorSlice(baseTensor: self, viewIndices: indices)
     }
     
 }
@@ -130,9 +130,9 @@ extension ArraySlice {
 
 // TODO: Make these less ugly.
 
-private func makeShape(baseShape: [Int], view: [ArrayIndex]) -> (shape: [Int], compactedView: [Int?])? {
+private func makeShape(baseShape: [Int], view: [TensorIndex]) -> (shape: [Int], compactedView: [Int?])? {
     // Assumes view is within bounds.
-    func calculateBound(baseCount: Int, view: ArrayIndex) -> Int {
+    func calculateBound(baseCount: Int, view: TensorIndex) -> Int {
         switch view {
         case .All: return baseCount
         case .SingleValue: return 1
@@ -141,11 +141,11 @@ private func makeShape(baseShape: [Int], view: [ArrayIndex]) -> (shape: [Int], c
         }
     }
     
-    func calculateUncompactedShape(baseShape: [Int], view: [ArrayIndex]) -> [Int] {
+    func calculateUncompactedShape(baseShape: [Int], view: [TensorIndex]) -> [Int] {
         return zip(baseShape, view).map(calculateBound)
     }
     
-    func calculateCompactedBound(baseCount: Int, view: ArrayIndex) -> Int? {
+    func calculateCompactedBound(baseCount: Int, view: TensorIndex) -> Int? {
         guard baseCount == 1 else { return nil }
         switch view {
         case .All:
@@ -159,7 +159,7 @@ private func makeShape(baseShape: [Int], view: [ArrayIndex]) -> (shape: [Int], c
         }
     }
     
-    func calculateCompactedView(uncompactedShape: [Int], view: [ArrayIndex]) -> [Int?] {
+    func calculateCompactedView(uncompactedShape: [Int], view: [TensorIndex]) -> [Int?] {
         return zip(uncompactedShape, view).map(calculateCompactedBound)
     }
     
@@ -174,7 +174,7 @@ private func makeShape(baseShape: [Int], view: [ArrayIndex]) -> (shape: [Int], c
     return (uncompactedShape.filter {$0 != 1}, compactedView)
 }
 
-private func convertIndex(index: Int, view: ArrayIndex) -> Int {
+private func convertIndex(index: Int, view: TensorIndex) -> Int {
     switch view {
     case .All: return index
     case .SingleValue: fatalError("This cannot happen")
@@ -183,7 +183,7 @@ private func convertIndex(index: Int, view: ArrayIndex) -> Int {
     }
 }
 
-private func transformToAbsoluteViewIndices<T>(baseSlice: ArraySlice<T>, view: [ArrayIndex]) -> [ArrayIndex] {
+private func transformToAbsoluteViewIndices<T>(baseSlice: TensorSlice<T>, view: [TensorIndex]) -> [TensorIndex] {
     guard baseSlice.shape.count == view.count else { fatalError("Incorrect number of indices to slice array") }
     guard !zip(baseSlice.shape, view).map({$1.isInbounds($0)}).contains(false) else { fatalError("Slice indices are out of bounds") }
     
@@ -193,9 +193,9 @@ private func transformToAbsoluteViewIndices<T>(baseSlice: ArraySlice<T>, view: [
         
         switch $0.1 {
         case .All:
-            return g.next()! // If the parent slice is .All in a dimension, than the child's ArrayIndex in that dimension is the only constraint
+            return g.next()! // If the parent slice is .All in a dimension, than the child's TensorIndex in that dimension is the only constraint
         case .SingleValue:
-            return $0.1 // On the other hand, if the parent slice is a .SingleValue, it fully determines the relationship to the base Array
+            return $0.1 // On the other hand, if the parent slice is a .SingleValue, it fully determines the relationship to the base TensorProtocol
                         // However, this code is actually unreachable because singular dimensions are compressed.
         case .List(let list):
             switch g.next()! {

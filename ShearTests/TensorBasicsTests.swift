@@ -5,7 +5,7 @@
 import XCTest
 import Shear
 
-class ArrayBasicsTests: XCTestCase {
+class TensorBasicsTests: XCTestCase {
 
     let iotaVec = iota(8)
     let iotaSq = iota(16).reshape([4, 4])
@@ -15,14 +15,14 @@ class ArrayBasicsTests: XCTestCase {
     let FiveFactorial = iota(120).reshape([1, 2, 3, 1, 4, 5, 1, 1])
     let Scalar = iota(1)
     
-    var allArrays: [ComputedArray<Int>] = []
+    var allTensors: [Tensor<Int>] = []
     
     override func setUp() {
         super.setUp()
-        allArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
+        allTensors = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
     }
 
-    // MARK: Basics - from Array.swift
+    // MARK: Basics - from TensorProtocol.swift
     func testRank() {
         let correctValues = [
             1,
@@ -34,13 +34,13 @@ class ArrayBasicsTests: XCTestCase {
             0,
         ]
         
-        zip(allArrays, correctValues).forEach {
+        zip(allTensors, correctValues).forEach {
             XCTAssertEqual($0.0.rank, $0.1)
         }
     }
     
     func testIsEmpty() {
-        allArrays.forEach {
+        allTensors.forEach {
             XCTAssertEqual($0.isEmpty, false) // Empty arrays are not allowed.
         }
     }
@@ -56,7 +56,7 @@ class ArrayBasicsTests: XCTestCase {
             (true, 0)
         ]
         
-        zip(allArrays, correctValues).forEach {
+        zip(allTensors, correctValues).forEach {
             XCTAssertEqual($0.0.isScalar, $0.1.0)
             XCTAssertEqual($0.0.scalar, $0.1.1)
         }
@@ -74,20 +74,20 @@ class ArrayBasicsTests: XCTestCase {
             false
         ]
         
-        zip(allArrays, correctValues).forEach {
+        zip(allTensors, correctValues).forEach {
             XCTAssertEqual($0.0.isVector, $0.1)
         }
     }
     
     func testEquality() {
         // Test self equality & self not-inequality
-        allArrays.forEach {
+        allTensors.forEach {
             XCTAssert($0 == $0)
             XCTAssert(!($0 != $0))
         }
         
         // Test copy equality and not-inequality
-        allArrays.forEach {
+        allTensors.forEach {
             let copy = $0
             XCTAssert(copy == $0)
             XCTAssert(!(copy != $0))
@@ -96,7 +96,7 @@ class ArrayBasicsTests: XCTestCase {
         }
         
         // Test identical value equality and not-inequality
-        let newArrays = [
+        let newTensors = [
             iota(8),
             iota(16).reshape([4, 4]),
             iota(27).reshape([3, 3, 3]),
@@ -105,14 +105,14 @@ class ArrayBasicsTests: XCTestCase {
             iota(120).reshape([1, 2, 3, 1, 4, 5, 1, 1]),
             iota(1)
         ]
-        zip(allArrays, newArrays).forEach {
+        zip(allTensors, newTensors).forEach {
             XCTAssert($0.0 == $0.1)
             XCTAssert(!($0.0 != $0.1))
         }
         
         // Test inequality and not-equality
-        let offByOne = newArrays[1..<newArrays.count] + [newArrays[0]]
-        zip(allArrays, offByOne).forEach {
+        let offByOne = newTensors[1..<newTensors.count] + [newTensors[0]]
+        zip(allTensors, offByOne).forEach {
             XCTAssert($0.0 != $0.1)
             XCTAssert(!($0.0 == $0.1))
         }
@@ -130,7 +130,7 @@ class ArrayBasicsTests: XCTestCase {
             "A{0}"
         ]
         
-        zip(allArrays, correctValues).forEach {
+        zip(allTensors, correctValues).forEach {
             XCTAssert(String($0.0) == $0.1)
         }
     }

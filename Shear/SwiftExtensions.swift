@@ -66,12 +66,12 @@ extension CollectionType {
 
 public extension Swift.Array {
     
-    public func ravel() -> ComputedArray<Generator.Element> {
-        return ComputedArray(DenseArray(shape: [Int(count)], baseArray: self))
+    public func ravel() -> Tensor<Generator.Element> {
+        return Tensor(DenseTensor(shape: [Int(count)], baseTensor: self))
     }
     
-    public func reshape(shape: [Int]) -> ComputedArray<Generator.Element> {
-        return ComputedArray(DenseArray(shape: shape, baseArray: self))
+    public func reshape(shape: [Int]) -> Tensor<Generator.Element> {
+        return Tensor(DenseTensor(shape: shape, baseTensor: self))
     }
     
     public func rotate(s: Int) -> [Generator.Element] {
@@ -85,13 +85,13 @@ public extension Swift.Array {
 
 extension CollectionType where Index.Distance: NumericType {
     
-    func ravel() -> ComputedArray<Generator.Element> {
+    func ravel() -> Tensor<Generator.Element> {
         let array = self.map { $0 }
         return array.ravel()
     }
     
-    func reshape(shape: [Int]) -> ComputedArray<Generator.Element> {
-        return ComputedArray(DenseArray(shape: shape, baseArray: self.map { $0 } ))
+    func reshape(shape: [Int]) -> Tensor<Generator.Element> {
+        return Tensor(DenseTensor(shape: shape, baseTensor: self.map { $0 } ))
     }
     
 }

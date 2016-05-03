@@ -5,7 +5,7 @@
 import Foundation
 
 /// AllElementsCollection is a collection
-struct AllElementsCollection<A: Array>: CollectionType {
+struct AllElementsCollection<A: TensorProtocol>: CollectionType {
     
     let array: A
     let stride: [Int]

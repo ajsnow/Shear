@@ -5,37 +5,37 @@
 import Foundation
 
 /// Element-wise Addition
-public func +<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
-    (left: A, right: B) -> ComputedArray<A.Element> {
+public func +<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: NumericType>
+    (left: A, right: B) -> Tensor<A.Element> {
         return zip(left, right).map(+)
 }
 
 /// Scalar Addition
-public func +<A: Array, X: NumericType where A.Element == X>
-    (left: A, right: X) -> ComputedArray<A.Element> {
+public func +<A: TensorProtocol, X: NumericType where A.Element == X>
+    (left: A, right: X) -> Tensor<A.Element> {
         return left.map { $0 + right }
 }
 
 /// Left-scalar Addition
-public func +<A: Array, X: NumericType where A.Element == X>
-    (left: X, right: A) -> ComputedArray<A.Element> {
+public func +<A: TensorProtocol, X: NumericType where A.Element == X>
+    (left: X, right: A) -> Tensor<A.Element> {
         return right.map { left + $0 }
 }
 
 /// Element-wise Subtraction
-public func -<A: Array, B: Array where A.Element == B.Element, A.Element: NumericType>
-    (left: A, right: B) -> ComputedArray<A.Element> {
+public func -<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: NumericType>
+    (left: A, right: B) -> Tensor<A.Element> {
         return zip(left, right).map(-)
 }
 
 /// Scalar Substraction
-public func -<A: Array, X: NumericType where A.Element == X>
-    (left: A, right: X) -> ComputedArray<A.Element> {
+public func -<A: TensorProtocol, X: NumericType where A.Element == X>
+    (left: A, right: X) -> Tensor<A.Element> {
         return left.map { $0 - right }
 }
 
 /// Left-scalar Subtraction
-public func -<A: Array, X: NumericType where A.Element == X>
-    (left: X, right: A) -> ComputedArray<A.Element> {
+public func -<A: TensorProtocol, X: NumericType where A.Element == X>
+    (left: X, right: A) -> Tensor<A.Element> {
         return right.map { left - $0 }
 }

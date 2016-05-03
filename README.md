@@ -25,7 +25,7 @@ let b = [
 let c = a ∙ b
 ```
 
-(Unfortunately, we cannot currently convert nested array literals into our types directly. Instead we use a reshape function defined on both our arrays and built-in Swift.Arrays to specify the `shape` (the count in each dimension) of arrays.)
+(Unfortunately, we cannot currently convert nested array literals into our types directly. Instead we use a reshape function defined on both our arrays and built-in Swift.Tensors to specify the `shape` (the count in each dimension) of arrays.)
 
 Now, of course, any self-respecting n-array lib will have matrix multiplication. What makes Shear a little more interesting is that our matrix multiplication and dot product (and higher order inner products) are defined simply as `inner(a, b, product: *, sum: +)`. `inner()` is a reusable component that can just as easily compute possible paths from an adjacency matrix (`inner(mat, mat, product: &, sum: |)`). Likewise, the pieces that make `inner()` tick—`.enclose()`, `.reduce()` and the outer product—are exposed as reusable components that clients can easily combine into more advanced operations of their own making.
 
@@ -55,11 +55,11 @@ Now, of course, any self-respecting n-array lib will have matrix multiplication.
 
 ### Basics
 
-An Array is defined by its elements and shape. The shape is an [Int] where each Int is the count in that dimension. The highest dimension is first, the rows are second to last, and the columns are last. (DenseArrays are stored in row-major order.) Elements are accessed via their Cartesian (`a[0, 6, 4]`) or linear (`a[linear: 34]`) indices. Arrays can also be sliced into ArraySlices (`a[7, 2..>5, [3, 5, 2]]`) which are shallow views into an underlying Array. Like Swift.ArraySlices, any modification of the elements of an ArraySlice are not reflected in the Array they are sliced from (unlike Swift.ArraySlices, the coordinates of an ArraySlice always start from all zero indices).
+An TensorProtocol is defined by its elements and shape. The shape is an [Int] where each Int is the count in that dimension. The highest dimension is first, the rows are second to last, and the columns are last. (DenseTensors are stored in row-major order.) Elements are accessed via their Cartesian (`a[0, 6, 4]`) or linear (`a[linear: 34]`) indices. Tensors can also be sliced into TensorSlices (`a[7, 2..>5, [3, 5, 2]]`) which are shallow views into an underlying TensorProtocol. Like Swift.TensorSlices, any modification of the elements of an TensorSlice are not reflected in the TensorProtocol they are sliced from (unlike Swift.TensorSlices, the coordinates of an TensorSlice always start from all zero indices).
 
 ### For a given array
 
-In addition to subscript indexing, an Array's elements can be accessed via the `.allElements` CollectionType view:
+In addition to subscript indexing, an Tensor's elements can be accessed via the `.allElements` CollectionType view:
 
 ```
 for (linearIndex, x) in xs.allElements.enumerate() {
@@ -75,7 +75,7 @@ for (indices, x) in xs.coordinate() {
 }
 ```
 
-Arrays can also be sequenced across a given dimension to operate on each lower dimensional slice in turn. For instance, if you wish to operate on each matrix in a 3-array, one can simply `.sequenceFirst()`: 
+Tensors can also be sequenced across a given dimension to operate on each lower dimensional slice in turn. For instance, if you wish to operate on each matrix in a 3-array, one can simply `.sequenceFirst()`: 
 
 ```
 for matrix in array3.sequenceFirst() {

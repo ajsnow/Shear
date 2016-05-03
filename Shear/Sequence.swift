@@ -5,16 +5,16 @@
 import Foundation
 
 // MARK: - Sequence
-public extension Array {
+public extension TensorProtocol {
     
-    /// Slices the Array into a sequence of `ArraySlice`s on its nth `deminsion`.
-    func sequence(deminsion: Int) -> [ArraySlice<Element>] {
+    /// Slices the TensorProtocol into a sequence of `TensorSlice`s on its nth `deminsion`.
+    func sequence(deminsion: Int) -> [TensorSlice<Element>] {
         if (isEmpty || isScalar) && deminsion == 0 { // TODO: Consider making sequencing scalar or empty arrays an error.
-            return [ArraySlice(baseArray: self)]
+            return [TensorSlice(baseTensor: self)]
         }
         guard deminsion < rank else { fatalError("An array cannot be sequenced on a deminsion it does not have") }
         
-        let viewIndices = [ArrayIndex](count: rank, repeatedValue: ArrayIndex.All)
+        let viewIndices = [TensorIndex](count: rank, repeatedValue: TensorIndex.All)
         return (0..<shape[deminsion]).map {
             var nViewIndices = viewIndices
             nViewIndices[deminsion] = .SingleValue($0)
@@ -22,16 +22,16 @@ public extension Array {
         }
     }
     
-    /// Slices the Array on its first dimension.
-    /// Since our DenseArray is stored in Row-Major order, sequencing on the first
+    /// Slices the TensorProtocol on its first dimension.
+    /// Since our DenseTensor is stored in Row-Major order, sequencing on the first
     /// dimension allows for better memory access patterns than any other sequence.
-    var sequenceFirst: [ArraySlice<Element>] {
+    var sequenceFirst: [TensorSlice<Element>] {
         return sequence(0)
     }
     
-    /// Slices the Array on its last dimension.
+    /// Slices the TensorProtocol on its last dimension.
     /// Tends to not be cache friendly...
-    var sequenceLast: [ArraySlice<Element>] {
+    var sequenceLast: [TensorSlice<Element>] {
         return sequence(rank != 0 ? rank - 1 : 0)
     }
     
@@ -41,7 +41,7 @@ public extension Array {
         
         return AnySequence(AnyGenerator {
             guard let indices = indexGenerator.next() else { return nil }
-            return (indices, self[indices]) // TODO: Linear indexing is cheaper for DenseArrays. Consider specializing.
+            return (indices, self[indices]) // TODO: Linear indexing is cheaper for DenseTensors. Consider specializing.
             })
     }
     

@@ -4,7 +4,7 @@
 
 import Foundation
 
-public struct DenseArray<T>: Array, MutableArray {
+public struct DenseTensor<T>: TensorProtocol, MutableTensorProtocol {
     
     // MARK: - Associated Types
     
@@ -27,79 +27,79 @@ public struct DenseArray<T>: Array, MutableArray {
 }
 
 // MARK: - Initializers
-extension DenseArray {
+extension DenseTensor {
     
-    /// Reshape a one-dimensional, built-in `baseArray` into a DenseArray of `shape`.
-    public init(shape newShape: [Int], baseArray: [Element]) {
-        guard let newShape = checkAndReduce(newShape) else { fatalError("Array cannot contain zero or negative length dimensions") }
+    /// Reshape a one-dimensional, built-in `baseTensor` into a DenseTensor of `shape`.
+    public init(shape newShape: [Int], baseTensor: [Element]) {
+        guard let newShape = checkAndReduce(newShape) else { fatalError("TensorProtocol cannot contain zero or negative length dimensions") }
         
         shape = newShape
         stride = calculateStride(shape)
         
         let count = shape.isEmpty ? 1 : shape.reduce(*)
-        guard count == baseArray.count else { fatalError("Array's element's count does not match the product of it's dimensions.") }
+        guard count == baseTensor.count else { fatalError("Tensor's element's count does not match the product of it's dimensions.") }
         
-        storage = baseArray
+        storage = baseTensor
     }
     
-    /// Construct a DenseArray with a `shape` of elements, each initialized to `repeatedValue`.
+    /// Construct a DenseTensor with a `shape` of elements, each initialized to `repeatedValue`.
     public init(shape newShape: [Int], repeatedValue: Element) {
         let storage = [Element](count: newShape.isEmpty ? 1 : newShape.reduce(*), repeatedValue: repeatedValue)
-        self.init(shape: newShape, baseArray: storage)
+        self.init(shape: newShape, baseTensor: storage)
     }
     
-    /// Reshape any Array `baseArray` into a new DenseArray of `shape`.
-    public init<A: Array where A.Element == Element>(shape newShape: [Int], baseArray: A) {
-        self.init(shape: newShape, baseArray: baseArray.allElements.map {$0})
+    /// Reshape any TensorProtocol `baseTensor` into a new DenseTensor of `shape`.
+    public init<A: TensorProtocol where A.Element == Element>(shape newShape: [Int], baseTensor: A) {
+        self.init(shape: newShape, baseTensor: baseTensor.allElements.map {$0})
     }
     
-    /// Convert any Array `baseArray` into a new DenseArray of the same `shape`.
-    public init<A: Array where A.Element == Element>(_ baseArray: A) {
-        self.init(shape: baseArray.shape, baseArray: baseArray.allElements.map {$0})
+    /// Convert any TensorProtocol `baseTensor` into a new DenseTensor of the same `shape`.
+    public init<A: TensorProtocol where A.Element == Element>(_ baseTensor: A) {
+        self.init(shape: baseTensor.shape, baseTensor: baseTensor.allElements.map {$0})
     }
     
-    /// Reshape a DenseArray `baseArray` into a new DenseArray of `shape`.
-    public init(shape newShape: [Int], baseArray: DenseArray<Element>) {
-        self.init(shape: newShape, baseArray: baseArray.storage)
+    /// Reshape a DenseTensor `baseTensor` into a new DenseTensor of `shape`.
+    public init(shape newShape: [Int], baseTensor: DenseTensor<Element>) {
+        self.init(shape: newShape, baseTensor: baseTensor.storage)
     }
     
-    /// Construct a DenseArray from a `collection` of Arrays.
+    /// Construct a DenseTensor from a `collection` of Tensors.
     ///
-    /// The count of the `collection` is the length of the resulting Array's first axis.
-    public init<C: CollectionType, A: Array where
+    /// The count of the `collection` is the length of the resulting Tensor's first axis.
+    public init<C: CollectionType, A: TensorProtocol where
         A.Element == Element,
         C.Generator.Element == A,
         C.Index.Distance == Int>
         (collection: C) {
         if collection.isEmpty {
-            fatalError("Cannot construct an Array from empty collection: can't infer shape")
+            fatalError("Cannot construct an TensorProtocol from empty collection: can't infer shape")
         }
         
         let subShape = collection.first!.shape
         guard !collection.contains({$0.shape != subShape}) else {
-            fatalError("Arrays in the collection constructor must have the same shape")
+            fatalError("Tensors in the collection constructor must have the same shape")
         }
         
         let shape = [collection.count] as [Int] + subShape
         let storage = collection.reduce([Element](), combine: {$0 + $1.allElements})
-        self.init(shape: shape, baseArray: storage)
+        self.init(shape: shape, baseTensor: storage)
     }
     
-    /// Construct a DenseArray from a `collection` of Arrays.
+    /// Construct a DenseTensor from a `collection` of Tensors.
     ///
-    /// The count of the `collection` is the length of the resulting Array's last axis.
-    public init<C: CollectionType, A: Array where
+    /// The count of the `collection` is the length of the resulting Tensor's last axis.
+    public init<C: CollectionType, A: TensorProtocol where
         A.Element == Element,
         C.Generator.Element == A,
         C.Index.Distance == Int>
         (collectionOnLastAxis collection: C) {
         if collection.isEmpty {
-            fatalError("Cannot construct an Array from empty collection: can't infer shape")
+            fatalError("Cannot construct an TensorProtocol from empty collection: can't infer shape")
         }
         
         let subShape = collection.first!.shape
         guard !collection.contains({ $0.shape != subShape }) else {
-            fatalError("Arrays in the collection constructor must have the same shape")
+            fatalError("Tensors in the collection constructor must have the same shape")
         }
         
         
@@ -110,13 +110,13 @@ extension DenseArray {
                 storage.append(array[linear: i])
             }
         }
-        self.init(shape: shape, baseArray: storage)
+        self.init(shape: shape, baseTensor: storage)
     }
     
 }
 
 // MARK: - Linear Access
-extension DenseArray {
+extension DenseTensor {
     
     public var allElements: AnyRandomAccessCollection<Element> {
         return AnyRandomAccessCollection(storage)
@@ -134,10 +134,10 @@ extension DenseArray {
 }
 
 // MARK: - Scalar Indexing
-extension DenseArray {
+extension DenseTensor {
     
     func getStorageIndex(indices: [Int]) -> Int {
-        guard checkBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
+        guard checkBounds(indices, forShape: shape) else { fatalError("TensorProtocol index out of range") }
         return convertIndices(cartesian: indices, stride: stride)
     }
     
@@ -162,14 +162,14 @@ extension DenseArray {
 }
 
 // MARK: - Slice Indexing
-extension DenseArray {
+extension DenseTensor {
     
-    public subscript(indices: [ArrayIndex]) -> ArraySlice<Element> {
-        return ArraySlice(baseArray: self, viewIndices: indices)
+    public subscript(indices: [TensorIndex]) -> TensorSlice<Element> {
+        return TensorSlice(baseTensor: self, viewIndices: indices)
     }
     
-    public subscript(indices: ArrayIndex...) -> ArraySlice<Element> {
-        return ArraySlice(baseArray: self, viewIndices: indices)
+    public subscript(indices: TensorIndex...) -> TensorSlice<Element> {
+        return TensorSlice(baseTensor: self, viewIndices: indices)
     }
     
 }

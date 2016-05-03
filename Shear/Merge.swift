@@ -4,14 +4,14 @@
 
 import Foundation
 
-public extension Array {
+public extension TensorProtocol {
     
-    /// Returns a DenseArray with the contents of additionalItems appended to the last axis of the Array.
+    /// Returns a DenseTensor with the contents of additionalItems appended to the last axis of the TensorProtocol.
     ///
     /// e.g.
     ///    1 2 | 5 6 --> 1 2 5 6
     ///    3 4 | 7 8 --> 3 4 7 8
-    public func append<A: Array where A.Element == Element>(additionalItems: A) -> ComputedArray<Element> {
+    public func append<A: TensorProtocol where A.Element == Element>(additionalItems: A) -> Tensor<Element> {
         return zipVectorMap(self, additionalItems, byRows: true, transform: { $0 + $1 } )
         //        guard rank == additionalItems.rank && shape.dropLast().elementsEqual(additionalItems.shape.dropLast()) ||
         //            rank == additionalItems.rank + 1 && shape.dropLast().elementsEqual(additionalItems.shape) else {
@@ -20,7 +20,7 @@ public extension Array {
         //
         //        var newShape = shape
         //        newShape[newShape.count - 1] += rank == additionalItems.rank ? additionalItems.shape.last! : 1
-        //        return ComputedArray(shape: newShape, cartesian: { indices in
+        //        return Tensor(shape: newShape, cartesian: { indices in
         //            if indices.last! < self.shape.last! {
         //                return self[indices]
         //            }
@@ -32,57 +32,57 @@ public extension Array {
         //        })
     }
     
-    /// Returns a DenseArray with the contents of additionalItems concatenated to the first axis of the Array.
+    /// Returns a DenseTensor with the contents of additionalItems concatenated to the first axis of the TensorProtocol.
     ///
     /// e.g.
     ///    1 2 | 5 6 --> 1 2
     ///    3 4 | 7 8 --> 3 4
     ///                  5 6
     ///                  7 8
-    public func concat<A: Array where A.Element == Element>(additionalItems: A) -> ComputedArray<Element> {
+    public func concat<A: TensorProtocol where A.Element == Element>(additionalItems: A) -> Tensor<Element> {
         return zipVectorMap(self, additionalItems, byRows: false, transform: {$0 + $1})
     }
     
-    /// Returns a DenseArray with a rank - 1 array of additionalitem appended to the last axis of the Array.
-    public func append(additionalItem: Element) -> ComputedArray<Element> {
+    /// Returns a DenseTensor with a rank - 1 array of additionalitem appended to the last axis of the TensorProtocol.
+    public func append(additionalItem: Element) -> Tensor<Element> {
         return vectorMap(byRows: true, transform: {$0 + [additionalItem]})
     }
     
-    /// Returns a DenseArray with a rank - 1 array of additionalitem concatenated to the first axis of the Array.
-    public func concat(additionalItem: Element) -> ComputedArray<Element> {
+    /// Returns a DenseTensor with a rank - 1 array of additionalitem concatenated to the first axis of the TensorProtocol.
+    public func concat(additionalItem: Element) -> Tensor<Element> {
         return vectorMap(byRows: false, transform: {$0 + [additionalItem]})
         // This could be optimized to the following:
-        //     return DenseArray(shape: [shape[0] + 1] + shape.dropFirst(), baseArray: [Element](allElements) + [Element](count: shape.dropFirst().reduce(*), repeatedValue: additionalItem))
+        //     return DenseTensor(shape: [shape[0] + 1] + shape.dropFirst(), baseTensor: [Element](allElements) + [Element](count: shape.dropFirst().reduce(*), repeatedValue: additionalItem))
         // But given all preformance we're leaving on the table elsewhere, it seems silly to break the nice symmetry for an unimportant function.
         // I've also not benchmarked the difference, so this could turn out to be a pessimization, though that would shock me.
     }
     
-    /// Returns a DenseArray of a higher order by creating a new first axis. Both input arrays must be the same shape.
+    /// Returns a DenseTensor of a higher order by creating a new first axis. Both input arrays must be the same shape.
     /// e.g.
     ///    1 2 3 4 | 5 6 7 8 --> 1 2 3 4
     ///                          5 6 7 8
-    public func laminate<A: Array where A.Element == Element>(additionalItems: A) -> ComputedArray<Element> {
+    public func laminate<A: TensorProtocol where A.Element == Element>(additionalItems: A) -> Tensor<Element> {
         guard shape == additionalItems.shape else {
-            fatalError("Arrays must have same shape to be laminated")
+            fatalError("Tensors must have same shape to be laminated")
         }
-        let left = ComputedArray(self)
-        let right = ComputedArray(additionalItems) // type erase both so we can put them in an array.
-        return ([left, right] as [ComputedArray<Element>]).ravel().disclose()
+        let left = Tensor(self)
+        let right = Tensor(additionalItems) // type erase both so we can put them in an array.
+        return ([left, right] as [Tensor<Element>]).ravel().disclose()
     }
     
-    /// Returns a DenseArray of a higher order by creating a new last axis. Both input arrays must be the same shape.
+    /// Returns a DenseTensor of a higher order by creating a new last axis. Both input arrays must be the same shape.
     /// e.g.
     ///    1 2 3 4 | 5 6 7 8 --> 1 5
     ///                          2 6
     ///                          3 7
     ///                          4 8
-    public func interpose<A: Array where A.Element == Element>(additionalItems: A) -> ComputedArray<Element> {
+    public func interpose<A: TensorProtocol where A.Element == Element>(additionalItems: A) -> Tensor<Element> {
         guard shape == additionalItems.shape else {
-            fatalError("Arrays must have same shape to be interposed")
+            fatalError("Tensors must have same shape to be interposed")
         }
-        let left = ComputedArray(self)
-        let right = ComputedArray(additionalItems) // type erase both so we can put them in an array.
-        return ([left, right] as [ComputedArray<Element>]).ravel().discloseFirst()
+        let left = Tensor(self)
+        let right = Tensor(additionalItems) // type erase both so we can put them in an array.
+        return ([left, right] as [Tensor<Element>]).ravel().discloseFirst()
     }
     
 }

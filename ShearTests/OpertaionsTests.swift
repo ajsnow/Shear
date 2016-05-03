@@ -15,15 +15,15 @@ class OpertaionsTests: XCTestCase {
     let FiveFactorial = iota(120).reshape([1, 2, 3, 1, 4, 5, 1, 1])
     let Scalar = iota(1)
 
-    var allArrays: [ComputedArray<Int>] = []
+    var allTensors: [Tensor<Int>] = []
     
     override func setUp() {
         super.setUp()
-        allArrays = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
+        allTensors = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
     }
     
     func testSequence() {
-        let correctValues: [(Shear.ComputedArray<Int>, Shear.ComputedArray<Int>)] = [
+        let correctValues: [(Shear.Tensor<Int>, Shear.Tensor<Int>)] = [
             ([0].ravel(), [7].ravel()),
             ([0, 1, 2, 3].ravel(), [3, 7, 11, 15].ravel()),
             (iota(9).reshape([3, 3]), [2, 5, 8, 11, 14, 17, 20, 23, 26].reshape([3, 3])),
@@ -33,7 +33,7 @@ class OpertaionsTests: XCTestCase {
             ([0].ravel(), [0].ravel()),
         ]
         
-        zip(allArrays, correctValues).forEach {
+        zip(allTensors, correctValues).forEach {
             XCTAssert($0.0.sequenceFirst.first! == $0.1.0)
             XCTAssert($0.0.sequenceLast.last! == $0.1.1)
         }
@@ -41,15 +41,15 @@ class OpertaionsTests: XCTestCase {
     }
     
     func testReshape() {
-        let testVectors: [([Int], Shear.DenseArray<Int>)] = [
-            ([2, 4], DenseArray(shape: [2, 4], baseArray: iota(8))),
-            ([16], DenseArray(iota(16))),
-            ([1, 3, 1, 1, 1, 9, 1], DenseArray(shape: [3, 9], baseArray: iota(27))),
-            ([2, 2], DenseArray(shape: [2, 2], baseArray: [0, 2, 4, 6])),
-            ([1, 4], DenseArray(shape: [4, 1], baseArray: [1, 3, 5, 7])),
+        let testVectors: [([Int], Shear.DenseTensor<Int>)] = [
+            ([2, 4], DenseTensor(shape: [2, 4], baseTensor: iota(8))),
+            ([16], DenseTensor(iota(16))),
+            ([1, 3, 1, 1, 1, 9, 1], DenseTensor(shape: [3, 9], baseTensor: iota(27))),
+            ([2, 2], DenseTensor(shape: [2, 2], baseTensor: [0, 2, 4, 6])),
+            ([1, 4], DenseTensor(shape: [4, 1], baseTensor: [1, 3, 5, 7])),
         ]
         
-        zip(allArrays, testVectors).forEach {
+        zip(allTensors, testVectors).forEach {
             XCTAssert($0.0.reshape($0.1.0) == $0.1.1)
         }
     }
@@ -65,7 +65,7 @@ class OpertaionsTests: XCTestCase {
             iota(1),
         ]
         
-        zip(allArrays, correctValues).forEach {
+        zip(allTensors, correctValues).forEach {
             XCTAssert($0.0.ravel() == $0.1)
         }
     }
@@ -73,10 +73,10 @@ class OpertaionsTests: XCTestCase {
     func testEnclose() {
         // We're only testing the shape is as expected, this does not guarantee the method is actually working, 
         // but it should detect most types of breaking changes to the existing implimentation.
-        allArrays.dropLast().forEach { // we drop the last as enclosing scalar won't be fun.
+        allTensors.dropLast().forEach { // we drop the last as enclosing scalar won't be fun.
             // Empty enclose
-            let enclosedArray = $0.enclose([])
-            XCTAssert(enclosedArray.scalar! == $0)
+            let enclosedTensor = $0.enclose([])
+            XCTAssert(enclosedTensor.scalar! == $0)
             
             // Enclose with axis
             let encloseFirst = $0.enclose(0)
@@ -186,7 +186,7 @@ class OpertaionsTests: XCTestCase {
     }
 
     func testReduceScan() {
-        var results = [ComputedArray<Int>]()
+        var results = [Tensor<Int>]()
         results.append([0, 0, 0, 0, 0, 5, 30, 210, 1680, 15120, 10, 110, 1320, 17160, 240240, 15, 240, 4080, 73440, 1395360, 20, 420, 9240, 212520, 5100480, 25, 650, 17550, 491400, 14250600, 30, 930, 29760, 982080, 33390720, 35, 1260, 46620, 1771560, 69090840, 40, 1640, 68880, 2961840, 130320960, 45, 2070, 97290, 4669920, 228826080, 50, 2550, 132600, 7027800, 379501200, 55, 3080, 175560, 10182480, 600766320, 60, 3660, 226920, 14295960, 914941440, 65, 4290, 287430, 19545240, 1348621560, 70, 4970, 357840, 26122320, 1933051680, 75, 5700, 438900, 34234200, 2704501800, 80, 6480, 531360, 44102880, 3704641920, 85, 7310, 635970, 55965360, 4980917040, 90, 8190, 753480, 70073640, 6586922160, 95, 9120, 884640, 86694720, 8582777280, 100, 10100, 1030200, 106110600, 11035502400, 105, 11130, 1190910, 128618280, 14019392520, 110, 12210, 1367520, 154529760, 17616392640, 115, 13340, 1560780, 184172040, 21916472760].reshape([2, 3, 4, 5]))
         results.append([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 0, 61, 124, 189, 256, 325, 396, 469, 544, 621, 700, 781, 864, 949, 1036, 1125, 1216, 1309, 1404, 1501, 1600, 1701, 1804, 1909, 2016, 2125, 2236, 2349, 2464, 2581, 2700, 2821, 2944, 3069, 3196, 3325, 3456, 3589, 3724, 3861, 4000, 4141, 4284, 4429, 4576, 4725, 4876, 5029, 5184, 5341, 5500, 5661, 5824, 5989, 6156, 6325, 6496, 6669, 6844, 7021].reshape([2, 3, 4, 5]))
         results.append([7, 7, 8, 10, 13, 17, 7, 12, 18, 25, 33, 42, 7, 17, 28, 40, 53, 67, 7, 22, 38, 55, 73, 92, 7, 27, 48, 70, 93, 117, 7, 32, 58, 85, 113, 142, 7, 37, 68, 100, 133, 167, 7, 42, 78, 115, 153, 192, 7, 47, 88, 130, 173, 217, 7, 52, 98, 145, 193, 242, 7, 57, 108, 160, 213, 267, 7, 62, 118, 175, 233, 292, 7, 67, 128, 190, 253, 317, 7, 72, 138, 205, 273, 342, 7, 77, 148, 220, 293, 367, 7, 82, 158, 235, 313, 392, 7, 87, 168, 250, 333, 417, 7, 92, 178, 265, 353, 442, 7, 97, 188, 280, 373, 467, 7, 102, 198, 295, 393, 492, 7, 107, 208, 310, 413, 517, 7, 112, 218, 325, 433, 542, 7, 117, 228, 340, 453, 567, 7, 122, 238, 355, 473, 592].reshape([2, 3, 4, 6]))
