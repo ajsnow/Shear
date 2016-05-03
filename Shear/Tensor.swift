@@ -34,75 +34,68 @@ public struct Tensor<T>: TensorProtocol {
     
 }
 
-// MARK: - Initializers
-extension Tensor {
+public extension Tensor {
     
-    public init(shape newShape: [Int], cartesian definition: [Int] -> Element) {
-        guard let newShape = checkAndReduce(newShape) else { fatalError("TensorProtocol cannot contain zero or negative length dimensions") }
+    // MARK: - Internal Init
+    
+    // Internal Init handles otherwise repeatitive tasks.
+    init(shape: [Int], cartesian: ([Int] -> Element)?, linear: (Int -> Element)?, unified: Bool) {
+        guard let shape = checkAndReduce(shape) else { fatalError("A Tensor cannot contain zero or negative length dimensions") }
         
-        shape = newShape
-        stride = calculateStride(shape)
-        count = shape.reduce(1, combine: *)
+        self.shape = shape
+        self.stride = calculateStride(shape)
+        self.count = shape.reduce(1, combine: *)
+        self.unified = unified
         
-        cartesianFn = definition
-        linearFn = transformFn(definition, stride: stride)
-        unified = false
+        switch (cartesian, linear) {
+        case let (.Some(cartesian), .Some(linear)):
+            self.cartesianFn = cartesian
+            self.linearFn = linear
+        case let (.Some(cartesian), .None):
+            self.cartesianFn = cartesian
+            self.linearFn = transformFn(cartesian, stride: stride)
+        case let (.None, .Some(linear)):
+            self.cartesianFn = transformFn(linear, stride: stride)
+            self.linearFn = linear
+        case (.None, .None):
+            fatalError("At least one method of index translation must be defined")
+        }
     }
     
-    public init(shape newShape: [Int], linear definition: Int -> Element) {
-        guard let newShape = checkAndReduce(newShape) else { fatalError("TensorProtocol cannot contain zero or negative length dimensions") }
-        
-        shape = newShape
-        stride = calculateStride(shape)
-        count = shape.reduce(1, combine: *)
-        
-        cartesianFn = transformFn(definition, stride: stride)
-        linearFn = definition
-        unified = false
-    }
+    // MARK: - Conformance Init
     
     /// Construct a Tensor with a `shape` of elements, each initialized to `repeatedValue`.
-    public init(shape newShape: [Int], repeatedValue: Element) {
-        guard let newShape = checkAndReduce(newShape) else { fatalError("TensorProtocol cannot contain zero or negative length dimensions") }
-        
-        shape = newShape
-        stride = calculateStride(shape)
-        count = shape.reduce(1, combine: *)
-        
-        cartesianFn = { _ in repeatedValue }
-        linearFn = { _ in repeatedValue }
-        unified = true
+    public init(shape: [Int], repeatedValue: Element) {
+        self.init(shape: shape, cartesian: { _ in repeatedValue }, linear: { _ in repeatedValue }, unified: true)
     }
     
-    /// Type-erase any TensorProtocol into a Tensor.
-    ///
-    /// The underlying TensorProtocol **must** handle range checking.
-    public init<A: TensorProtocol where A.Element == Element>(_ baseTensor: A) {
-        shape = baseTensor.shape
-        stride = calculateStride(shape)
-        count = shape.reduce(1, combine: *)
-        
-        cartesianFn = { indices in baseTensor[indices] }
-        linearFn = { index in baseTensor[linear: index] }
-        unified = baseTensor.unified
+    /// Convert the native Array of `values` into a Tensor of `shape`.
+    public init(shape: [Int], values: [Element]) {
+        self.init(shape: shape, cartesian: nil, linear: { i in values[i] }, unified: true)
     }
     
-    /// Type-erase and reshape any TensorProtocol into a Tensor.
-    ///
-    /// The underlying TensorProtocol **must** handle range checking.
-    public init<A: TensorProtocol where A.Element == Element>(shape newShape: [Int], baseTensor: A) {
-        guard let newShape = checkAndReduce(newShape) else { fatalError("TensorProtocol cannot contain zero or negative length dimensions") }
+    /// Construct a Tensor with the elements of `tensor` of `shape`.
+    public init(shape: [Int], tensor: Tensor<Element>) {
+        guard shape.reduce(1, combine: *) == tensor.count else { fatalError("Reshaped Tensors must contain the same number of elements") }
+        // It's a little redundant to compute the shape twice, but that's not a high cost.
         
-        shape = newShape
-        stride = calculateStride(shape)
-        count = shape.reduce(1, combine: *)
-        
-        guard count == baseTensor.shape.reduce(1, combine: *) else { fatalError("Reshaped arrays must contain the same number of elements") }
-        
-        let definition = { index in baseTensor[linear: index] }
-        cartesianFn = transformFn(definition, stride: stride)
-        linearFn = definition
-        unified = baseTensor.unified
+        self.init(shape: shape, cartesian: nil, linear: tensor.linearFn, unified: tensor.unified) // The cartesian function changes unless the shape == tensor.shape, so we recompute it from the linear function that does not change.
+    }
+    
+    /// Type-convert any TensorProtocol adopter into a Tensor.
+    public init<A: TensorProtocol where A.Element == Element>(_ tensor: A) {
+        // Likely doubles up on bounds checking.
+        self.init(shape: tensor.shape, cartesian: { indices in tensor[indices] }, linear: { index in tensor[linear: index] }, unified: tensor.unified)
+    }
+    
+    /// Constructs a Tensor with the given `shape` where the values are a function of their `cartesian` indices.
+    public init(shape: [Int], cartesian: [Int] -> Element) {
+        self.init(shape: shape, cartesian: cartesian, linear: nil, unified: false) // We have to be conservative with unified's condition here since we could get closures dragging lots of Tensors in with them.
+    }
+    
+    /// Constructs a Tensor with the given `shape` where the values are a function of their `linear` index.
+    public init(shape: [Int], linear: Int -> Element) {
+       self.init(shape: shape, cartesian: nil, linear: linear, unified: false) // We have to be conservative with unified's condition here since we could get closures dragging lots of Tensors in with them.
     }
     
 }

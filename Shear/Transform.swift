@@ -8,12 +8,13 @@ public extension TensorProtocol {
     
     /// Returns a new Tensor with the contents of `self` with `shape`.
     func reshape(shape: [Int]) -> Tensor<Element> {
-        return Tensor(shape: shape, baseTensor: self)
+        // REMOVE DEFENSIVE CONVERSION LATER
+        return Tensor(shape: shape, tensor: Tensor(self))
     }
     
     /// Returns a new Tensor with the contents of `self` as a vector.
     func ravel() -> Tensor<Element> {
-        return Tensor(shape: [Int(allElements.count)], baseTensor: self)
+        return reshape([Int(allElements.count)])
     }
     
     /// Reverse the order of Elements along the last axis (columns).
