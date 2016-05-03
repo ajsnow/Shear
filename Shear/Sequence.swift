@@ -8,9 +8,9 @@ import Foundation
 public extension TensorProtocol {
     
     /// Slices the TensorProtocol into a sequence of `TensorSlice`s on its nth `deminsion`.
-    func sequence(deminsion: Int) -> [TensorSlice<Element>] {
+    func sequence(deminsion: Int) -> [Tensor<Element>] {
         if (isEmpty || isScalar) && deminsion == 0 { // TODO: Consider making sequencing scalar or empty arrays an error.
-            return [TensorSlice(baseTensor: self)]
+            return [Tensor(self)]
         }
         guard deminsion < rank else { fatalError("An array cannot be sequenced on a deminsion it does not have") }
         
@@ -25,13 +25,13 @@ public extension TensorProtocol {
     /// Slices the TensorProtocol on its first dimension.
     /// Since our DenseTensor is stored in Row-Major order, sequencing on the first
     /// dimension allows for better memory access patterns than any other sequence.
-    var sequenceFirst: [TensorSlice<Element>] {
+    var sequenceFirst: [Tensor<Element>] {
         return sequence(0)
     }
     
     /// Slices the TensorProtocol on its last dimension.
     /// Tends to not be cache friendly...
-    var sequenceLast: [TensorSlice<Element>] {
+    var sequenceLast: [Tensor<Element>] {
         return sequence(rank != 0 ? rank - 1 : 0)
     }
     

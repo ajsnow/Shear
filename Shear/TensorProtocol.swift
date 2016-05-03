@@ -48,10 +48,10 @@ public protocol TensorProtocol: CustomStringConvertible {
     subscript(indices: [Int]) -> Element { get }
     
     /// Returns an `TensorSlice` view into the base `TensorProtocol` determined by the set of `TensorIndex`s.
-    subscript(indices: TensorIndex...) -> TensorSlice<Element> { get }
+    subscript(indices: TensorIndex...) -> Tensor<Element> { get }
     
     /// Returns an `TensorSlice` view into the base `TensorProtocol` determined by the set of `TensorIndex`s.
-    subscript(indices: [TensorIndex]) -> TensorSlice<Element> { get }
+    subscript(indices: [TensorIndex]) -> Tensor<Element> { get }
     
     /// Returns the element for the given linear index.
     subscript(linear linear: Int) -> Element { get }

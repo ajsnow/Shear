@@ -116,12 +116,12 @@ extension TensorSlice {
 // MARK: - Slice Indexing
 extension TensorSlice {
     
-    public subscript(indices: [TensorIndex]) -> TensorSlice<Element> {
-        return TensorSlice(baseTensor: self, viewIndices: indices)
+    public subscript(indices: [TensorIndex]) -> Tensor<Element> {
+        return Tensor(TensorSlice(baseTensor: self, viewIndices: indices))
     }
     
-    public subscript(indices: TensorIndex...) -> TensorSlice<Element> {
-        return TensorSlice(baseTensor: self, viewIndices: indices)
+    public subscript(indices: TensorIndex...) -> Tensor<Element> {
+        return Tensor(TensorSlice(baseTensor: self, viewIndices: indices))
     }
     
 }

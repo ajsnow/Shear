@@ -132,12 +132,12 @@ extension Tensor {
 // MARK: - Slice Indexing
 extension Tensor {
     
-    public subscript(indices: [TensorIndex]) -> TensorSlice<Element> {
-        return TensorSlice(baseTensor: self, viewIndices: indices) // Bounds checking happens in TensorSlice's init.
+    public subscript(indices: [TensorIndex]) -> Tensor<Element> {
+        return Tensor(TensorSlice(baseTensor: self, viewIndices: indices)) // Bounds checking happens in TensorSlice's init.
     }
     
-    public subscript(indices: TensorIndex...) -> TensorSlice<Element> {
-        return TensorSlice(baseTensor: self, viewIndices: indices) // Bounds checking happens in TensorSlice's init.
+    public subscript(indices: TensorIndex...) -> Tensor<Element> {
+        return Tensor(TensorSlice(baseTensor: self, viewIndices: indices)) // Bounds checking happens in TensorSlice's init.
     }
     
 }
