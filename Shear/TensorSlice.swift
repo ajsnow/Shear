@@ -4,11 +4,11 @@
 
 import Foundation
 
-public struct TensorSlice<T>: TensorProtocol {
+struct TensorSlice<T>: TensorProtocol {
     
     // MARK: - Associated Types
     
-    public typealias Element = T
+    typealias Element = T
     
     // MARK: - Underlying Storage
     
@@ -23,9 +23,9 @@ public struct TensorSlice<T>: TensorProtocol {
     
     // MARK: - Stored Properties
     
-    public let shape: [Int]
+    let shape: [Int]
     
-    public let unified: Bool
+    let unified: Bool
     
     /// The stride needed to index into storage.
     private let stride: [Int]
@@ -76,11 +76,11 @@ extension TensorSlice {
 // MARK: - All Elements Views
 extension TensorSlice {
     
-    public var allElements: AnyRandomAccessCollection<Element> {
+    var allElements: AnyRandomAccessCollection<Element> {
         return AnyRandomAccessCollection(AllElementsCollection(array: self))
     }
     
-    public subscript(linear linearIndex: Int) -> Element {
+    subscript(linear linearIndex: Int) -> Element {
         return self[convertIndices(linear: linearIndex, stride: stride)]
     }
     
@@ -101,12 +101,12 @@ extension TensorSlice {
         }
     }
     
-    public subscript(indices: [Int]) -> Element {
+    subscript(indices: [Int]) -> Element {
         let storageIndices = getStorageIndices(indices)
         return storage[storageIndices]
     }
     
-    public subscript(indices: Int...) -> Element {
+    subscript(indices: Int...) -> Element {
         let storageIndices = getStorageIndices(indices)
         return storage[storageIndices]
     }
@@ -116,11 +116,11 @@ extension TensorSlice {
 // MARK: - Slice Indexing
 extension TensorSlice {
     
-    public subscript(indices: [TensorIndex]) -> Tensor<Element> {
+    subscript(indices: [TensorIndex]) -> Tensor<Element> {
         return Tensor(TensorSlice(baseTensor: self, viewIndices: indices))
     }
     
-    public subscript(indices: TensorIndex...) -> Tensor<Element> {
+    subscript(indices: TensorIndex...) -> Tensor<Element> {
         return Tensor(TensorSlice(baseTensor: self, viewIndices: indices))
     }
     
