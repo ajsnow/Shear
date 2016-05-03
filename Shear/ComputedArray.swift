@@ -44,8 +44,8 @@ extension ComputedArray {
         stride = calculateStride(shape)
         count = shape.reduce(1, combine: *)
         
-        cartesianFn = checkFn(definition, shape: shape)
-        linearFn = checkFn(transformFn(definition, stride: stride), count: count)
+        cartesianFn = definition
+        linearFn = transformFn(definition, stride: stride)
         unified = false
     }
     
@@ -56,8 +56,8 @@ extension ComputedArray {
         stride = calculateStride(shape)
         count = shape.reduce(1, combine: *)
         
-        cartesianFn = checkFn(transformFn(definition, stride: stride), shape: shape)
-        linearFn = checkFn(definition, count: count)
+        cartesianFn = transformFn(definition, stride: stride)
+        linearFn = definition
         unified = false
     }
     
@@ -69,8 +69,8 @@ extension ComputedArray {
         stride = calculateStride(shape)
         count = shape.reduce(1, combine: *)
         
-        cartesianFn = checkFn({ _ in repeatedValue }, shape: shape)
-        linearFn = checkFn({ _ in repeatedValue }, count: count)
+        cartesianFn = { _ in repeatedValue }
+        linearFn = { _ in repeatedValue }
         unified = true
     }
     
@@ -100,10 +100,11 @@ extension ComputedArray {
         guard count == baseArray.shape.reduce(1, combine: *) else { fatalError("Reshaped arrays must contain the same number of elements") }
         
         let definition = { index in baseArray[linear: index] }
-        cartesianFn = checkFn(transformFn(definition, stride: stride), shape: shape)
+        cartesianFn = transformFn(definition, stride: stride)
         linearFn = definition
         unified = baseArray.unified
     }
+    
 }
 
 // MARK: - Linear Access
@@ -139,27 +140,13 @@ extension ComputedArray {
 extension ComputedArray {
     
     public subscript(indices: [ArrayIndex]) -> ArraySlice<Element> {
-        return ArraySlice(baseArray: self, viewIndices: indices)
+        return ArraySlice(baseArray: self, viewIndices: indices) // Bounds checking happens in ArraySlice's init.
     }
     
     public subscript(indices: ArrayIndex...) -> ArraySlice<Element> {
-        return ArraySlice(baseArray: self, viewIndices: indices)
+        return ArraySlice(baseArray: self, viewIndices: indices) // Bounds checking happens in ArraySlice's init.
     }
     
-}
-
-private func checkFn<A>(cartesianFn: [Int] -> A, shape: [Int]) -> [Int] -> A {
-    return { indices in
-        guard checkBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
-        return cartesianFn(indices)
-    }
-}
-
-private func checkFn<A>(linearFn: Int -> A, count: Int) -> Int -> A {
-    return { index in
-        guard checkBounds(index, forCount: count) else { fatalError("Array index out of range") }
-        return linearFn(index)
-    }
 }
 
 private func transformFn<A>(cartesianFn: [Int] -> A, stride: [Int]) -> Int -> A {
