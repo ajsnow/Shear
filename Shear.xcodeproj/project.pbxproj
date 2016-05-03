@@ -14,7 +14,7 @@
 		EB1C61561B5327500092817E /* TensorProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C61551B5327500092817E /* TensorProtocol.swift */; };
 		EB1C615A1B5327B20092817E /* NumericType.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C61591B5327B20092817E /* NumericType.swift */; };
 		EB1C615C1B5327BC0092817E /* NumericMisc.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1C615B1B5327BC0092817E /* NumericMisc.swift */; };
-		EB3ED7CD1B78811C0092817E /* ArrayIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */; };
+		EB3ED7CD1B78811C0092817E /* TensorIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3ED7CC1B78811C0092817E /* TensorIndex.swift */; };
 		EB77109E1BA8B0D4006FE242 /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77109D1BA8B0D4006FE242 /* SwiftExtensions.swift */; };
 		EB77C9D61CD81514006FE242 /* EncloseDisclose.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77C9D51CD81514006FE242 /* EncloseDisclose.swift */; };
 		EB77C9D81CD8158D006FE242 /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77C9D71CD8158D006FE242 /* Sequence.swift */; };
@@ -53,7 +53,7 @@
 		EB1C61551B5327500092817E /* TensorProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = TensorProtocol.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		EB1C61591B5327B20092817E /* NumericType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumericType.swift; sourceTree = "<group>"; };
 		EB1C615B1B5327BC0092817E /* NumericMisc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumericMisc.swift; sourceTree = "<group>"; };
-		EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayIndex.swift; sourceTree = "<group>"; };
+		EB3ED7CC1B78811C0092817E /* TensorIndex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TensorIndex.swift; sourceTree = "<group>"; };
 		EB77109D1BA8B0D4006FE242 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
 		EB777C4D1CD82863006FE242 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		EB777C4E1CD82863006FE242 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -164,7 +164,7 @@
 			isa = PBXGroup;
 			children = (
 				EBA365321BAFC2BE0092817E /* AllElementsCollection.swift */,
-				EB3ED7CC1B78811C0092817E /* ArrayIndex.swift */,
+				EB3ED7CC1B78811C0092817E /* TensorIndex.swift */,
 				EB77109D1BA8B0D4006FE242 /* SwiftExtensions.swift */,
 				EBE948BF1BD44DBB001A40C8 /* Util.swift */,
 			);
@@ -295,7 +295,7 @@
 				EBE948C01BD44DBB001A40C8 /* Util.swift in Sources */,
 				EB77C9DC1CD81646006FE242 /* Merge.swift in Sources */,
 				EB77C9D61CD81514006FE242 /* EncloseDisclose.swift in Sources */,
-				EB3ED7CD1B78811C0092817E /* ArrayIndex.swift in Sources */,
+				EB3ED7CD1B78811C0092817E /* TensorIndex.swift in Sources */,
 				EB03C3FE1BD43A40001A40C8 /* Pair.swift in Sources */,
 				EBC220E81CD5B03F006FE242 /* Tensor.swift in Sources */,
 				EBEB92C21B77FC660092817E /* TensorSlice.swift in Sources */,
