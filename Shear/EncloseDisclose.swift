@@ -41,7 +41,7 @@ public extension TensorProtocol {
             return internalIndices
         }
         
-        return Tensor(shape: newShape, linear: { Tensor(self[internalIndicesList[$0]]) })
+        return Tensor(shape: newShape, linear: { self[internalIndicesList[$0]] })
     }
     
 }

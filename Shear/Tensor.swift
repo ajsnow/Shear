@@ -4,11 +4,7 @@
 
 import Foundation
 
-public struct Tensor<T>: TensorProtocol {
-    
-    // MARK: - Associated Types
-    
-    public typealias Element = T
+public struct Tensor<Element>: TensorProtocol {
     
     // MARK: - Underlying Storage
     

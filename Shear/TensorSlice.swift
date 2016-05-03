@@ -4,11 +4,7 @@
 
 import Foundation
 
-struct TensorSlice<T>: TensorProtocol {
-    
-    // MARK: - Associated Types
-    
-    typealias Element = T
+struct TensorSlice<Element>: TensorProtocol {
     
     // MARK: - Underlying Storage
     
