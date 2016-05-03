@@ -81,16 +81,7 @@ extension ArraySlice {
     }
     
     public subscript(linear linearIndex: Int) -> Element {
-        return self[linearToCartesianIndices(linearIndex)]
-    }
-    
-    private func linearToCartesianIndices(index: Int) -> [Int] {
-        var index = index
-        return stride.map { s in
-            let i: Int
-            (i, index) = (index / s, index % s)
-            return i
-        }
+        return self[convertIndices(linear: linearIndex, stride: stride)]
     }
     
 }
@@ -100,17 +91,7 @@ extension ArraySlice {
 extension ArraySlice {
     
     private func getStorageIndices(indices: [Int]) -> [Int] {
-        // First, we check to see if we have the right number of indices to address an element:
-        if indices.count != rank {
-            fatalError("Array indices don't match array shape")
-        }
-        
-        // Next, we check to see if all the indices are between 0 and the count of their demension:
-        for (index, count) in zip(indices, shape) {
-            if index < 0 || index >= count {
-                fatalError("Array index out of range")
-            }
-        }
+        guard checkBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
         
         // Now that we're bounds checked, we can do this knowing we have enough g.next()s & without checking if we'll be within the various arrays
         var g = indices.generate()
