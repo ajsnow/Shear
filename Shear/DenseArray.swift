@@ -138,41 +138,25 @@ extension DenseArray {
 extension DenseArray {
     
     func getStorageIndex(indices: [Int]) -> Int {
-        // First, we check to see if we have the right number of indices to address an element:
-        if indices.count != rank {
-            fatalError("Array indices don't match array shape")
-        }
-        
-        // Next, we check to see if all the indices are between 0 and the count of their demension:
-        for (index, count) in zip(indices, shape) {
-            if index < 0 || index >= count {
-                fatalError("Array index out of range")
-            }
-        }
-        
-        // We've meet our preconditions, so lets calculate the target index:
-        return zip(indices, stride).map(*).reduce(0, combine: +) // Aside: clever readers may notice that this is the dot product of the indices and stride vectors.
+        guard checkBounds(indices, forShape: shape) else { fatalError("Array index out of range") }
+        return convertIndices(cartesian: indices, stride: stride)
     }
     
     public subscript(indices: [Int]) -> Element {
         get {
-            let storageIndex = getStorageIndex(indices)
-            return storage[storageIndex]
+            return self[linear: getStorageIndex(indices)]
         }
         set(newValue) {
-            let storageIndex = getStorageIndex(indices)
-            storage[storageIndex] = newValue
+            self[linear: getStorageIndex(indices)] = newValue
         }
     }
     
     public subscript(indices: Int...) -> Element {
         get {
-            let storageIndex = getStorageIndex(indices)
-            return storage[storageIndex]
+            return self[linear: getStorageIndex(indices)]
         }
         set(newValue) {
-            let storageIndex = getStorageIndex(indices)
-            storage[storageIndex] = newValue
+            self[linear: getStorageIndex(indices)] = newValue
         }
     }
 
