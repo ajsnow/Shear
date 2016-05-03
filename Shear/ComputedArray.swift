@@ -38,9 +38,9 @@ public struct ComputedArray<T>: Array {
 extension ComputedArray {
     
     public init(shape newShape: [Int], cartesian definition: [Int] -> Element) {
-        guard !newShape.contains({ $0 < 1 }) else { fatalError("Array cannot contain zero or negative length dimensions") }
+        guard let newShape = checkAndReduce(newShape) else { fatalError("Array cannot contain zero or negative length dimensions") }
         
-        shape = newShape.filter { $0 > 1 } // shape is defined in terms of non-unary dimensions.
+        shape = newShape
         stride = calculateStride(shape)
         count = shape.reduce(1, combine: *)
         
@@ -50,9 +50,9 @@ extension ComputedArray {
     }
     
     public init(shape newShape: [Int], linear definition: Int -> Element) {
-        guard !newShape.contains({ $0 < 1 }) else { fatalError("Array cannot contain zero or negative length dimensions") }
+        guard let newShape = checkAndReduce(newShape) else { fatalError("Array cannot contain zero or negative length dimensions") }
         
-        shape = newShape.filter { $0 > 1 } // shape is defined in terms of non-unary dimensions.
+        shape = newShape
         stride = calculateStride(shape)
         count = shape.reduce(1, combine: *)
         
@@ -63,9 +63,9 @@ extension ComputedArray {
     
     /// Construct a ComputedArray with a `shape` of elements, each initialized to `repeatedValue`.
     public init(shape newShape: [Int], repeatedValue: Element) {
-        guard !newShape.contains({ $0 < 1 }) else { fatalError("Array cannot contain zero or negative length dimensions") }
+        guard let newShape = checkAndReduce(newShape) else { fatalError("Array cannot contain zero or negative length dimensions") }
         
-        shape = newShape.filter { $0 > 1 } // shape is defined in terms of non-unary dimensions.
+        shape = newShape
         stride = calculateStride(shape)
         count = shape.reduce(1, combine: *)
         
@@ -91,9 +91,9 @@ extension ComputedArray {
     ///
     /// The underlying Array **must** handle range checking.
     public init<A: Array where A.Element == Element>(shape newShape: [Int], baseArray: A) {
-        guard !newShape.contains({ $0 < 1 }) else { fatalError("Array cannot contain zero or negative length dimensions") }
+        guard let newShape = checkAndReduce(newShape) else { fatalError("Array cannot contain zero or negative length dimensions") }
         
-        shape = newShape.filter { $0 > 1 } // shape is defined in terms of non-unary dimensions.
+        shape = newShape
         stride = calculateStride(shape)
         count = shape.reduce(1, combine: *)
         

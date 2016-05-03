@@ -23,7 +23,7 @@ public struct DenseArray<T>: Array, MutableArray {
     
     /// The stride needed to index into storage.
     private let stride: [Int]
-
+    
 }
 
 // MARK: - Initializers
@@ -31,9 +31,9 @@ extension DenseArray {
     
     /// Reshape a one-dimensional, built-in `baseArray` into a DenseArray of `shape`.
     public init(shape newShape: [Int], baseArray: [Element]) {
-        guard !newShape.contains({ $0 < 1 }) else { fatalError("Array cannot contain zero or negative length dimensions.") }
+        guard let newShape = checkAndReduce(newShape) else { fatalError("Array cannot contain zero or negative length dimensions") }
         
-        shape = newShape.filter { $0 > 1 } // shape is defined in terms of non-unary dimensions.
+        shape = newShape
         stride = calculateStride(shape)
         
         let count = shape.isEmpty ? 1 : shape.reduce(*)
@@ -71,19 +71,18 @@ extension DenseArray {
         C.Generator.Element == A,
         C.Index.Distance == Int>
         (collection: C) {
-            if collection.isEmpty {
-                fatalError("Cannot construct an Array from empty collection: can't infer shape")
-            }
-            
-            
-            let subShape = collection.first!.shape
-            guard !collection.contains({$0.shape != subShape}) else {
-                fatalError("Arrays in the collection constructor must have the same shape")
-            }
-            
-            let shape = [collection.count] as [Int] + subShape
-            let storage = collection.reduce([Element](), combine: {$0 + $1.allElements})
-            self.init(shape: shape, baseArray: storage)
+        if collection.isEmpty {
+            fatalError("Cannot construct an Array from empty collection: can't infer shape")
+        }
+        
+        let subShape = collection.first!.shape
+        guard !collection.contains({$0.shape != subShape}) else {
+            fatalError("Arrays in the collection constructor must have the same shape")
+        }
+        
+        let shape = [collection.count] as [Int] + subShape
+        let storage = collection.reduce([Element](), combine: {$0 + $1.allElements})
+        self.init(shape: shape, baseArray: storage)
     }
     
     /// Construct a DenseArray from a `collection` of Arrays.
@@ -94,24 +93,24 @@ extension DenseArray {
         C.Generator.Element == A,
         C.Index.Distance == Int>
         (collectionOnLastAxis collection: C) {
-            if collection.isEmpty {
-                fatalError("Cannot construct an Array from empty collection: can't infer shape")
+        if collection.isEmpty {
+            fatalError("Cannot construct an Array from empty collection: can't infer shape")
+        }
+        
+        let subShape = collection.first!.shape
+        guard !collection.contains({ $0.shape != subShape }) else {
+            fatalError("Arrays in the collection constructor must have the same shape")
+        }
+        
+        
+        let shape = subShape + [collection.count] as [Int]
+        var storage = [Element]()
+        for i in 0..<Int(collection.first!.allElements.count) {
+            for array in collection {
+                storage.append(array[linear: i])
             }
-            
-            let subShape = collection.first!.shape
-            guard !collection.contains({ $0.shape != subShape }) else {
-                fatalError("Arrays in the collection constructor must have the same shape")
-            }
-            
-            
-            let shape = subShape + [collection.count] as [Int]
-            var storage = [Element]()
-            for i in 0..<Int(collection.first!.allElements.count) {
-                for array in collection {
-                    storage.append(array[linear: i])
-                }
-            }
-            self.init(shape: shape, baseArray: storage)
+        }
+        self.init(shape: shape, baseArray: storage)
     }
     
 }
@@ -159,7 +158,7 @@ extension DenseArray {
             self[linear: getStorageIndex(indices)] = newValue
         }
     }
-
+    
 }
 
 // MARK: - Slice Indexing
@@ -172,5 +171,5 @@ extension DenseArray {
     public subscript(indices: ArrayIndex...) -> ArraySlice<Element> {
         return ArraySlice(baseArray: self, viewIndices: indices)
     }
-
+    
 }

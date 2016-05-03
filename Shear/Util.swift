@@ -46,3 +46,9 @@ func checkBounds(indices: [Int], forShape shape: [Int]) -> Bool {
 func checkBounds(index: Int, forCount count: Int) -> Bool {
     return 0 ..< count ~= index
 }
+
+/// Returns a shape define in terms of it's non-unitary dimensions, if given an otherwise valid shape. Otherwise returns nil.
+func checkAndReduce(shape: [Int]) -> [Int]? {
+    guard !shape.contains({ $0 < 1 }) else { return nil }
+    return shape.filter { $0 > 1 }
+}

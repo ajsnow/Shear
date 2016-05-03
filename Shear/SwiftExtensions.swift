@@ -45,11 +45,21 @@ public extension CollectionType where SubSequence.Generator.Element == Generator
     
 }
 
-extension CollectionType where Generator.Element: Comparable {
+extension CollectionType where Generator.Element: Equatable {
     
     func allEqual() -> Bool {
         guard let first = self.first else { return true } // An empty array certainly has uniform contents.
         return !self.contains { $0 != first }
+    }
+    
+}
+
+extension CollectionType {
+    
+    func allEqual<A where A: Equatable>(compare: Generator.Element -> A) -> Bool {
+        guard let first = self.first else { return true } // An empty array certainly has uniform contents.
+        let firstTransformed = compare(first)
+        return !self.contains { compare($0) != firstTransformed }
     }
     
 }
