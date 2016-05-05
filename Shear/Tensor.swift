@@ -78,6 +78,24 @@ public extension Tensor {
         self.init(shape: shape, cartesian: nil, linear: tensor.linearFn, unified: tensor.unified) // The cartesian function changes unless the shape == tensor.shape, so we recompute it from the linear function that does not change.
     }
     
+    /// Construct a Tensor a slice with `view` into `tensor`.
+    init(view: [TensorIndex], tensor: Tensor<Element>) {
+        guard let (shape, compactView) = makeShape(tensor.shape, view: view) else {
+            fatalError("Invalid bounds for an TensorSlice")
+        }
+        
+        let cartesian = { (indices: [Int]) -> Element in
+            var g = indices.generate()
+            let underlyingIndices = zip(compactView, view).map { (c, v) -> Int in
+                if let d = c { return d }
+                return convertIndex(g.next()!, view: v)
+            }
+            return tensor.cartesianFn(underlyingIndices)
+        }
+        
+        self.init(shape: shape, cartesian: cartesian, linear: nil, unified: false)
+    }
+    
     /// Type-convert any TensorProtocol adopter into a Tensor.
     public init<A: TensorProtocol where A.Element == Element>(_ tensor: A) {
         // Likely doubles up on bounds checking.
@@ -129,11 +147,12 @@ extension Tensor {
 extension Tensor {
     
     public subscript(indices: [TensorIndex]) -> Tensor<Element> {
-        return Tensor(TensorSlice(baseTensor: self, viewIndices: indices)) // Bounds checking happens in TensorSlice's init.
+        return Tensor(view: indices, tensor: self)
+        
     }
     
     public subscript(indices: TensorIndex...) -> Tensor<Element> {
-        return Tensor(TensorSlice(baseTensor: self, viewIndices: indices)) // Bounds checking happens in TensorSlice's init.
+        return Tensor(view: indices, tensor: self)
     }
     
 }

@@ -126,7 +126,7 @@ extension TensorSlice {
 
 // TODO: Make these less ugly.
 
-private func makeShape(baseShape: [Int], view: [TensorIndex]) -> (shape: [Int], compactedView: [Int?])? {
+func makeShape(baseShape: [Int], view: [TensorIndex]) -> (shape: [Int], compactedView: [Int?])? {
     // Assumes view is within bounds.
     func calculateBound(baseCount: Int, view: TensorIndex) -> Int {
         switch view {
@@ -170,7 +170,7 @@ private func makeShape(baseShape: [Int], view: [TensorIndex]) -> (shape: [Int], 
     return (uncompactedShape.filter {$0 != 1}, compactedView)
 }
 
-private func convertIndex(index: Int, view: TensorIndex) -> Int {
+func convertIndex(index: Int, view: TensorIndex) -> Int {
     switch view {
     case .All: return index
     case .SingleValue: fatalError("This cannot happen")
@@ -179,7 +179,7 @@ private func convertIndex(index: Int, view: TensorIndex) -> Int {
     }
 }
 
-private func transformToAbsoluteViewIndices<T>(baseSlice: TensorSlice<T>, view: [TensorIndex]) -> [TensorIndex] {
+func transformToAbsoluteViewIndices<T>(baseSlice: TensorSlice<T>, view: [TensorIndex]) -> [TensorIndex] {
     guard baseSlice.shape.count == view.count else { fatalError("Incorrect number of indices to slice array") }
     guard !zip(baseSlice.shape, view).map({$1.isInbounds($0)}).contains(false) else { fatalError("Slice indices are out of bounds") }
     
