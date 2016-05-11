@@ -16,25 +16,12 @@ class TensorSliceTests: XCTestCase {
     let Scalar = iota(1)
     
     var computedTensors: [Tensor<Int>] = []
-    var allTensors: [Shear.TensorSlice<Int>] = []
+    var allTensors: [Tensor<Int>] = []
     
     override func setUp() {
         super.setUp()
         computedTensors = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
-        allTensors = computedTensors.map { TensorSlice(baseTensor: $0) }
-    }
-    
-    func testInits() {
-        let ba = iota(10).reshape([5, 2])
-        let fda = Shear.TensorSlice(baseTensor: ba)
-        let pda = Shear.TensorSlice(baseTensor: ba, viewIndices: [$, $])
-        let fsa = Shear.TensorSlice(baseTensor: pda)
-        let psa = Shear.TensorSlice(baseTensor: fsa, viewIndices: [$, $])
-        
-        let arrays = [fda, pda, fsa, psa]
-        arrays.forEach {
-            XCTAssert($0.shape == [5, 2])
-        }
+        allTensors = computedTensors.map { Tensor(view: $0.shape.map { _ in $}, tensor: $0) }
     }
     
     func testShape() {

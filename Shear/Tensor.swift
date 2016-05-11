@@ -164,3 +164,57 @@ private func transformFn<A>(cartesianFn: [Int] -> A, stride: [Int]) -> Int -> A 
 private func transformFn<A>(linearFn: Int -> A, stride: [Int]) -> [Int] -> A {
     return { indices in linearFn(convertIndices(cartesian: indices, stride: stride)) }
 }
+
+private func makeShape(baseShape: [Int], view: [TensorIndex]) -> (shape: [Int], compactedView: [Int?])? {
+    // Assumes view is within bounds.
+    func calculateBound(baseCount: Int, view: TensorIndex) -> Int {
+        switch view {
+        case .All: return baseCount
+        case .SingleValue: return 1
+        case .List(let list): return list.count
+        case .Range(let low, let high): return high - low
+        }
+    }
+    
+    func calculateUncompactedShape(baseShape: [Int], view: [TensorIndex]) -> [Int] {
+        return zip(baseShape, view).map(calculateBound)
+    }
+    
+    func calculateCompactedBound(baseCount: Int, view: TensorIndex) -> Int? {
+        guard baseCount == 1 else { return nil }
+        switch view {
+        case .All:
+            return 0 // Cannot be reached, as there cannot be singular dimensions in the base array's shape either.
+        case .SingleValue(let sv):
+            return sv
+        case .List(let list):
+            return list.first! // If the list is empty we have a problem we should have detected earlier.
+        case .Range(let low, _):
+            return low
+        }
+    }
+    
+    func calculateCompactedView(uncompactedShape: [Int], view: [TensorIndex]) -> [Int?] {
+        return zip(uncompactedShape, view).map(calculateCompactedBound)
+    }
+    
+    // Check for correct number of indices
+    guard baseShape.count == view.count else { return nil }
+    guard !zip(baseShape, view).map({$1.isInbounds($0)}).contains(false) else { return nil }
+    
+    let uncompactedShape = calculateUncompactedShape(baseShape, view: view)
+    guard !uncompactedShape.contains({$0 < 1}) else { return nil }
+    
+    let compactedView = calculateCompactedView(uncompactedShape, view: view)
+    return (uncompactedShape.filter {$0 != 1}, compactedView)
+}
+
+private func convertIndex(index: Int, view: TensorIndex) -> Int {
+    switch view {
+    case .All: return index
+    case .SingleValue: fatalError("This cannot happen")
+    case .List(let list): return list[index]
+    case .Range(let low, _): return low + index
+    }
+}
+
