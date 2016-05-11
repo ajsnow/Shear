@@ -109,6 +109,7 @@ public extension TensorProtocol {
 
 public extension TensorProtocol {
     
+    /// Take all of the elements of `Self` into a native array and build a new `Tensor` referencing that array.
     func unify() -> Tensor<Element> {
         return Tensor(shape: shape, values: [Element](allElements))
     }
@@ -120,7 +121,7 @@ public extension TensorProtocol {
 // (which can be faster since native arrays can test if they point to the same underlying buffer).
 // Likewise, TensorSlices equality could check their masks & underlying DenseTensors for equality which could sometimes get the same optimization.
 public func ==<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
-    return left.shape == right.shape && zip(left, right).map(==).allElements.filter { $0 == false }.isEmpty
+    return left.shape == right.shape && !zip(left, right).allElements.contains(!=)
 }
 
 public func !=<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {

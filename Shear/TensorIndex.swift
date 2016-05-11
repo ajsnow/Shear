@@ -28,7 +28,7 @@ public enum TensorIndex: IntegerLiteralConvertible, ArrayLiteralConvertible {
         case .Range(let startIndex, let endIndex):
             return startIndex <= endIndex && endIndex <= bound
         case .List(let indices):
-            return indices.filter {$0 >= bound}.isEmpty
+            return !indices.contains { $0 >= bound }
         }
     }
     
