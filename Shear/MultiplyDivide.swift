@@ -35,7 +35,7 @@ public func *<A: TensorProtocol, X: NumericType where A.Element == X>
 /// Tensor / Outer Product
 public func ⊗<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: NumericType>
     (left: A, right: B) -> Tensor<A.Element> {
-        return outer(left, right, product: *)
+        return outer(left, right).map(*)
 }
 
 // As far as I can tell, no one actually uses a generalized cross product

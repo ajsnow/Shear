@@ -208,7 +208,7 @@ class OpertaionsTests: XCTestCase {
     }
 
     func testOuterInner() {
-        let op = outer(vEvens, vOdds, product: *)
+        let op = outer(vEvens, vOdds).map(*)
         XCTAssert(op == [
             0,  0,  0,  0,
             2,  6, 10, 14,

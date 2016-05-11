@@ -15,27 +15,25 @@ public func zip<A: TensorProtocol, B: TensorProtocol>(left: A, _ right: B) -> Te
 
 // MARK: - Generalized Inner and Outer Products
 
-/// Returns the outer product `transform` of `left` and `right`.
-/// The outer product is the result of  all elements of `left` and `right` being `transform`'d.
-public func outer<A: TensorProtocol, B: TensorProtocol, C>
-    (left: A, _ right: B, product: (A.Element, B.Element) -> C) -> Tensor<C> {
+/// Returns a tensor of all possible pairings of elements between `left` and `right`.
+public func outer<A: TensorProtocol, B: TensorProtocol>(left: A, _ right: B) -> Tensor<(A.Element, B.Element)> {
     return Tensor(shape: left.shape + right.shape, cartesian: { indices in
         let l = left[[Int](indices[0..<left.rank])]
         let r = right[[Int](indices[left.rank..<indices.count])]
-        return product(l, r) // This one looks a lot slower than the eager version...
+        return (l, r)
     })
 }
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, +)`.
 public func inner<A: TensorProtocol, B: TensorProtocol, C>(left: A, _ right: B, product: (Tensor<A.Element>, Tensor<B.Element>) -> Tensor<C>, sum: (C, C) -> C) -> Tensor<C> {
-    return outer(left.enclose(left.rank - 1), right.enclose(0), product: product).map { $0.reduce(sum).scalar! }
+    return outer(left.enclose(left.rank - 1), right.enclose(0)).map { product($0.0, $0.1).reduce(sum).scalar! }
 }
 
 /// Returns the inner product of `left` and `right`, fused with `transform` and reduced by `combine`.
 /// For example the dot product of A & B is defined as `inner(A, B, *, 0, +)`.
 public func inner<A: TensorProtocol, B: TensorProtocol, C, D>(left: A, _ right: B, product: (Tensor<A.Element>, Tensor<B.Element>) -> Tensor<C>, sum: (D, C) -> D, initialSum: D) -> Tensor<D> {
-    return outer(left.enclose(left.rank - 1), right.enclose(0), product: product).map { $0.reduce(initialSum, combine: sum).scalar! }
+    return outer(left.enclose(left.rank - 1), right.enclose(0)).map { product($0.0, $0.1).reduce(initialSum, combine: sum).scalar! }
 }
 
 // MARK: - Multi-Map
