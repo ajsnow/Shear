@@ -12,20 +12,16 @@ public protocol TensorProtocol: CustomStringConvertible {
     /// The type of elements stored by this `TensorProtocol`.
     associatedtype Element
     
-    // /// The type of a linear view of the elements stored by this `TensorProtocol`.
-    // // TODO: As of Swift 2.2, we cannot contrain the CollecitonType's Element to be the same as the Tensor's Element. According to the mailing list, this ability will land in Swift 3
-    // associatedtype ElementsView: CollectionType
-    
     // MARK: - Properties
     
     /// The shape (length in each demision) of this `TensorProtocol`.
     /// The last element is the count of columns; the first is the count along the `TensorProtocol`'s highest dimension.
     ///
     /// e.g.
-    ///     If the TensorProtocol is a 3 by 4 matrix, its shape is [3, 4]
-    ///     If The TensorProtocol is a vector of 7 elements, its shape is [7]
-    ///     If the TensorProtocol is a scalar, its shape is []
-    ///     If the TensorProtocol is empty, its shape is also []
+    ///     If the Tensor is a 3 by 4 matrix, its shape is [3, 4]
+    ///     If the Tensor is a vector of 7 elements, its shape is [7]
+    ///     If the Tensor is a scalar, its shape is []
+    ///     If the Tensor is empty, its shape is also []
     var shape: [Int] { get }
     
     /// A view that provides a `CollectionType` over all the items stored in the array.
@@ -58,19 +54,6 @@ public protocol TensorProtocol: CustomStringConvertible {
     
     /// Returns a sequence containing pairs of cartesian indices and `Element`s.
     func coordinate() -> AnySequence<([Int], Element)>
-    
-}
-
-public protocol MutableTensorProtocol: TensorProtocol {
-    
-    /// Returns the element for the given set of indices.
-    subscript(indices: Int...) -> Element { get set }
-    
-    /// Returns the element for the given set of indices.
-    subscript(indices: [Int]) -> Element { get set }
-    
-    /// Returns the element for the given linear index.
-    subscript(linear linear: Int) -> Element { get set }
     
 }
 
