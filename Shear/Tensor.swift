@@ -80,7 +80,7 @@ public extension Tensor {
     
     /// Construct a Tensor a slice with `view` into `tensor`.
     init(view: [TensorIndex], tensor: Tensor<Element>) {
-        guard let (shape, compactView) = makeShape(tensor.shape, view: view) else {
+        guard let (shape, compactView) = makeSliceIndexingShapeAndView(tensor.shape, view: view) else {
             fatalError("Invalid bounds for an TensorSlice")
         }
         
@@ -165,7 +165,7 @@ private func transformFn<A>(linearFn: Int -> A, stride: [Int]) -> [Int] -> A {
     return { indices in linearFn(convertIndices(cartesian: indices, stride: stride)) }
 }
 
-private func makeShape(baseShape: [Int], view: [TensorIndex]) -> (shape: [Int], compactedView: [Int?])? {
+private func makeSliceIndexingShapeAndView(baseShape: [Int], view: [TensorIndex]) -> (shape: [Int], compactedView: [Int?])? {
     // Assumes view is within bounds.
     func calculateBound(baseCount: Int, view: TensorIndex) -> Int {
         switch view {
