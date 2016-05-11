@@ -1,6 +1,6 @@
 # Shear
 
-A multidimensional array library for Swift.
+A multidimensional array (hereafter: tensor) library for Swift.
 
 ## Status
 
@@ -25,21 +25,21 @@ let b = [
 let c = a ∙ b
 ```
 
-(Unfortunately, we cannot currently convert nested array literals into our types directly. Instead we use a reshape function defined on both our arrays and built-in Swift.Tensors to specify the `shape` (the count in each dimension) of arrays.)
+(Unfortunately, we cannot currently convert nested array literals into our types directly. Instead we use a reshape function defined on both our tensors and built-in Arrays to specify the `shape` (the count in each dimension) of arrays.)
 
-Now, of course, any self-respecting n-array lib will have matrix multiplication. What makes Shear a little more interesting is that our matrix multiplication and dot product (and higher order inner products) are defined simply as `inner(a, b, product: *, sum: +)`. `inner()` is a reusable component that can just as easily compute possible paths from an adjacency matrix (`inner(mat, mat, product: &, sum: |)`). Likewise, the pieces that make `inner()` tick—`.enclose()`, `.reduce()` and the outer product—are exposed as reusable components that clients can easily combine into more advanced operations of their own making.
+Now, of course, any self-respecting n-array lib will have matrix multiplication. What makes Shear a little more interesting is that our matrix multiplication and dot product (and higher order inner products) are defined simply as `inner(a, b, product: *, sum: +)`. `inner()` is a reusable component that can just as easily compute possible paths from an adjacency matrix (`inner(mat, mat, product: &, sum: |)`). Likewise, the pieces that make `inner()` tick—`.enclose()`, `.reduce()` and the outer product—are themselves exposed as reusable components that users can easily combine into more advanced operations of their own making.
 
 ## Current Features
 
-* Arbitrary dimensional dense arrays with copy-on-write semantics
+* Arbitrary dimensional dense tensors with copy-on-write semantics
 
-* Arbitrary dimensional computed arrays for lazy evaluation
+* Arbitrary dimensional computed tensors for lazy evaluation
 
-* Very flexible array slicing: slice whole dimensions, single columns, ranges, or arbitrarily reordered lists on a per-dimension basis
+* Very flexible tensor slicing: slice whole dimensions, single columns, ranges, or arbitrarily reordered lists on a per-dimension basis
 
-* A featureful (totally a word) suite of operations for sequencing, mapping, reducing, scanning, transforming, and combining arrays 
+* A featureful (totally a word) suite of operations for sequencing, mapping, reducing, scanning, transforming, and combining tensors 
 
-* Basic math operators for numeric arrays
+* Basic math operators for numeric tensors
 
 ## Not Current Features
 
@@ -55,11 +55,11 @@ Now, of course, any self-respecting n-array lib will have matrix multiplication.
 
 ### Basics
 
-An TensorProtocol is defined by its elements and shape. The shape is an [Int] where each Int is the count in that dimension. The highest dimension is first, the rows are second to last, and the columns are last. (DenseTensors are stored in row-major order.) Elements are accessed via their Cartesian (`a[0, 6, 4]`) or linear (`a[linear: 34]`) indices. Tensors can also be sliced into TensorSlices (`a[7, 2..>5, [3, 5, 2]]`) which are shallow views into an underlying TensorProtocol. Like Swift.TensorSlices, any modification of the elements of an TensorSlice are not reflected in the TensorProtocol they are sliced from (unlike Swift.TensorSlices, the coordinates of an TensorSlice always start from all zero indices).
+A Tensor is defined by its elements and shape. The shape is an [Int] where each Int is the count in that dimension. The highest dimension is first, the rows are second to last, and the columns are last. (Dense tensors are stored in row-major order.) Elements are accessed via their Cartesian (`a[0, 6, 4]`) or linear (`a[linear: 34]`) indices. Tensors can also be sliced into other tensors (`a[7, 2..>5, [3, 5, 2]]`) which are shallow views into an underlying tensor.
 
-### For a given array
+### For a given tensor
 
-In addition to subscript indexing, an Tensor's elements can be accessed via the `.allElements` CollectionType view:
+In addition to subscript indexing, a tensor's elements can be accessed via the `.allElements` CollectionType view:
 
 ```
 for (linearIndex, x) in xs.allElements.enumerate() {
@@ -78,7 +78,7 @@ for (indices, x) in xs.coordinate() {
 Tensors can also be sequenced across a given dimension to operate on each lower dimensional slice in turn. For instance, if you wish to operate on each matrix in a 3-array, one can simply `.sequenceFirst()`: 
 
 ```
-for matrix in array3.sequenceFirst() {
+for matrix in threeArray.sequenceFirst() {
 	for rowVec in matrix.sequenceFirst() {
 		for scalar in rowVec.sequenceFirst() {
 			// yet more stuff to do
@@ -92,23 +92,23 @@ for matrix in array3.sequenceFirst() {
 
 ---
 
-Of course, it's also possible to handle these types of operations at a high level of abstraction.
+Of course, it's also possible to handle these types of operations at a higher level of abstraction.
 
-As one might expect, `.map()` maps a transform upon each element of an array and produces an array of the same shape as output. `.reduce()` and `.scan()` reduce and scan the last dimension (the columns) of an array, while `.reduceFirst()` and `.scanFirst()` have similar effects over the first dimension. Finally, `.vectorMap` maps a transform against either each set of either row vectors or highest-order vectors in the array, which is quite useful for implementing other higher-order functions.
+As one might expect, `.map()` maps a transform upon each element of a tensor and produces a tensor of the same shape as output. `.reduce()` and `.scan()` reduce and scan the last dimension (the columns) of a tensor, while `.reduceFirst()` and `.scanFirst()` have similar effects over the first dimension. Finally, `.vectorMap` maps a transform against either each set of either row vectors or highest-order vectors in the tensor, which is quite useful for implementing other higher-order functions.
 
-One also has the ability to `.flip()` (along the first axis) `.reverse()` (along the last), `.transpose()` and `.enclose()` — which transforms an array of elements into an array of arrays of elements where the specified axes determines the shape of the resulting inner arrays.
+One also has the ability to `.flip()` (along the first axis) `.reverse()` (along the last), `.transpose()` and `.enclose()` — which transforms a tensor of elements into an tensor of tensors of elements where the specified axes determines the shape of the resulting inner tensors.
 
-### Between arrays
+### Between tensors
 
-`zip` takes two arrays and returns a lazily computed array of matched element pairs. (Which you can then `.map()` etc. to your heart's desire.)
+`zip` takes two tensors and returns a lazily computed tensor of matched element pairs. (Which you can then `.map()` etc. to your heart's desire.)
 
-`outer()` computes the outer product of two arrays for a given transform (which is all combinations of one set of elements with the other).
+`outer()` computes the outer product of two tensors for a given transform (which is all combinations of one set of elements with the other).
 
-`inner()` computes the generalized inner product of two arrays (like the dot-product).
+`inner()` computes the generalized inner product of two tensors (like the dot-product).
 
-In addition, most of the expected math operators are overloaded to provide element-wise or matrix (or vector or generalized-matrix) functions for numeric arrays.
+In addition, most of the expected math operators are overloaded to provide element-wise or matrix (or vector or generalized-matrix) functions for numeric tensors.
 
-Finally, arrays can have additional elements added to on their first and last axes via `.concat()` and `.append()` and can have dimensions added to the front or back of the shape via `.laminate()` and `.interpose()`.
+Finally, tensors can have additional elements added to on their first and last axes via `.concat()` and `.append()` and can have dimensions added to the front or back of the shape via `.laminate()` and `.interpose()`.
 
 ## Contributing
 

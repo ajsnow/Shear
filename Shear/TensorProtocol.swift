@@ -149,13 +149,13 @@ public extension TensorProtocol {
     
     public var description: String {
         // We add the A{ ... }  to make it easy to spot nested `Tensors`.
-        return "A{" + toString(Swift.ArraySlice(shape), elementGenerator: allElements.generate()) + "}"
+        return "A{" + toString(ArraySlice(shape), elementGenerator: allElements.generate()) + "}"
     }
     
 }
 
 // When called with the correct args, it returns a string that looks like the nested native array equivalent.
-private func toString<A>(remainingShape: Swift.ArraySlice<Int>, elementGenerator: AnyGenerator<A>) -> String {
+private func toString<A>(remainingShape: ArraySlice<Int>, elementGenerator: AnyGenerator<A>) -> String {
     guard let length = remainingShape.first else {
         return String(elementGenerator.next()!) // If the number of elements is not the scan-product of the shape, something terrible has already happened.
     }

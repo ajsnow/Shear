@@ -52,7 +52,7 @@ public func ×<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element
         let bx = right[linear: 0],
             by = right[linear: 1],
             bz = right[linear: 2]
-        let cx = ay*bz - by*az, // Xcode 7.1 has a hard time with parsing these as a Swift.TensorProtocol literal.
+        let cx = ay*bz - by*az, // Xcode 7.1 has a hard time with parsing these as an Array literal.
             cy = az*bx - bz*ax,
             cz = ax*by - bx*ay
         return Tensor(shape: [3], values: [cx, cy, cz])

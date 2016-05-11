@@ -64,7 +64,7 @@ extension CollectionType {
     
 }
 
-public extension Swift.Array {
+public extension Array {
     
     public func ravel() -> Tensor<Generator.Element> {
         return Tensor(shape: [Int(count)], values: self)
