@@ -31,7 +31,7 @@ Now, of course, any self-respecting n-array lib will have matrix multiplication.
 
 ## Current Features
 
-* Arbitrary dimensional dense tensors with copy-on-write semantics
+* Arbitrary dimensional dense tensors
 
 * Arbitrary dimensional computed tensors for lazy evaluation
 
@@ -102,7 +102,7 @@ One also has the ability to `.flip()` (along the first axis) `.reverse()` (along
 
 `zip` takes two tensors and returns a lazily computed tensor of matched element pairs. (Which you can then `.map()` etc. to your heart's desire.)
 
-`outer()` computes the outer product of two tensors for a given transform (which is all combinations of one set of elements with the other).
+`outer()` pairs of each element of one tensor with every element of the other. Producing a tensor whose shape is the concationation of the argument's shapes.
 
 `inner()` computes the generalized inner product of two tensors (like the dot-product).
 
