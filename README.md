@@ -100,7 +100,7 @@ One also has the ability to `.flip()` (along the first axis) `.reverse()` (along
 
 ### Between tensors
 
-`zip` takes two tensors and returns a lazily computed tensor of matched element pairs. (Which you can then `.map()` etc. to your heart's desire.)
+`zip()` takes two tensors and returns a lazily computed tensor of matched element pairs. (Which you can then `.map()` etc. to your heart's desire.)
 
 `outer()` pairs of each element of one tensor with every element of the other. Producing a tensor whose shape is the concationation of the argument's shapes.
 
