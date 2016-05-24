@@ -85,7 +85,7 @@ public extension TensorProtocol {
     var scalar: Element? {
         guard isScalar else { return nil }
         
-        return allElements.first
+        return self[]
     }
     
     /// Returns true iff `self` is a vector.
