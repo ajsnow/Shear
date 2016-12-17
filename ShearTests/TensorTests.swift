@@ -49,13 +49,13 @@ class TensorTests: XCTestCase {
         let iota1b = Tensor(shape: [], tensor: iota1)
         XCTAssert(iota1b == iota1)
         
-        let tensorify = Tensor(iota2x3[$, $])
+        let tensorify = Tensor(iota2x3[.all, .all])
         XCTAssert(tensorify == iota2x3)
         
         let iota1c = Tensor(iota1[[] as [TensorIndex]])
         XCTAssert(iota1c == iota1)
         
-        let cordString = Tensor(shape: [2, 3], cartesian: { indices in indices.reduce("", combine: {$0 + String($1) }) })
+        let cordString = Tensor(shape: [2, 3], cartesian: { indices in indices.reduce("", {$0 + String($1) }) })
         let cordString2 = Tensor(shape: [2, 3], values: ["00", "01", "02", "10", "11", "12"])
         XCTAssert(cordString == cordString2)
         
@@ -125,7 +125,7 @@ class TensorTests: XCTestCase {
     // MARK: - Slicing
     
     func testSliceIndexingFull() {
-        let testVec = allTensors.map { $0.shape.map { _ in $ } }
+        let testVec = allTensors.map { $0.shape.map { _ in TensorIndex.all } }
         
         zip(allTensors, testVec).forEach { (array, indices) in
             XCTAssert(array[indices] == array)
@@ -134,14 +134,14 @@ class TensorTests: XCTestCase {
     
     func testSliceIndexingSingular() {
         // First value
-        let testVec = allTensors.map { $0.shape.map { _ in TensorIndex.SingleValue(0) } }
+        let testVec = allTensors.map { $0.shape.map { _ in TensorIndex.singleValue(0) } }
         
         zip(allTensors, testVec).forEach { (array, indices) in
             XCTAssert(Array(array[indices].allElements) == [array.allElements.first!])
         }
         
         // Last value
-        let testVec2 = allTensors.map { $0.shape.map { count in TensorIndex.SingleValue(count - 1) } }
+        let testVec2 = allTensors.map { $0.shape.map { count in TensorIndex.singleValue(count - 1) } }
         
         zip(allTensors, testVec2).forEach { (array, indices) in
             XCTAssert(Array(array[indices].allElements) == [array.allElements.last!])
@@ -150,7 +150,7 @@ class TensorTests: XCTestCase {
         
         let randish = 893746573 // Arbitrary value that won't change between test runs.
         let indices = allTensors.map { $0.shape.map { count in randish % count } }
-        let testVec3 = indices.map { $0.map { TensorIndex.SingleValue($0) } }
+        let testVec3 = indices.map { $0.map { TensorIndex.singleValue($0) } }
         
         let values = zip(allTensors, indices).map { $0[$1] }
         let slices = zip(allTensors, testVec3).map { $0[$1] }

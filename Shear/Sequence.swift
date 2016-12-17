@@ -8,16 +8,16 @@ import Foundation
 public extension TensorProtocol {
     
     /// Slices the TensorProtocol into a sequence of `TensorSlice`s on its nth `deminsion`.
-    func sequence(deminsion: Int) -> [Tensor<Element>] {
+    func sequence(_ deminsion: Int) -> [Tensor<Element>] {
         if (isEmpty || isScalar) && deminsion == 0 { // TODO: Consider making sequencing scalar or empty arrays an error.
             return [Tensor(self)]
         }
         guard deminsion < rank else { fatalError("An array cannot be sequenced on a deminsion it does not have") }
         
-        let viewIndices = [TensorIndex](count: rank, repeatedValue: TensorIndex.All)
+        let viewIndices = [TensorIndex](repeating: TensorIndex.all, count: rank)
         return (0..<shape[deminsion]).map {
             var nViewIndices = viewIndices
-            nViewIndices[deminsion] = .SingleValue($0)
+            nViewIndices[deminsion] = .singleValue($0)
             return self[nViewIndices]
         }
     }
@@ -39,7 +39,7 @@ public extension TensorProtocol {
     public func coordinate() -> AnySequence<([Int], Element)> {
         let indexGenerator = makeRowMajorIndexGenerator(shape)
         
-        return AnySequence(AnyGenerator {
+        return AnySequence(AnyIterator {
             guard let indices = indexGenerator.next() else { return nil }
             return (indices, self[indices]) // TODO: Linear indexing is cheaper for DenseTensors. Consider specializing.
             })

@@ -4,15 +4,15 @@
 
 import Foundation
 
-public extension SequenceType {
+public extension Sequence {
     
     /// Return the array of partial results of repeatedly calling `combine` with an
     /// accumulated value initialized to `initial` and each element of
     /// `self`, in turn, i.e. return
     /// `[initial, combine(results[0], self[0]),...combine(results[count-1], self[count-1]]`.
-    func scan<T>(initial: T, @noescape combine: (T, Self.Generator.Element) -> T) -> [T] {
+    func scan<T>(_ initial: T, combine: (T, Self.Iterator.Element) -> T) -> [T] {
         var results: [T] = [initial]
-        for (i, v) in self.enumerate() {
+        for (i, v) in self.enumerated() {
             results.append(combine(results[i], v))
         }
         return results
@@ -21,22 +21,22 @@ public extension SequenceType {
 }
 
 // We could have defined these on sequence types, but this definition is much nicer
-public extension CollectionType where SubSequence.Generator.Element == Generator.Element {
+public extension Collection where SubSequence.Iterator.Element == Iterator.Element {
     
-    func reduce(@noescape combine: (Generator.Element, Generator.Element) -> Generator.Element) -> Generator.Element {
+    func reduce(_ combine: (Iterator.Element, Iterator.Element) -> Iterator.Element) -> Iterator.Element {
         guard !isEmpty else { fatalError("CollectionType must have at least one element to be self-reduced") }
         
-        return dropFirst().reduce(first!, combine: combine)
+        return dropFirst().reduce(first!, combine)
     }
 
     /// Return the array of partial results of repeatedly calling `combine` with an
     /// accumulated value initialized to `initial` and each element of
     /// `self`, in turn, i.e. return
     /// `[self[0], combine(results[0], self[1]),...combine(results[count-2], self[count-1]]`.
-    func scan(@noescape combine: (Generator.Element, Generator.Element) -> Generator.Element) -> [Generator.Element] {
+    func scan(_ combine: (Iterator.Element, Iterator.Element) -> Iterator.Element) -> [Iterator.Element] {
         guard !isEmpty else { fatalError("CollectionType must have at least one element to be self-scanned.") }
         
-        var results = [first!] as [Generator.Element]
+        var results = [first!] as [Iterator.Element]
         for v in self.dropFirst() {
             results.append(combine(results.last!, v))
         }
@@ -45,7 +45,7 @@ public extension CollectionType where SubSequence.Generator.Element == Generator
     
 }
 
-extension CollectionType where Generator.Element: Equatable {
+extension Collection where Iterator.Element: Equatable {
     
     func allEqual() -> Bool {
         guard let first = self.first else { return true } // An empty array certainly has uniform contents.
@@ -54,9 +54,9 @@ extension CollectionType where Generator.Element: Equatable {
     
 }
 
-extension CollectionType {
+extension Collection {
     
-    func allEqual<A where A: Equatable>(compare: Generator.Element -> A) -> Bool {
+    func allEqual<A>(_ compare: (Iterator.Element) -> A) -> Bool where A: Equatable {
         guard let first = self.first else { return true } // An empty array certainly has uniform contents.
         let firstTransformed = compare(first)
         return !self.contains { compare($0) != firstTransformed }
@@ -66,15 +66,15 @@ extension CollectionType {
 
 public extension Array {
     
-    public func ravel() -> Tensor<Generator.Element> {
+    public func ravel() -> Tensor<Iterator.Element> {
         return Tensor(shape: [Int(count)], values: self)
     }
     
-    public func reshape(shape: [Int]) -> Tensor<Generator.Element> {
+    public func reshape(_ shape: [Int]) -> Tensor<Iterator.Element> {
         return Tensor(shape: shape, values: self)
     }
     
-    public func rotate(s: Int) -> [Generator.Element] {
+    public func rotate(_ s: Int) -> [Iterator.Element] {
         let shift = modulo(s, base: count)
         let back = self[0..<shift]
         let front = self[shift..<count]
@@ -83,14 +83,14 @@ public extension Array {
     
 }
 
-extension CollectionType where Index.Distance: NumericType {
-    
-    func ravel() -> Tensor<Generator.Element> {
+extension Collection where Index: Integer {
+
+    func ravel() -> Tensor<Iterator.Element> {
         let array = self.map { $0 }
         return array.ravel()
     }
     
-    func reshape(shape: [Int]) -> Tensor<Generator.Element> {
+    func reshape(_ shape: [Int]) -> Tensor<Iterator.Element> {
         return Tensor(shape: shape, values: Array(self))
     }
     
@@ -98,23 +98,23 @@ extension CollectionType where Index.Distance: NumericType {
 
 extension String {
     
-    func leftpad(count: Int, padding: Character = " ") -> String {
+    func leftpad(_ count: Int, padding: Character = " ") -> String {
         let paddingCount = count - self.characters.count
         
         switch paddingCount {
         case 0:
             return self
         case _ where paddingCount < 0:
-            return self[self.startIndex..<self.startIndex.advancedBy(count)]
+            return self[self.startIndex..<self.characters.index(self.startIndex, offsetBy: count)]
         default:
-            let pad = String(count: paddingCount, repeatedValue: padding)
+            let pad = String(repeating: String(padding), count: paddingCount)
             return pad + self
         }
     }
     
 }
 
-func modulo(count: Int, base: Int) -> Int {
+func modulo(_ count: Int, base: Int) -> Int {
     let m = count % base
     return m < 0 ? m + base : m
 }

@@ -43,14 +43,17 @@ public protocol TensorProtocol: CustomStringConvertible {
     /// Returns the element for the given set of indices.
     subscript(indices: [Int]) -> Element { get }
     
-    /// Returns an `TensorSlice` view into the base `TensorProtocol` determined by the set of `TensorIndex`s.
+    /// Returns a `TensorSlice` view into the base `TensorProtocol` determined by the set of `TensorIndex`s.
     subscript(indices: TensorIndex...) -> Tensor<Element> { get }
     
-    /// Returns an `TensorSlice` view into the base `TensorProtocol` determined by the set of `TensorIndex`s.
+    /// Returns a `TensorSlice` view into the base `TensorProtocol` determined by the set of `TensorIndex`s.
     subscript(indices: [TensorIndex]) -> Tensor<Element> { get }
     
     /// Returns the element for the given linear index.
     subscript(linear linear: Int) -> Element { get }
+    
+    /// Returns a `TensorSlice` view into the base `TensorProtocol` determined by the range of linear indices.
+    subscript(linear indices: Range<Int>) -> Tensor<Element> { get }
     
     /// Returns a sequence containing pairs of cartesian indices and `Element`s.
     func coordinate() -> AnySequence<([Int], Element)>
@@ -95,13 +98,13 @@ public extension TensorProtocol {
     
     /// The length of the TensorProtocol in a particular dimension.
     /// Safe to call without checking the Tensor's rank (unlike .shape[d])
-    func size(d: Int) -> Int {
+    func size(_ d: Int) -> Int {
         return d < rank ? shape[d] : 1
     }
     
     /// The length of the TensorProtocol in several dimensions.
     /// Safe to call without checking the Tensor's rank (unlike .shape[d])
-    func size(ds: [Int]) -> [Int] {
+    func size(_ ds: [Int]) -> [Int] {
         return ds.map(size)
     }
     
@@ -120,11 +123,11 @@ public extension TensorProtocol {
 // We could make an optimized version for DenseTensors that compares shape && storage
 // (which can be faster since native arrays can test if they point to the same underlying buffer).
 // Likewise, TensorSlices equality could check their masks & underlying DenseTensors for equality which could sometimes get the same optimization.
-public func ==<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
-    return left.shape == right.shape && !zip(left, right).allElements.contains(!=)
+public func ==<A: TensorProtocol, B: TensorProtocol>(left: A, right: B) -> Bool where A.Element == B.Element, A.Element: Equatable {
+    return left.shape == right.shape && !zip(left, right).allElements.contains(where: !=)
 }
 
-public func !=<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: Equatable>(left: A, right: B) -> Bool {
+public func !=<A: TensorProtocol, B: TensorProtocol>(left: A, right: B) -> Bool where A.Element == B.Element, A.Element: Equatable {
     return !(left == right)
 }
 
@@ -133,15 +136,15 @@ public extension TensorProtocol {
     
     public var description: String {
         // We add the A{ ... }  to make it easy to spot nested `Tensors`.
-        return "A{" + toString(ArraySlice(shape), elementGenerator: allElements.generate()) + "}"
+        return "A{" + toString(ArraySlice(shape), elementGenerator: allElements.makeIterator()) + "}"
     }
     
 }
 
 // When called with the correct args, it returns a string that looks like the nested native array equivalent.
-private func toString<A>(remainingShape: ArraySlice<Int>, elementGenerator: AnyGenerator<A>) -> String {
+fileprivate func toString<A>(_ remainingShape: ArraySlice<Int>, elementGenerator: AnyIterator<A>) -> String {
     guard let length = remainingShape.first else {
-        return String(elementGenerator.next()!) // If the number of elements is not the scan-product of the shape, something terrible has already happened.
+        return String(describing: elementGenerator.next()!) // If the number of elements is not the scan-product of the shape, something terrible has already happened.
     }
     
     var str = "[" + toString(remainingShape.dropFirst(), elementGenerator: elementGenerator)
@@ -152,20 +155,20 @@ private func toString<A>(remainingShape: ArraySlice<Int>, elementGenerator: AnyG
     return str
 }
 
-/// Provides a string similar to the APL printout of a given `TensorProtocol`.
-func aplString<A: TensorProtocol>(array: A) -> String {
-    guard !array.isEmpty else { return "" }
-    guard !array.isScalar else { return String(array.scalar!) }
-    
-    func aplString<A: TensorProtocol>(array: A, paddingCount: Int) -> String {
-        if array.isVector {
-            return array.allElements.map { String($0).leftpad(paddingCount) }.joinWithSeparator(" ")
-        }
-        let newlines = String(count: array.rank - 1, repeatedValue: "\n" as Character)
-        return array.sequenceFirst.map { aplString($0, paddingCount: paddingCount) }.joinWithSeparator(newlines)
+// In Swift 3.1, recursion inside of nested functions segfaults the compiler.
+fileprivate func aplString<A: TensorProtocol>(_ array: A, paddingCount: Int) -> String {
+    if array.isVector {
+        return array.allElements.map { String(describing: $0).leftpad(paddingCount) }.joined(separator: " ")
     }
-    
+    let newlines = String(repeating: "\n", count: array.rank - 1)
+    return array.sequenceFirst.map { aplString($0, paddingCount: paddingCount) }.joined(separator: newlines)
+}
+
+/// Provides a string similar to the APL printout of a given `TensorProtocol`.
+func aplString<A: TensorProtocol>(_ array: A) -> String {
+    guard !array.isEmpty else { return "" }
+    guard !array.isScalar else { return String(describing: array.scalar!) }
     // I don't think this will handle wide character correctly. Sorry, CJK!
-    let paddingCount = array.allElements.lazy.map { String($0) }.maxElement { $0.characters.count < $1.characters.count }?.characters.count ?? 0
+    let paddingCount = array.allElements.lazy.map { String(describing: $0) }.max { $0.characters.count < $1.characters.count }?.characters.count ?? 0
     return aplString(array, paddingCount: paddingCount)
 }

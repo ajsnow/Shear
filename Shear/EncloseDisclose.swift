@@ -10,33 +10,33 @@ public extension TensorProtocol {
     // TODO: Supporting the full APL-style axes enclose requires support for general dimensional reodering.
     /// Encloses the TensorProtocol upon the `axes` specified, resulting in an TensorProtocol of Tensors.
     /// If no `axes` are provided, encloses over the whole TensorProtocol.
-    /// Enclose is equivilant to APL's enclose when the axes are in accending order.
+    /// Enclose is equivilant to APL's enclose when the axes are in ascending order.
     /// i.e.
     ///     A.enclose(2, 0, 5) == ⊂[0 2 5]A
     ///     A.enclose(2, 0, 5) != ⊂[2 0 5]A
-    func enclose(axes: Int...) -> Tensor<Tensor<Element>> {
+    func enclose(_ axes: Int...) -> Tensor<Tensor<Element>> {
         return enclose(axes)
     }
     
     // TODO: Supporting the full APL-style axes enclose requires support for general dimensional reodering.
     /// Encloses the TensorProtocol upon the `axes` specified, resulting in an TensorProtocol of Tensors.
     /// If no `axes` are provided, encloses over the whole TensorProtocol.
-    /// Enclose is equivilant to APL's enclose when the axes are in accending order.
+    /// Enclose is equivilant to APL's enclose when the axes are in ascending order.
     /// i.e.
     ///     A.enclose([2, 0, 5]) == ⊂[0 2 5]A
     ///     A.enclose([2, 0, 5]) != ⊂[2 0 5]A
-    func enclose(axes: [Int]) -> Tensor<Tensor<Element>> {
+    func enclose(_ axes: [Int]) -> Tensor<Tensor<Element>> {
         guard !axes.isEmpty else { return ([Tensor(self)] as [Tensor<Element>]).ravel() }
         
-        let axes = Set(axes).sort() // Filter out any repeated axes.
-        guard !axes.contains({ !checkBounds($0, forCount: rank) }) else { fatalError("All axes must be between 0..<rank") }
+        let axes = Set(axes).sorted() // Filter out any repeated axes.
+        guard !axes.contains(where: { !checkBounds($0, forCount: rank) }) else { fatalError("All axes must be between 0..<rank") }
         
-        let newShape = [Int](shape.enumerate().lazy.filter { !axes.contains($0.index) }.map { $0.element })
+        let newShape = [Int](shape.enumerated().lazy.filter { !axes.contains($0.offset) }.map { $0.element })
         
         let internalIndicesList = makeRowMajorIndexGenerator(newShape).map { newIndices -> [TensorIndex] in
-            var internalIndices = newIndices.map { TensorIndex.SingleValue($0) }
+            var internalIndices = newIndices.map { TensorIndex.singleValue($0) }
             for a in axes {
-                internalIndices.insert(.All, atIndex: a) // N.B. This only works when the axes are sorted.
+                internalIndices.insert(.all, at: a) // N.B. This only works when the axes are sorted.
             }
             return internalIndices
         }

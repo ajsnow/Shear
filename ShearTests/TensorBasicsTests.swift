@@ -131,7 +131,7 @@ class TensorBasicsTests: XCTestCase {
         ]
         
         zip(allTensors, correctValues).forEach {
-            XCTAssert(String($0.0) == $0.1)
+            XCTAssert(String(describing: $0.0) == $0.1)
         }
     }
 

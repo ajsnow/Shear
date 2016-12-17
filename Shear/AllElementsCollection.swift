@@ -3,9 +3,33 @@
 // license that can be found in the LICENSE file.
 
 import Foundation
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func >= <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l >= r
+  default:
+    return !(lhs < rhs)
+  }
+}
+
 
 /// AllElementsCollection is a collection
-struct AllElementsCollection<A: TensorProtocol>: CollectionType {
+struct AllElementsCollection<A: TensorProtocol>: Collection, BidirectionalCollection, RandomAccessCollection {
     
     let array: A
     let stride: [Int]
@@ -17,14 +41,12 @@ struct AllElementsCollection<A: TensorProtocol>: CollectionType {
         count = array.shape.isEmpty ? 1 : array.shape.reduce(*)
     }
     
-    func generate() -> AnyGenerator<A.Element> {
-        
-        let indexGenerator = makeRowMajorIndexGenerator(array.shape)
-        
-        return AnyGenerator { () -> A.Element? in
-            guard let indices = indexGenerator.next() else { return nil }
-            return self.array[indices]
-        }
+    public func index(after i: Int) -> Int {
+        return i + 1
+    }
+    
+    func index(before i: Int) -> Int {
+        return i - 1
     }
     
     var startIndex: Int {
@@ -35,7 +57,7 @@ struct AllElementsCollection<A: TensorProtocol>: CollectionType {
         return count
     }
     
-    subscript(position: Int) -> A.Element {
+    subscript(_ position: Int) -> A.Element {
         return array[linear: position]
     }
     
@@ -52,27 +74,27 @@ struct AllElementsCollection<A: TensorProtocol>: CollectionType {
 /// (N.B. this requires setting the bounds to the reversed shape & reversing the output since our mapping is row-major.)
 struct BoundedAccumulator {
     enum OverflowBehavior {
-        case Nil
-        case Ignore
-        case FatalError
+        case `nil`
+        case ignore
+        case fatalError
     }
     
-    private let bounds: [Int]
-    private(set) var current: [Int]?
-    private let onOverflow: OverflowBehavior
+    fileprivate let bounds: [Int]
+    fileprivate(set) var current: [Int]?
+    fileprivate let onOverflow: OverflowBehavior
     
     init(bounds: [Int], onOverflow: OverflowBehavior) {
         self.bounds = bounds
-        self.current = [Int](count: bounds.count, repeatedValue: 0)
+        self.current = [Int](repeating: 0, count: bounds.count)
         self.onOverflow = onOverflow
     }
     
-    mutating func add(amount: Int, position pos: Int = 0) {
+    mutating func add(_ amount: Int, position pos: Int = 0) {
         guard pos < bounds.count else {
             switch onOverflow {
-            case .Nil: current = nil; fallthrough
-            case .Ignore: return
-            case .FatalError: fatalError("overflow")
+            case .nil: current = nil; fallthrough
+            case .ignore: return
+            case .fatalError: fatalError("overflow")
             }
         }
         
@@ -90,18 +112,18 @@ struct BoundedAccumulator {
 
 // We reverse the shape so that we can reverse the BoundedAccumulator's output.
 // We reverse that because we need row major order, which means incrementing the rows (indices.first) last.
-func makeRowMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
-    var accRev = BoundedAccumulator(bounds: shape.reverse(), onOverflow: .Nil)
-    return AnyGenerator { () -> [Int]? in
+func makeRowMajorIndexGenerator(_ shape: [Int]) -> AnyIterator<[Int]> {
+    var accRev = BoundedAccumulator(bounds: shape.reversed(), onOverflow: .nil)
+    return AnyIterator { () -> [Int]? in
         let elementRev = accRev.current
         accRev.inc()
-        return elementRev?.reverse()
+        return elementRev?.reversed()
     }
 }
 
-func makeColumnMajorIndexGenerator(shape: [Int]) -> AnyGenerator<[Int]> {
-    var accRev = BoundedAccumulator(bounds: shape, onOverflow: .Nil)
-    return AnyGenerator { () -> [Int]? in
+func makeColumnMajorIndexGenerator(_ shape: [Int]) -> AnyIterator<[Int]> {
+    var accRev = BoundedAccumulator(bounds: shape, onOverflow: .nil)
+    return AnyIterator { () -> [Int]? in
         let elementRev = accRev.current
         accRev.inc()
         return elementRev

@@ -12,10 +12,10 @@ public func zeros<Element: NumericType>(shape newShape: [Int]) -> Tensor<Element
     return Tensor<Element>(shape: newShape, repeatedValue: 0)
 }
 
-public func eye<Element: NumericType>(count: Int, rank: Int = 2) -> Tensor<Element> {
+public func eye<Element: NumericType>(_ count: Int, rank: Int = 2) -> Tensor<Element> {
     guard rank > 1 else { return ones(shape: [1]) }
     
-    let shape = [Int](count: rank, repeatedValue: count)
+    let shape = [Int](repeating: count, count: rank)
     return Tensor(shape: shape, cartesian: { $0.allEqual() ? 1 : 0 })
 }
 
@@ -23,10 +23,10 @@ public func eye<Element: NumericType>(shape newShape: [Int]) -> Tensor<Element> 
     return Tensor(shape: newShape, cartesian: { $0.allEqual() ? 1 : 0 })
 }
 
-public func iota<Element: NumericType>(count: Int) -> Tensor<Element> {
+public func iota<Element: NumericType>(_ count: Int) -> Tensor<Element> {
     return Tensor(shape: [count], linear: { Element($0) })
 }
 
-public func iota(count: Int) -> Tensor<Int> {
+public func iota(_ count: Int) -> Tensor<Int> {
     return Tensor(shape: [count], linear: { $0 })
 }

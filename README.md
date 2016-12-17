@@ -4,7 +4,7 @@ A multidimensional array (hereafter: tensor) library for Swift.
 
 ## Status
 
-Shear is in *early alpha*. It's API is unstable & implementation is unoptimized. If you want to get in at the ground floor figuring out how to define n-arrays in the swiftest way possible, here's your opportunity. If you want a sturdy foundation to build a product on today, this likely isn't it.
+Shear is a hobby project. It's API is unstable & implementation is unoptimized. If you want a sturdy foundation to build a product on today, this likely isn't it.
 
 ## Example
 

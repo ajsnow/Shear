@@ -11,7 +11,7 @@ public extension TensorProtocol {
     /// e.g.
     ///    1 2 | 5 6 --> 1 2 5 6
     ///    3 4 | 7 8 --> 3 4 7 8
-    public func append<A: TensorProtocol where A.Element == Element>(additionalItems: A) -> Tensor<Element> {
+    public func append<A: TensorProtocol>(_ additionalItems: A) -> Tensor<Element> where A.Element == Element {
         return zipVectorMap(self, additionalItems, byRows: true, transform: { $0 + $1 } )
         //        guard rank == additionalItems.rank && shape.dropLast().elementsEqual(additionalItems.shape.dropLast()) ||
         //            rank == additionalItems.rank + 1 && shape.dropLast().elementsEqual(additionalItems.shape) else {
@@ -39,17 +39,17 @@ public extension TensorProtocol {
     ///    3 4 | 7 8 --> 3 4
     ///                  5 6
     ///                  7 8
-    public func concat<A: TensorProtocol where A.Element == Element>(additionalItems: A) -> Tensor<Element> {
+    public func concat<A: TensorProtocol>(_ additionalItems: A) -> Tensor<Element> where A.Element == Element {
         return zipVectorMap(self, additionalItems, byRows: false, transform: {$0 + $1})
     }
     
     /// Returns a DenseTensor with a rank - 1 array of additionalitem appended to the last axis of the TensorProtocol.
-    public func append(additionalItem: Element) -> Tensor<Element> {
+    public func append(_ additionalItem: Element) -> Tensor<Element> {
         return vectorMap(byRows: true, transform: {$0 + [additionalItem]})
     }
     
     /// Returns a DenseTensor with a rank - 1 array of additionalitem concatenated to the first axis of the TensorProtocol.
-    public func concat(additionalItem: Element) -> Tensor<Element> {
+    public func concat(_ additionalItem: Element) -> Tensor<Element> {
         return vectorMap(byRows: false, transform: {$0 + [additionalItem]})
         // This could be optimized to the following:
         //     return DenseTensor(shape: [shape[0] + 1] + shape.dropFirst(), baseTensor: [Element](allElements) + [Element](count: shape.dropFirst().reduce(*), repeatedValue: additionalItem))
@@ -61,7 +61,7 @@ public extension TensorProtocol {
     /// e.g.
     ///    1 2 3 4 | 5 6 7 8 --> 1 2 3 4
     ///                          5 6 7 8
-    public func laminate<A: TensorProtocol where A.Element == Element>(additionalItems: A) -> Tensor<Element> {
+    public func laminate<A: TensorProtocol>(_ additionalItems: A) -> Tensor<Element> where A.Element == Element {
         guard shape == additionalItems.shape else {
             fatalError("Tensors must have same shape to be laminated")
         }
@@ -76,7 +76,7 @@ public extension TensorProtocol {
     ///                          2 6
     ///                          3 7
     ///                          4 8
-    public func interpose<A: TensorProtocol where A.Element == Element>(additionalItems: A) -> Tensor<Element> {
+    public func interpose<A: TensorProtocol>(_ additionalItems: A) -> Tensor<Element> where A.Element == Element {
         guard shape == additionalItems.shape else {
             fatalError("Tensors must have same shape to be interposed")
         }

@@ -4,30 +4,30 @@
 
 import Foundation
 
-public enum TensorIndex: IntegerLiteralConvertible, ArrayLiteralConvertible {
+public enum TensorIndex: ExpressibleByIntegerLiteral, ExpressibleByArrayLiteral {
     
-    case All
-    case SingleValue(Int)
-    case Range(Int, Int)
-    case List([Int])
+    case all
+    case singleValue(Int)
+    case range(Int, Int)
+    case list([Int])
     
     public init(integerLiteral value: Int) {
-        self = .SingleValue(value)
+        self = .singleValue(value)
     }
     
     public init(arrayLiteral elements: Int...) {
-        self = .List(elements)
+        self = .list(elements)
     }
     
-    func isInbounds(bound: Int) -> Bool {
+    func isInbounds(_ bound: Int) -> Bool {
         switch self {
-        case .All:
+        case .all:
             return true
-        case .SingleValue(let index):
+        case .singleValue(let index):
             return index < bound
-        case .Range(let startIndex, let endIndex):
+        case .range(let startIndex, let endIndex):
             return startIndex <= endIndex && endIndex <= bound
-        case .List(let indices):
+        case .list(let indices):
             return !indices.contains { $0 >= bound }
         }
     }
@@ -37,11 +37,11 @@ public enum TensorIndex: IntegerLiteralConvertible, ArrayLiteralConvertible {
 // "RangeLiteralConvertibles" of a sort.
 public func ..<(start: Int, end: Int) -> TensorIndex {
     precondition(start <= end, "TensorIndex.Range: start must be less than or equal to end")
-    return .Range(start, end)
+    return .range(start, end)
 }
 
 public func ...(start: Int, end: Int) -> TensorIndex {
     return start ..< (end + 1)
 }
 
-public let $ = TensorIndex.All // TODO: decide if this or nil or some other symbol is best to express grabbing all of a dim
+//public let $ = TensorIndex.all // TODO: decide if this or nil or some other symbol is best to express grabbing all of a dim

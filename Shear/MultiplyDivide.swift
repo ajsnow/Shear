@@ -8,33 +8,33 @@ import Accelerate
 // MARK: - Operator Declarations
 
 //infix operator * {} /// Element-wise Product Operator, already declared ;)
-infix operator ⊗ {} /// Tensor / Outer Product Operator
-infix operator × {} /// Cross Product Operator
-infix operator ∙ {} /// Matrix / Dot / Inner Product Operator
+infix operator ⊗ /// Tensor / Outer Product Operator
+infix operator × /// Cross Product Operator
+infix operator ∙ /// Matrix / Dot / Inner Product Operator
 
 // MARK: - Operator Implementations
 
 /// Element-wise Multiplication
-public func *<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: NumericType>
-    (left: A, right: B) -> Tensor<A.Element> {
+public func *<A: TensorProtocol, B: TensorProtocol>
+    (left: A, right: B) -> Tensor<A.Element> where A.Element == B.Element, A.Element: NumericType {
         return zip(left, right).map(*)
 }
 
 /// Scalar Multiplication
-public func *<A: TensorProtocol, X: NumericType where A.Element == X>
-    (left: A, right: X) -> Tensor<A.Element> {
+public func *<A: TensorProtocol, X: NumericType>
+    (left: A, right: X) -> Tensor<A.Element> where A.Element == X {
         return left.map { $0 * right }
 }
 
 /// Left-Scalar Multiplication
-public func *<A: TensorProtocol, X: NumericType where A.Element == X>
-    (left: X, right: A) -> Tensor<A.Element> {
+public func *<A: TensorProtocol, X: NumericType>
+    (left: X, right: A) -> Tensor<A.Element> where A.Element == X {
         return right.map { left * $0 }
 }
 
 /// Tensor / Outer Product
-public func ⊗<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: NumericType>
-    (left: A, right: B) -> Tensor<A.Element> {
+public func ⊗<A: TensorProtocol, B: TensorProtocol>
+    (left: A, right: B) -> Tensor<A.Element> where A.Element == B.Element, A.Element: NumericType {
         return outer(left, right).map(*)
 }
 
@@ -42,8 +42,8 @@ public func ⊗<A: TensorProtocol, B: TensorProtocol where A.Element == B.Elemen
 // (i.e. N vectors of N+1 length in N+1 space) for anything, so we just
 // support the 3-space case.
 /// Cross Product
-public func ×<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: NumericType>
-    (left: A, right: B) -> Tensor<A.Element> {
+public func ×<A: TensorProtocol, B: TensorProtocol>
+    (left: A, right: B) -> Tensor<A.Element> where A.Element == B.Element, A.Element: NumericType {
         precondition(left.shape == right.shape && left.shape == [3], "Shear only supports 3-space cross products. If you actually want this, we'll happily accept a PR for a generalized algo.")
         
         let ax = left[linear: 0],
@@ -59,25 +59,25 @@ public func ×<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element
 }
 
 /// Matrix / Dot / Inner Product
-public func ∙<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: NumericType>
-    (left: A, right: B) -> Tensor<A.Element> {
+public func ∙<A: TensorProtocol, B: TensorProtocol>
+    (left: A, right: B) -> Tensor<A.Element> where A.Element == B.Element, A.Element: NumericType {
         return inner(left, right, product: *, sum: +)
 }
 
 /// Element-wise Division
-public func /<A: TensorProtocol, B: TensorProtocol where A.Element == B.Element, A.Element: NumericType>
-    (left: A, right: B) -> Tensor<A.Element> {
+public func /<A: TensorProtocol, B: TensorProtocol>
+    (left: A, right: B) -> Tensor<A.Element> where A.Element == B.Element, A.Element: NumericType {
         return zip(left, right).map(/)
 }
 
 /// Scalar Division
-public func /<A: TensorProtocol, X: NumericType where A.Element == X>
-    (left: A, right: X) -> Tensor<A.Element> {
+public func /<A: TensorProtocol, X: NumericType>
+    (left: A, right: X) -> Tensor<A.Element> where A.Element == X {
         return left.map { $0 / right }
 }
 
 /// Left-Scalar Division
-public func /<A: TensorProtocol, X: NumericType where A.Element == X>
-    (left: X, right: A) -> Tensor<A.Element> {
+public func /<A: TensorProtocol, X: NumericType>
+    (left: X, right: A) -> Tensor<A.Element> where A.Element == X {
         return right.map { left / $0 }
 }

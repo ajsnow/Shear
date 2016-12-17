@@ -177,7 +177,7 @@ class OpertaionsTests: XCTestCase {
             XCTAssert(i == [v])
         }
         
-        let stride = FiveFactorial.shape.reverse().scan(1, combine: *).dropLast().reverse()
+        let stride = FiveFactorial.shape.reversed().scan(1, combine: *).dropLast().reversed()
         FiveFactorial.coordinate().forEach { (i, v) in
             let dot = zip(i, stride).map(*).reduce(+)
             XCTAssert(dot == v)
@@ -217,7 +217,8 @@ class OpertaionsTests: XCTestCase {
             ].reshape([4, 4]))
         
         XCTAssert(inner(vEvens, vOdds, product: *, sum: +).scalar! == 68)
-        XCTAssert(inner(vEvens, vOdds, product: *, sum: +, initialSum: 5).scalar! == 68 + 5)
+        let swiftTypeInferenceIsSlow = inner(vEvens, vOdds, product: *, sum: +, initialSum: 5)
+        XCTAssert(swiftTypeInferenceIsSlow.scalar! == 68 + 5)
         
         let a = iota(12).reshape([4, 3])
         let b = iota(6).reshape([3, 2])

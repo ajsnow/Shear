@@ -21,7 +21,7 @@ class TensorSliceTests: XCTestCase {
     override func setUp() {
         super.setUp()
         computedTensors = [iotaVec, iotaSq, iotaCube, vEvens, vOdds, FiveFactorial, Scalar]
-        allTensors = computedTensors.map { Tensor(view: $0.shape.map { _ in $}, tensor: $0) }
+        allTensors = computedTensors.map { Tensor(view: $0.shape.map { _ in .all}, tensor: $0) }
     }
     
     func testShape() {
@@ -84,7 +84,7 @@ class TensorSliceTests: XCTestCase {
     // MARK: - Slicing
     
     func testSliceIndexingFull() {
-        let testVec = allTensors.map { $0.shape.map { _ in $ } }
+        let testVec = allTensors.map { $0.shape.map { _ in TensorIndex.all } }
         
         zip(allTensors, testVec).forEach { (array, indices) in
             XCTAssert(array[indices] == array)
@@ -93,14 +93,14 @@ class TensorSliceTests: XCTestCase {
     
     func testSliceIndexingSingular() {
         // First value
-        let testVec = allTensors.map { $0.shape.map { _ in TensorIndex.SingleValue(0) } }
+        let testVec = allTensors.map { $0.shape.map { _ in TensorIndex.singleValue(0) } }
         
         zip(allTensors, testVec).forEach { (array, indices) in
             XCTAssert(Array(array[indices].allElements) == [array.allElements.first!])
         }
         
         // Last value
-        let testVec2 = allTensors.map { $0.shape.map { count in TensorIndex.SingleValue(count - 1) } }
+        let testVec2 = allTensors.map { $0.shape.map { count in TensorIndex.singleValue(count - 1) } }
         
         zip(allTensors, testVec2).forEach { (array, indices) in
             XCTAssert(Array(array[indices].allElements) == [array.allElements.last!])
@@ -109,7 +109,7 @@ class TensorSliceTests: XCTestCase {
         
         let randish = 893746573 // Arbitrary value that won't change between test runs.
         let indices = allTensors.map { $0.shape.map { count in randish % count } }
-        let testVec3 = indices.map { $0.map { TensorIndex.SingleValue($0) } }
+        let testVec3 = indices.map { $0.map { TensorIndex.singleValue($0) } }
         
         let values = zip(allTensors, indices).map { $0[$1] }
         let slices = zip(allTensors, testVec3).map { $0[$1] }
@@ -157,10 +157,10 @@ class TensorSliceTests: XCTestCase {
     
     func testSliceIndexingBetweenNestedSlices() {
         let baseTensor = iota(3125).reshape([5, 5, 5, 5, 5])
-        let firstSlice = baseTensor[$, [4, 1, 3, 2], 1..<4, 4, 0]
+        let firstSlice = baseTensor[.all, [4, 1, 3, 2], 1..<4, 4, 0]
         XCTAssert(firstSlice.shape == [5, 4, 3])
         
-        let view = [$, 1, 1..<3, [2, 0]]
+        let view = [TensorIndex.all, 1, 1..<3 as TensorIndex, [2, 0] as TensorIndex] as [TensorIndex]
         
         
         let views = (0..<4).map {
