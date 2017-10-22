@@ -21,7 +21,7 @@ public extension Sequence {
 }
 
 // We could have defined these on sequence types, but this definition is much nicer
-public extension Collection where SubSequence.Iterator.Element == Iterator.Element {
+public extension Collection {
     
     func reduce(_ combine: (Iterator.Element, Iterator.Element) -> Iterator.Element) -> Iterator.Element {
         guard !isEmpty else { fatalError("CollectionType must have at least one element to be self-reduced") }
@@ -83,7 +83,7 @@ public extension Array {
     
 }
 
-extension Collection where Index: Integer {
+extension Collection where Index: BinaryInteger {
 
     func ravel() -> Tensor<Iterator.Element> {
         let array = self.map { $0 }
@@ -105,7 +105,7 @@ extension String {
         case 0:
             return self
         case _ where paddingCount < 0:
-            return self[self.startIndex..<self.characters.index(self.startIndex, offsetBy: count)]
+            return String(self[self.startIndex..<self.characters.index(self.startIndex, offsetBy: count)])
         default:
             let pad = String(repeating: String(padding), count: paddingCount)
             return pad + self

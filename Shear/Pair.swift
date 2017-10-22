@@ -47,12 +47,12 @@ public func inner<A: TensorProtocol, B: TensorProtocol, C, D>(_ left: A, _ right
 func zipVectorMap<A: TensorProtocol, B: TensorProtocol, C>(_ left: A, _ right: B, byRows rowVector: Bool = true, transform: ([A.Element], [B.Element]) throws -> [C]) rethrows -> Tensor<C> {
     if rowVector {
         guard left.rank == right.rank     && left.shape.dropLast().elementsEqual(right.shape.dropLast()) ||
-            left.rank == right.rank + 1 && left.shape.dropLast().elementsEqual(right.shape) else {
+              left.rank == right.rank +  1 && left.shape.dropLast().elementsEqual(right.shape) else {
                 fatalError("Shape of the right array must match the left array in all but the last dimension")
         }
     } else {
         guard left.rank == right.rank     && left.shape.dropFirst().elementsEqual(right.shape.dropFirst()) ||
-            left.rank == right.rank + 1 && left.shape.dropFirst().elementsEqual(right.shape) else {
+              left.rank == right.rank + 1 && left.shape.dropFirst().elementsEqual(right.shape) else {
                 fatalError("Shape of the right array must match the left array in all but the first dimension")
         }
     }
@@ -83,12 +83,12 @@ fileprivate func internalZipVectorMap<A: TensorProtocol, B: TensorProtocol, C>(_
 func zipVectorMap<A: TensorProtocol, B: TensorProtocol, C, AA, BB>(_ left: A, _ right: B, byRows rowVector: Bool = true, transform: @escaping ([AA], [BB]) -> [C]) -> Tensor<C> where A.Element == AA, B.Element == BB {
     if rowVector {
         guard left.rank == right.rank     && left.shape.dropLast().elementsEqual(right.shape.dropLast()) ||
-            left.rank == right.rank + 1 && left.shape.dropLast().elementsEqual(right.shape) else {
+              left.rank == right.rank + 1 && left.shape.dropLast().elementsEqual(right.shape) else {
                 fatalError("Shape of the right array must match the left array in all but the last dimension")
         }
     } else {
         guard left.rank == right.rank     && left.shape.dropFirst().elementsEqual(right.shape.dropFirst()) ||
-            left.rank == right.rank + 1 && left.shape.dropFirst().elementsEqual(right.shape) else {
+              left.rank == right.rank + 1 && left.shape.dropFirst().elementsEqual(right.shape) else {
                 fatalError("Shape of the right array must match the left array in all but the first dimension")
         }
     }

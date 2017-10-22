@@ -98,10 +98,14 @@ struct BoundedAccumulator {
             }
         }
         
-        current?[pos] += amount
-        while current?[pos] >= bounds[pos] {
-            current?[pos] -= bounds[pos]
-            self.add(1, position: pos + 1)
+        guard var curValue = current?[pos] else { return }
+        curValue += amount
+        let bound = bounds[pos]
+        let nextIncrement = curValue / bound
+        curValue %= bound
+        current?[pos] = curValue
+        if nextIncrement > 0 {
+            self.add(nextIncrement, position: pos + 1)
         }
     }
     
